@@ -8,7 +8,7 @@ from test_blending import TestBlending
 
 
 def bm_blending() -> None:
-    devices = ["cpu", "cuda"]
+    devices = ['cpu', 'cuda']
     kwargs_list = []
     num_meshes = [16]
     image_size = [128, 256]
@@ -18,19 +18,24 @@ def bm_blending() -> None:
     for case in test_cases:
         n, s, k, d = case
         kwargs_list.append(
-            {"num_meshes": n, "image_size": s, "faces_per_pixel": k, "device": d}
+            {
+                'num_meshes': n,
+                'image_size': s,
+                'faces_per_pixel': k,
+                'device': d,
+            }
         )
 
     benchmark(
         TestBlending.bm_sigmoid_alpha_blending,
-        "SIGMOID_ALPHA_BLENDING_PYTORCH",
+        'SIGMOID_ALPHA_BLENDING_PYTORCH',
         kwargs_list,
         warmup_iters=1,
     )
 
     benchmark(
         TestBlending.bm_softmax_blending,
-        "SOFTMAX_BLENDING_PYTORCH",
+        'SOFTMAX_BLENDING_PYTORCH',
         kwargs_list,
         warmup_iters=1,
     )

@@ -8,7 +8,7 @@ from pytorch3d.renderer.lighting import diffuse, specular
 
 
 def _bm_diffuse_cuda_with_init(N, S, K):
-    device = torch.device("cuda")
+    device = torch.device('cuda')
     normals = torch.randn(N, S, S, K, 3, device=device)
     color = torch.randn(1, 3, device=device)
     direction = torch.randn(N, S, S, K, 3, device=device)
@@ -18,7 +18,7 @@ def _bm_diffuse_cuda_with_init(N, S, K):
 
 
 def _bm_specular_cuda_with_init(N, S, K):
-    device = torch.device("cuda")
+    device = torch.device('cuda')
     points = torch.randn(N, S, S, K, 3, device=device)
     normals = torch.randn(N, S, S, K, 3, device=device)
     direction = torch.randn(N, S, S, K, 3, device=device)
@@ -42,6 +42,10 @@ def bm_lighting() -> None:
     test_cases = product(Ns, Ss, Ks)
     for case in test_cases:
         N, S, K = case
-        kwargs_list.append({"N": N, "S": S, "K": K})
-    benchmark(_bm_diffuse_cuda_with_init, "DIFFUSE", kwargs_list, warmup_iters=3)
-    benchmark(_bm_specular_cuda_with_init, "SPECULAR", kwargs_list, warmup_iters=3)
+        kwargs_list.append({'N': N, 'S': S, 'K': K})
+    benchmark(
+        _bm_diffuse_cuda_with_init, 'DIFFUSE', kwargs_list, warmup_iters=3
+    )
+    benchmark(
+        _bm_specular_cuda_with_init, 'SPECULAR', kwargs_list, warmup_iters=3
+    )

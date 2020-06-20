@@ -14,7 +14,7 @@ class TestOpsUtils(TestCaseMixin, unittest.TestCase):
         np.random.seed(42)
 
     def test_wmean(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         n_points = 20
 
         x = torch.rand(n_points, 3, device=device)
@@ -56,7 +56,7 @@ class TestOpsUtils(TestCaseMixin, unittest.TestCase):
         weight = torch.rand(x.shape[0], device=device)
         with self.assertRaises(ValueError) as context:
             oputil.wmean(x, weight=weight, keepdim=False)
-        self.assertTrue("weights are not compatible" in str(context.exception))
+        self.assertTrue('weights are not compatible' in str(context.exception))
 
         # test dim
         weight = torch.rand(x.shape[0], n_points, device=device)

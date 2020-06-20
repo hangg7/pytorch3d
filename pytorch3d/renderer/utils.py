@@ -28,8 +28,8 @@ class TensorAccessor(object):
                 In __setattr__ and __getattr__ only the value of class
                 attributes at this index will be accessed.
         """
-        self.__dict__["class_object"] = class_object
-        self.__dict__["index"] = index
+        self.__dict__['class_object'] = class_object
+        self.__dict__['index'] = index
 
     def __setattr__(self, name: str, value: Any):
         """
@@ -42,25 +42,28 @@ class TensorAccessor(object):
         """
         v = getattr(self.class_object, name)
         if not torch.is_tensor(v):
-            msg = "Can only set values on attributes which are tensors; got %r"
+            msg = 'Can only set values on attributes which are tensors; got %r'
             raise AttributeError(msg % type(v))
 
         # Convert the attribute to a tensor if it is not a tensor.
         if not torch.is_tensor(value):
             value = torch.tensor(
-                value, device=v.device, dtype=v.dtype, requires_grad=v.requires_grad
+                value,
+                device=v.device,
+                dtype=v.dtype,
+                requires_grad=v.requires_grad,
             )
 
         # Check the shapes match the existing shape and the shape of the index.
         if v.dim() > 1 and value.dim() > 1 and value.shape[1:] != v.shape[1:]:
-            msg = "Expected value to have shape %r; got %r"
+            msg = 'Expected value to have shape %r; got %r'
             raise ValueError(msg % (v.shape, value.shape))
         if (
             v.dim() == 0
             and isinstance(self.index, slice)
             and len(value) != len(self.index)
         ):
-            msg = "Expected value to have len %r; got %r"
+            msg = 'Expected value to have len %r; got %r'
             raise ValueError(msg % (len(self.index), len(value)))
         self.class_object.__dict__[name][self.index] = value
 
@@ -75,7 +78,7 @@ class TensorAccessor(object):
         if hasattr(self.class_object, name):
             return self.class_object.__dict__[name][self.index]
         else:
-            msg = "Attribue %s not found on %r"
+            msg = 'Attribue %s not found on %r'
             return AttributeError(msg % (name, self.class_object.__name__))
 
 
@@ -87,7 +90,7 @@ class TensorProperties(object):
     A mix-in class for storing tensors as properties with helper methods.
     """
 
-    def __init__(self, dtype=torch.float32, device="cpu", **kwargs):
+    def __init__(self, dtype=torch.float32, device='cpu', **kwargs):
         """
         Args:
             dtype: data type to set for the inputs
@@ -110,7 +113,7 @@ class TensorProperties(object):
                 elif isinstance(v, BROADCAST_TYPES):
                     args_to_broadcast[k] = v
                 else:
-                    msg = "Arg %s with type %r is not broadcastable"
+                    msg = 'Arg %s with type %r is not broadcastable'
                     warnings.warn(msg % (k, type(v)))
 
             names = args_to_broadcast.keys()
@@ -148,17 +151,17 @@ class TensorProperties(object):
         if isinstance(index, (int, slice)):
             return TensorAccessor(class_object=self, index=index)
 
-        msg = "Expected index of type int or slice; got %r"
+        msg = 'Expected index of type int or slice; got %r'
         raise ValueError(msg % type(index))
 
-    def to(self, device: str = "cpu"):
+    def to(self, device: str = 'cpu'):
         """
         In place operation to move class properties which are tensors to a
         specified device. If self has a property "device", update this as well.
         """
         for k in dir(self):
             v = getattr(self, k)
-            if k == "device":
+            if k == 'device':
                 setattr(self, k, device)
             if torch.is_tensor(v) and v.device != device:
                 setattr(self, k, v.to(device))
@@ -170,7 +173,7 @@ class TensorProperties(object):
         """
         for k in dir(self):
             v = getattr(self, k)
-            if inspect.ismethod(v) or k.startswith("__"):
+            if inspect.ismethod(v) or k.startswith('__'):
                 continue
             if torch.is_tensor(v):
                 v_clone = v.clone()
@@ -239,8 +242,8 @@ class TensorProperties(object):
                     idx_dims = _batch_idx.shape
                     tensor_dims = v.shape
                     if len(idx_dims) > len(tensor_dims):
-                        msg = "batch_idx cannot have more dimensions than %s. "
-                        msg += "got shape %r and %s has shape %r"
+                        msg = 'batch_idx cannot have more dimensions than %s. '
+                        msg += 'got shape %r and %s has shape %r'
                         raise ValueError(msg % (k, idx_dims, k, tensor_dims))
                     if idx_dims != tensor_dims:
                         # To use torch.gather the index tensor (_batch_idx) has
@@ -256,7 +259,9 @@ class TensorProperties(object):
         return self
 
 
-def format_tensor(input, dtype=torch.float32, device: str = "cpu") -> torch.Tensor:
+def format_tensor(
+    input, dtype=torch.float32, device: str = 'cpu'
+) -> torch.Tensor:
     """
     Helper function for converting a scalar value to a tensor.
 
@@ -277,7 +282,9 @@ def format_tensor(input, dtype=torch.float32, device: str = "cpu") -> torch.Tens
     return input
 
 
-def convert_to_tensors_and_broadcast(*args, dtype=torch.float32, device: str = "cpu"):
+def convert_to_tensors_and_broadcast(
+    *args, dtype=torch.float32, device: str = 'cpu'
+):
     """
     Helper function to handle parsing an arbitrary number of inputs (*args)
     which all need to have the same batch dimension.
@@ -308,7 +315,7 @@ def convert_to_tensors_and_broadcast(*args, dtype=torch.float32, device: str = "
     args_Nd = []
     for c in args_1d:
         if c.shape[0] != 1 and c.shape[0] != N:
-            msg = "Got non-broadcastable sizes %r" % sizes
+            msg = 'Got non-broadcastable sizes %r' % sizes
             raise ValueError(msg)
 
         # Expand broadcast dim and keep non broadcast dims the same size

@@ -39,7 +39,7 @@ def _pad_texture_maps(images: List[torch.Tensor]) -> torch.Tensor:
         if image.shape[:2] != max_shape:
             image_BCHW = image.permute(2, 0, 1)[None]
             new_image_BCHW = interpolate(
-                image_BCHW, size=max_shape, mode="bilinear", align_corners=False
+                image_BCHW, size=max_shape, mode='bilinear', align_corners=False
             )
             tex_maps[i] = new_image_BCHW[0].permute(1, 2, 0)
     tex_maps = torch.stack(tex_maps, dim=0)  # (num_tex_maps, max_H, max_W, 3)
@@ -65,7 +65,7 @@ def _extend_tensor(input_tensor: torch.Tensor, N: int) -> torch.Tensor:
     """
     # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
     if input_tensor.ndim < 2:
-        raise ValueError("Input tensor must have ndimensions >= 2.")
+        raise ValueError('Input tensor must have ndimensions >= 2.')
     B = input_tensor.shape[0]
     non_batch_dims = tuple(input_tensor.shape[1:])
     constant_dims = (-1,) * input_tensor.ndim  # these dims are not expanded.
@@ -101,24 +101,24 @@ class Textures(object):
         """
         # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
         if faces_uvs is not None and faces_uvs.ndim != 3:
-            msg = "Expected faces_uvs to be of shape (N, F, 3); got %r"
+            msg = 'Expected faces_uvs to be of shape (N, F, 3); got %r'
             raise ValueError(msg % repr(faces_uvs.shape))
         if verts_uvs is not None and verts_uvs.ndim != 3:
-            msg = "Expected verts_uvs to be of shape (N, V, 2); got %r"
+            msg = 'Expected verts_uvs to be of shape (N, V, 2); got %r'
             raise ValueError(msg % repr(verts_uvs.shape))
         if verts_rgb is not None and verts_rgb.ndim != 3:
-            msg = "Expected verts_rgb to be of shape (N, V, 3); got %r"
+            msg = 'Expected verts_rgb to be of shape (N, V, 3); got %r'
             raise ValueError(msg % repr(verts_rgb.shape))
         if maps is not None:
             # pyre-fixme[16]: `List` has no attribute `ndim`.
             if torch.is_tensor(maps) and maps.ndim != 4:
-                msg = "Expected maps to be of shape (N, H, W, 3); got %r"
+                msg = 'Expected maps to be of shape (N, H, W, 3); got %r'
                 # pyre-fixme[16]: `List` has no attribute `shape`.
                 raise ValueError(msg % repr(maps.shape))
             elif isinstance(maps, list):
                 maps = _pad_texture_maps(maps)
             if faces_uvs is None or verts_uvs is None:
-                msg = "To use maps, faces_uvs and verts_uvs are required"
+                msg = 'To use maps, faces_uvs and verts_uvs are required'
                 raise ValueError(msg)
 
         self._faces_uvs_padded = faces_uvs
@@ -238,7 +238,7 @@ class Textures(object):
         #  List[typing.Any], torch.Tensor]`.
         return self._maps_padded
 
-    def extend(self, N: int) -> "Textures":
+    def extend(self, N: int) -> 'Textures':
         """
         Create new Textures class which contains each input texture N times
 
@@ -249,13 +249,17 @@ class Textures(object):
             new Textures object.
         """
         if not isinstance(N, int):
-            raise ValueError("N must be an integer.")
+            raise ValueError('N must be an integer.')
         if N <= 0:
-            raise ValueError("N must be > 0.")
+            raise ValueError('N must be > 0.')
 
         if all(
             v is not None
-            for v in [self._faces_uvs_padded, self._verts_uvs_padded, self._maps_padded]
+            for v in [
+                self._faces_uvs_padded,
+                self._verts_uvs_padded,
+                self._maps_padded,
+            ]
         ):
             # pyre-fixme[6]: Expected `Tensor` for 1st param but got
             #  `Optional[torch.Tensor]`.
@@ -275,5 +279,5 @@ class Textures(object):
             new_verts_rgb = _extend_tensor(self._verts_rgb_padded, N)
             return self.__class__(verts_rgb=new_verts_rgb)
         else:
-            msg = "Either vertex colors or texture maps are required."
+            msg = 'Either vertex colors or texture maps are required.'
             raise ValueError(msg)

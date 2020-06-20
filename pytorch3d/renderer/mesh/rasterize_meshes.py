@@ -125,7 +125,7 @@ def rasterize_meshes(
         faces_per_bin = 1 + (image_size - 1) // bin_size
         if faces_per_bin >= kMaxFacesPerBin:
             raise ValueError(
-                "bin_size too small, number of faces per bin must be less than %d; got %d"
+                'bin_size too small, number of faces per bin must be less than %d; got %d'
                 % (kMaxFacesPerBin, faces_per_bin)
             )
 
@@ -204,7 +204,9 @@ class _RasterizeFaceVerts(torch.autograd.Function):
         return pix_to_face, zbuf, barycentric_coords, dists
 
     @staticmethod
-    def backward(ctx, grad_pix_to_face, grad_zbuf, grad_barycentric_coords, grad_dists):
+    def backward(
+        ctx, grad_pix_to_face, grad_zbuf, grad_barycentric_coords, grad_dists
+    ):
         grad_face_verts = None
         grad_mesh_to_face_first_idx = None
         grad_num_faces_per_mesh = None
@@ -276,7 +278,9 @@ def rasterize_meshes_python(
     face_idxs = torch.full(
         (N, H, W, K), fill_value=-1, dtype=torch.int64, device=device
     )
-    zbuf = torch.full((N, H, W, K), fill_value=-1, dtype=torch.float32, device=device)
+    zbuf = torch.full(
+        (N, H, W, K), fill_value=-1, dtype=torch.float32, device=device
+    )
     bary_coords = torch.full(
         (N, H, W, K, 3), fill_value=-1, dtype=torch.float32, device=device
     )
@@ -345,7 +349,9 @@ def rasterize_meshes_python(
                         continue
 
                     # Compute barycentric coordinates and pixel z distance.
-                    pxy = torch.tensor([xf, yf], dtype=torch.float32, device=device)
+                    pxy = torch.tensor(
+                        [xf, yf], dtype=torch.float32, device=device
+                    )
 
                     bary = barycentric_coordinates(pxy, v0[:2], v1[:2], v2[:2])
                     if perspective_correct:
@@ -476,7 +482,7 @@ def point_line_distance(p, v0, v1):
     p to the projection gives the minimum distance to the segment.
     """
     if p.shape != v0.shape != v1.shape:
-        raise ValueError("All points must have the same number of coordinates")
+        raise ValueError('All points must have the same number of coordinates')
 
     v1v0 = v1 - v0
     l2 = v1v0.dot(v1v0)  # |v1 - v0|^2
@@ -502,7 +508,7 @@ def point_triangle_distance(p, v0, v1, v2):
         shortest absolute distance from the point to the triangle.
     """
     if p.shape != v0.shape != v1.shape != v2.shape:
-        raise ValueError("All points must have the same number of coordinates")
+        raise ValueError('All points must have the same number of coordinates')
 
     e01_dist = point_line_distance(p, v0, v1)
     e02_dist = point_line_distance(p, v0, v2)

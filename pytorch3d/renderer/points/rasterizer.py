@@ -21,11 +21,11 @@ class PointFragments(NamedTuple):
 # Class to store the point rasterization params with defaults
 class PointsRasterizationSettings:
     __slots__ = [
-        "image_size",
-        "radius",
-        "points_per_pixel",
-        "bin_size",
-        "max_points_per_bin",
+        'image_size',
+        'radius',
+        'points_per_pixel',
+        'bin_size',
+        'max_points_per_bin',
     ]
 
     def __init__(
@@ -79,10 +79,10 @@ class PointsRasterizer(nn.Module):
         NOTE: keeping this as a separate function for readability but it could
         be moved into forward.
         """
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of PointsRasterizer"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of PointsRasterizer'
             raise ValueError(msg)
 
         pts_world = point_clouds.points_padded()
@@ -112,7 +112,7 @@ class PointsRasterizer(nn.Module):
             PointFragments: Rasterization outputs as a named tuple.
         """
         points_screen = self.transform(point_clouds, **kwargs)
-        raster_settings = kwargs.get("raster_settings", self.raster_settings)
+        raster_settings = kwargs.get('raster_settings', self.raster_settings)
         idx, zbuf, dists2 = rasterize_points(
             points_screen,
             image_size=raster_settings.image_size,

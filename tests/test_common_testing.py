@@ -14,10 +14,10 @@ class TestOpsUtils(TestCaseMixin, unittest.TestCase):
         np.random.seed(42)
 
     def test_all_close(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         n_points = 20
         noise_std = 1e-3
-        msg = "tratata"
+        msg = 'tratata'
 
         # test absolute tolerance
         x = torch.rand(n_points, 3, device=device)
@@ -35,7 +35,9 @@ class TestOpsUtils(TestCaseMixin, unittest.TestCase):
 
         self.assertClose(to_np(x), to_np(x_noise), atol=10 * noise_std)
         with self.assertRaises(AssertionError) as context:
-            self.assertClose(to_np(x), to_np(x_noise), atol=0.1 * noise_std, msg=msg)
+            self.assertClose(
+                to_np(x), to_np(x_noise), atol=0.1 * noise_std, msg=msg
+            )
         self.assertTrue(msg in str(context.exception))
 
         # test relative tolerance

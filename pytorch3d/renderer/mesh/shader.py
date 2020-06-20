@@ -40,27 +40,36 @@ class HardPhongShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of HardPhongShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of HardPhongShader'
             raise ValueError(msg)
 
         texels = interpolate_vertex_colors(fragments, meshes)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
-        blend_params = kwargs.get("blend_params", self.blend_params)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
+        blend_params = kwargs.get('blend_params', self.blend_params)
         colors = phong_shading(
             meshes=meshes,
             fragments=fragments,
@@ -88,25 +97,34 @@ class SoftPhongShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of SoftPhongShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of SoftPhongShader'
             raise ValueError(msg)
         texels = interpolate_vertex_colors(fragments, meshes)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
         colors = phong_shading(
             meshes=meshes,
             fragments=fragments,
@@ -135,25 +153,34 @@ class HardGouraudShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of HardGouraudShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of HardGouraudShader'
             raise ValueError(msg)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
-        blend_params = kwargs.get("blend_params", self.blend_params)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
+        blend_params = kwargs.get('blend_params', self.blend_params)
         pixel_colors = gouraud_shading(
             meshes=meshes,
             fragments=fragments,
@@ -181,24 +208,33 @@ class SoftGouraudShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of SoftGouraudShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of SoftGouraudShader'
             raise ValueError(msg)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
         pixel_colors = gouraud_shading(
             meshes=meshes,
             fragments=fragments,
@@ -228,26 +264,35 @@ class TexturedSoftPhongShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of TexturedSoftPhongShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of TexturedSoftPhongShader'
             raise ValueError(msg)
         texels = interpolate_texture_map(fragments, meshes)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
-        blend_params = kwargs.get("blend_params", self.blend_params)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
+        blend_params = kwargs.get('blend_params', self.blend_params)
         colors = phong_shading(
             meshes=meshes,
             fragments=fragments,
@@ -275,26 +320,35 @@ class HardFlatShader(nn.Module):
     """
 
     def __init__(
-        self, device="cpu", cameras=None, lights=None, materials=None, blend_params=None
+        self,
+        device='cpu',
+        cameras=None,
+        lights=None,
+        materials=None,
+        blend_params=None,
     ):
         super().__init__()
-        self.lights = lights if lights is not None else PointLights(device=device)
+        self.lights = (
+            lights if lights is not None else PointLights(device=device)
+        )
         self.materials = (
             materials if materials is not None else Materials(device=device)
         )
         self.cameras = cameras
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of HardFlatShader"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of HardFlatShader'
             raise ValueError(msg)
         texels = interpolate_vertex_colors(fragments, meshes)
-        lights = kwargs.get("lights", self.lights)
-        materials = kwargs.get("materials", self.materials)
-        blend_params = kwargs.get("blend_params", self.blend_params)
+        lights = kwargs.get('lights', self.lights)
+        materials = kwargs.get('materials', self.materials)
+        blend_params = kwargs.get('blend_params', self.blend_params)
         colors = flat_shading(
             meshes=meshes,
             fragments=fragments,
@@ -326,7 +380,9 @@ class SoftSilhouetteShader(nn.Module):
 
     def __init__(self, blend_params=None):
         super().__init__()
-        self.blend_params = blend_params if blend_params is not None else BlendParams()
+        self.blend_params = (
+            blend_params if blend_params is not None else BlendParams()
+        )
 
     def forward(self, fragments, meshes, **kwargs) -> torch.Tensor:
         """"
@@ -334,6 +390,6 @@ class SoftSilhouetteShader(nn.Module):
         There is no need for lighting or texturing
         """
         colors = torch.ones_like(fragments.bary_coords)
-        blend_params = kwargs.get("blend_params", self.blend_params)
+        blend_params = kwargs.get('blend_params', self.blend_params)
         images = sigmoid_alpha_blend(colors, fragments, blend_params)
         return images

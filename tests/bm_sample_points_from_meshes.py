@@ -10,9 +10,9 @@ from test_sample_points_from_meshes import TestSamplePoints
 
 def bm_sample_points() -> None:
 
-    backend = ["cpu"]
+    backend = ['cpu']
     if torch.cuda.is_available():
-        backend.append("cuda:0")
+        backend.append('cuda:0')
     kwargs_list = []
     num_meshes = [2, 10, 32]
     num_verts = [100, 1000]
@@ -23,16 +23,16 @@ def bm_sample_points() -> None:
         n, v, f, s, b = case
         kwargs_list.append(
             {
-                "num_meshes": n,
-                "num_verts": v,
-                "num_faces": f,
-                "num_samples": s,
-                "device": b,
+                'num_meshes': n,
+                'num_verts': v,
+                'num_faces': f,
+                'num_samples': s,
+                'device': b,
             }
         )
     benchmark(
         TestSamplePoints.sample_points_with_init,
-        "SAMPLE_MESH",
+        'SAMPLE_MESH',
         kwargs_list,
         warmup_iters=1,
     )

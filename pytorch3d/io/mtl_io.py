@@ -58,7 +58,7 @@ def make_mesh_texture_atlas(
     if not material_properties and not texture_images:
         return atlas
 
-    if texture_wrap == "repeat":
+    if texture_wrap == 'repeat':
         # If texture uv coordinates are outside the range [0, 1] follow
         # the convention GL_REPEAT in OpenGL i.e the integer part of the coordinate
         # will be ignored and a repeating pattern is formed.
@@ -66,13 +66,13 @@ def make_mesh_texture_atlas(
         # https://shapenet.org/qaforum/index.php?qa=15&qa_1=why-is-the-texture-coordinate-in-the-obj-file-not-in-the-range # noqa: B950
         # pyre-fixme[16]: `ByteTensor` has no attribute `any`.
         if (faces_verts_uvs > 1).any() or (faces_verts_uvs < 0).any():
-            msg = "Texture UV coordinates outside the range [0, 1]. \
-                The integer part will be ignored to form a repeating pattern."
+            msg = 'Texture UV coordinates outside the range [0, 1]. \
+                The integer part will be ignored to form a repeating pattern.'
             warnings.warn(msg)
             # pyre-fixme[9]: faces_verts_uvs has type `Tensor`; used as `int`.
             # pyre-fixme[6]: Expected `int` for 1st param but got `Tensor`.
             faces_verts_uvs = faces_verts_uvs % 1
-    elif texture_wrap == "clamp":
+    elif texture_wrap == 'clamp':
         # Clamp uv coordinates to the [0, 1] range.
         faces_verts_uvs = faces_verts_uvs.clamp(0.0, 1.0)
 
@@ -81,15 +81,15 @@ def make_mesh_texture_atlas(
     # done separately to the texture interpolation.
     for material_name, props in material_properties.items():
         # Bool to indicate which faces use this texture map.
-        faces_material_ind = torch.from_numpy(face_material_names == material_name).to(
-            faces_verts_uvs.device
-        )
+        faces_material_ind = torch.from_numpy(
+            face_material_names == material_name
+        ).to(faces_verts_uvs.device)
         if faces_material_ind.sum() > 0:
             # For these faces, update the base color to the
             # diffuse material color.
-            if "diffuse_color" not in props:
+            if 'diffuse_color' not in props:
                 continue
-            atlas[faces_material_ind, ...] = props["diffuse_color"][None, :]
+            atlas[faces_material_ind, ...] = props['diffuse_color'][None, :]
 
     # Iterate through the materials used in this mesh. Update the
     # texture atlas for the faces which use this material.
@@ -103,9 +103,9 @@ def make_mesh_texture_atlas(
         image = torch.flip(image, [0]).type_as(faces_verts_uvs)
 
         # Bool to indicate which faces use this texture map.
-        faces_material_ind = torch.from_numpy(face_material_names == material_name).to(
-            faces_verts_uvs.device
-        )
+        faces_material_ind = torch.from_numpy(
+            face_material_names == material_name
+        ).to(faces_verts_uvs.device)
 
         # Find the subset of faces which use this texture with this texture image
         uvs_subset = faces_verts_uvs[faces_material_ind, :, :]
@@ -115,7 +115,9 @@ def make_mesh_texture_atlas(
         # by the diffuse material color (i.e. use *= as the atlas has
         # been initialized to the diffuse color)?. This is
         # not being done in SoftRas.
-        atlas[faces_material_ind, :, :] = make_material_atlas(image, uvs_subset, R)
+        atlas[faces_material_ind, :, :] = make_material_atlas(
+            image, uvs_subset, R
+        )
 
     return atlas
 
@@ -372,14 +374,16 @@ def _bilinear_interpolation_grid_sample(
     N = grid.shape[0]
     # convert [0, 1] to the range [-1, 1] expected by grid_sample.
     grid = grid * 2.0 - 1.0
-    image = image.permute(2, 0, 1)[None, ...].expand(N, -1, -1, -1)  # (N, 3, H, W)
+    image = image.permute(2, 0, 1)[None, ...].expand(
+        N, -1, -1, -1
+    )  # (N, 3, H, W)
     # Align_corners has to be set to True to match the output of the SoftRas
     # cuda kernel for bilinear sampling.
-    out = F.grid_sample(image, grid, mode="bilinear", align_corners=True)
+    out = F.grid_sample(image, grid, mode='bilinear', align_corners=True)
     return out.permute(0, 2, 3, 1)
 
 
-def load_mtl(f_mtl, material_names: List, data_dir: str, device="cpu"):
+def load_mtl(f_mtl, material_names: List, data_dir: str, device='cpu'):
     """
     Load texture images and material reflectivity values for ambient, diffuse
     and specular light (Ka, Kd, Ks, Ns).
@@ -412,38 +416,38 @@ def load_mtl(f_mtl, material_names: List, data_dir: str, device="cpu"):
     material_colors = {}
     material_properties = {}
     texture_images = {}
-    material_name = ""
+    material_name = ''
 
     f_mtl, new_f = _open_file(f_mtl)
     lines = [line.strip() for line in f_mtl]
     for line in lines:
         if len(line.split()) != 0:
-            if line.split()[0] == "newmtl":
+            if line.split()[0] == 'newmtl':
                 material_name = line.split()[1]
                 material_colors[material_name] = {}
-            if line.split()[0] == "map_Kd":
+            if line.split()[0] == 'map_Kd':
                 # Texture map.
                 texture_files[material_name] = line.split()[1]
-            if line.split()[0] == "Kd":
+            if line.split()[0] == 'Kd':
                 # RGB diffuse reflectivity
                 kd = np.array(list(line.split()[1:4])).astype(np.float32)
                 kd = torch.from_numpy(kd).to(device)
-                material_colors[material_name]["diffuse_color"] = kd
-            if line.split()[0] == "Ka":
+                material_colors[material_name]['diffuse_color'] = kd
+            if line.split()[0] == 'Ka':
                 # RGB ambient reflectivity
                 ka = np.array(list(line.split()[1:4])).astype(np.float32)
                 ka = torch.from_numpy(ka).to(device)
-                material_colors[material_name]["ambient_color"] = ka
-            if line.split()[0] == "Ks":
+                material_colors[material_name]['ambient_color'] = ka
+            if line.split()[0] == 'Ks':
                 # RGB specular reflectivity
                 ks = np.array(list(line.split()[1:4])).astype(np.float32)
                 ks = torch.from_numpy(ks).to(device)
-                material_colors[material_name]["specular_color"] = ks
-            if line.split()[0] == "Ns":
+                material_colors[material_name]['specular_color'] = ks
+            if line.split()[0] == 'Ns':
                 # Specular exponent
                 ns = np.array(list(line.split()[1:4])).astype(np.float32)
                 ns = torch.from_numpy(ns).to(device)
-                material_colors[material_name]["shininess"] = ns
+                material_colors[material_name]['shininess'] = ns
 
     if new_f:
         f_mtl.close()
@@ -455,11 +459,11 @@ def load_mtl(f_mtl, material_names: List, data_dir: str, device="cpu"):
             filename = texture_files[name]
             filename_texture = os.path.join(data_dir, filename)
             if os.path.isfile(filename_texture):
-                image = _read_image(filename_texture, format="RGB") / 255.0
+                image = _read_image(filename_texture, format='RGB') / 255.0
                 image = torch.from_numpy(image)
                 texture_images[name] = image
             else:
-                msg = f"Texture file does not exist: {filename_texture}"
+                msg = f'Texture file does not exist: {filename_texture}'
                 warnings.warn(msg)
 
         if name in material_colors:

@@ -19,9 +19,11 @@ def _validate_chamfer_reduction_inputs(
         point_reduction: Reduction operation to apply for the loss across the
             points, can be one of ["mean", "sum"].
     """
-    if batch_reduction is not None and batch_reduction not in ["mean", "sum"]:
-        raise ValueError('batch_reduction must be one of ["mean", "sum"] or None')
-    if point_reduction not in ["mean", "sum"]:
+    if batch_reduction is not None and batch_reduction not in ['mean', 'sum']:
+        raise ValueError(
+            'batch_reduction must be one of ["mean", "sum"] or None'
+        )
+    if point_reduction not in ['mean', 'sum']:
         raise ValueError('point_reduction must be one of ["mean", "sum"]')
 
 
@@ -43,23 +45,26 @@ def _handle_pointcloud_input(
     elif torch.is_tensor(points):
         # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
         if points.ndim != 3:
-            raise ValueError("Expected points to be of shape (N, P, D)")
+            raise ValueError('Expected points to be of shape (N, P, D)')
         X = points
         if lengths is not None and (
             lengths.ndim != 1 or lengths.shape[0] != X.shape[0]
         ):
-            raise ValueError("Expected lengths to be of shape (N,)")
+            raise ValueError('Expected lengths to be of shape (N,)')
         if lengths is None:
             lengths = torch.full(
-                (X.shape[0],), X.shape[1], dtype=torch.int64, device=points.device
+                (X.shape[0],),
+                X.shape[1],
+                dtype=torch.int64,
+                device=points.device,
             )
         if normals is not None and normals.ndim != 3:
-            raise ValueError("Expected normals to be of shape (N, P, 3")
+            raise ValueError('Expected normals to be of shape (N, P, 3')
     else:
         raise ValueError(
-            "The input pointclouds should be either "
-            + "Pointclouds objects or torch.Tensor of shape "
-            + "(minibatch, num_points, 3)."
+            'The input pointclouds should be either '
+            + 'Pointclouds objects or torch.Tensor of shape '
+            + '(minibatch, num_points, 3).'
         )
     return X, lengths, normals
 
@@ -72,8 +77,8 @@ def chamfer_distance(
     x_normals=None,
     y_normals=None,
     weights=None,
-    batch_reduction: Union[str, None] = "mean",
-    point_reduction: str = "mean",
+    batch_reduction: Union[str, None] = 'mean',
+    point_reduction: str = 'mean',
 ):
     """
     Chamfer distance between two pointclouds x and y.
@@ -128,20 +133,23 @@ def chamfer_distance(
     )  # shape [N, P2]
 
     if y.shape[0] != N or y.shape[2] != D:
-        raise ValueError("y does not have the correct shape.")
+        raise ValueError('y does not have the correct shape.')
     if weights is not None:
         if weights.size(0) != N:
-            raise ValueError("weights must be of shape (N,).")
+            raise ValueError('weights must be of shape (N,).')
         if not (weights >= 0).all():
-            raise ValueError("weights cannot be negative.")
+            raise ValueError('weights cannot be negative.')
         if weights.sum() == 0.0:
             weights = weights.view(N, 1)
-            if batch_reduction in ["mean", "sum"]:
+            if batch_reduction in ['mean', 'sum']:
                 return (
                     (x.sum((1, 2)) * weights).sum() * 0.0,
                     (x.sum((1, 2)) * weights).sum() * 0.0,
                 )
-            return ((x.sum((1, 2)) * weights) * 0.0, (x.sum((1, 2)) * weights) * 0.0)
+            return (
+                (x.sum((1, 2)) * weights) * 0.0,
+                (x.sum((1, 2)) * weights) * 0.0,
+            )
 
     cham_norm_x = x.new_zeros(())
     cham_norm_y = x.new_zeros(())
@@ -189,7 +197,7 @@ def chamfer_distance(
     if return_normals:
         cham_norm_x = cham_norm_x.sum(1)  # (N,)
         cham_norm_y = cham_norm_y.sum(1)  # (N,)
-    if point_reduction == "mean":
+    if point_reduction == 'mean':
         cham_x /= x_lengths
         cham_y /= y_lengths
         if return_normals:
@@ -203,7 +211,7 @@ def chamfer_distance(
         if return_normals:
             cham_norm_x = cham_norm_x.sum()
             cham_norm_y = cham_norm_y.sum()
-        if batch_reduction == "mean":
+        if batch_reduction == 'mean':
             div = weights.sum() if weights is not None else N
             cham_x /= div
             cham_y /= div

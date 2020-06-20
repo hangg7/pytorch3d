@@ -20,15 +20,15 @@ from pytorch3d.utils import torus
 
 class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
     def test_load_obj_simple(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "# this is a comment",  # Comments should be ignored.
-                "v 0.1 0.2 0.3",
-                "v 0.2 0.3 0.4",
-                "v 0.3 0.4 0.5",
-                "v  0.4 0.5 0.6",  # some obj files have multiple spaces after v
-                "f 1 2 3",
-                "f 1 2 4 3 1",  # Polygons should be split into triangles
+                '# this is a comment',  # Comments should be ignored.
+                'v 0.1 0.2 0.3',
+                'v 0.2 0.3 0.4',
+                'v 0.3 0.4 0.5',
+                'v  0.4 0.5 0.6',  # some obj files have multiple spaces after v
+                'f 1 2 3',
+                'f 1 2 4 3 1',  # Polygons should be split into triangles
             ]
         )
         obj_file = StringIO(obj_file)
@@ -39,7 +39,12 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         tex_maps = aux.texture_images
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor(
@@ -65,24 +70,24 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(tex_maps is None)
 
     def test_load_obj_complex(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "# this is a comment",  # Comments should be ignored.
-                "v 0.1 0.2 0.3",
-                "v 0.2 0.3 0.4",
-                "v 0.3 0.4 0.5",
-                "v 0.4 0.5 0.6",
-                "vn 0.000000 0.000000 -1.000000",
-                "vn -1.000000 -0.000000 -0.000000",
-                "vn -0.000000 -0.000000 1.000000",  # Normals should not be ignored.
-                "v 0.5 0.6 0.7",
-                "vt 0.749279 0.501284 0.0",  # Some files add 0.0 - ignore this.
-                "vt 0.999110 0.501077",
-                "vt 0.999455 0.750380",
-                "f 1 2 3",
-                "f 1 2 4 3 5",  # Polygons should be split into triangles
-                "f 2/1/2 3/1/2 4/2/2",  # Texture/normals are loaded correctly.
-                "f -1 -2 1",  # Negative indexing counts from the end.
+                '# this is a comment',  # Comments should be ignored.
+                'v 0.1 0.2 0.3',
+                'v 0.2 0.3 0.4',
+                'v 0.3 0.4 0.5',
+                'v 0.4 0.5 0.6',
+                'vn 0.000000 0.000000 -1.000000',
+                'vn -1.000000 -0.000000 -0.000000',
+                'vn -0.000000 -0.000000 1.000000',  # Normals should not be ignored.
+                'v 0.5 0.6 0.7',
+                'vt 0.749279 0.501284 0.0',  # Some files add 0.0 - ignore this.
+                'vt 0.999110 0.501077',
+                'vt 0.999455 0.750380',
+                'f 1 2 3',
+                'f 1 2 4 3 5',  # Polygons should be split into triangles
+                'f 2/1/2 3/1/2 4/2/2',  # Texture/normals are loaded correctly.
+                'f -1 -2 1',  # Negative indexing counts from the end.
             ]
         )
         obj_file = StringIO(obj_file)
@@ -128,11 +133,15 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         expected_faces_normals_idx = -(
             torch.ones_like(expected_faces, dtype=torch.int64)
         )
-        expected_faces_normals_idx[4, :] = torch.tensor([1, 1, 1], dtype=torch.int64)
+        expected_faces_normals_idx[4, :] = torch.tensor(
+            [1, 1, 1], dtype=torch.int64
+        )
         expected_faces_textures_idx = -(
             torch.ones_like(expected_faces, dtype=torch.int64)
         )
-        expected_faces_textures_idx[4, :] = torch.tensor([0, 0, 1], dtype=torch.int64)
+        expected_faces_textures_idx[4, :] = torch.tensor(
+            [0, 0, 1], dtype=torch.int64
+        )
 
         self.assertTrue(torch.all(verts == expected_verts))
         self.assertTrue(torch.all(faces.verts_idx == expected_faces))
@@ -144,25 +153,35 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(tex_maps is None)
 
     def test_load_obj_normals_only(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "v 0.1 0.2 0.3",
-                "v 0.2 0.3 0.4",
-                "v 0.3 0.4 0.5",
-                "v 0.4 0.5 0.6",
-                "vn 0.000000 0.000000 -1.000000",
-                "vn -1.000000 -0.000000 -0.000000",
-                "f 2//1 3//1 4//2",
+                'v 0.1 0.2 0.3',
+                'v 0.2 0.3 0.4',
+                'v 0.3 0.4 0.5',
+                'v 0.4 0.5 0.6',
+                'vn 0.000000 0.000000 -1.000000',
+                'vn -1.000000 -0.000000 -0.000000',
+                'f 2//1 3//1 4//2',
             ]
         )
         obj_file = StringIO(obj_file)
-        expected_faces_normals_idx = torch.tensor([[0, 0, 1]], dtype=torch.int64)
+        expected_faces_normals_idx = torch.tensor(
+            [[0, 0, 1]], dtype=torch.int64
+        )
         expected_normals = torch.tensor(
-            [[0.000000, 0.000000, -1.000000], [-1.000000, -0.000000, -0.000000]],
+            [
+                [0.000000, 0.000000, -1.000000],
+                [-1.000000, -0.000000, -0.000000],
+            ],
             dtype=torch.float32,
         )
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         verts, faces, aux = load_obj(obj_file)
@@ -174,30 +193,39 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertClose(normals, expected_normals)
         self.assertClose(verts, expected_verts)
         # Textures idx padded  with -1.
-        self.assertClose(faces.textures_idx, torch.ones_like(faces.verts_idx) * -1)
+        self.assertClose(
+            faces.textures_idx, torch.ones_like(faces.verts_idx) * -1
+        )
         self.assertTrue(textures is None)
         self.assertTrue(materials is None)
         self.assertTrue(tex_maps is None)
 
     def test_load_obj_textures_only(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "v 0.1 0.2 0.3",
-                "v 0.2 0.3 0.4",
-                "v 0.3 0.4 0.5",
-                "v 0.4 0.5 0.6",
-                "vt 0.999110 0.501077",
-                "vt 0.999455 0.750380",
-                "f 2/1 3/1 4/2",
+                'v 0.1 0.2 0.3',
+                'v 0.2 0.3 0.4',
+                'v 0.3 0.4 0.5',
+                'v 0.4 0.5 0.6',
+                'vt 0.999110 0.501077',
+                'vt 0.999455 0.750380',
+                'f 2/1 3/1 4/2',
             ]
         )
         obj_file = StringIO(obj_file)
-        expected_faces_textures_idx = torch.tensor([[0, 0, 1]], dtype=torch.int64)
+        expected_faces_textures_idx = torch.tensor(
+            [[0, 0, 1]], dtype=torch.int64
+        )
         expected_textures = torch.tensor(
             [[0.999110, 0.501077], [0.999455, 0.750380]], dtype=torch.float32
         )
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         verts, faces, aux = load_obj(obj_file)
@@ -210,93 +238,99 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertClose(expected_textures, textures)
         self.assertClose(expected_verts, verts)
         self.assertTrue(
-            torch.all(faces.normals_idx == -(torch.ones_like(faces.textures_idx)))
+            torch.all(
+                faces.normals_idx == -(torch.ones_like(faces.textures_idx))
+            )
         )
         self.assertTrue(normals is None)
         self.assertTrue(materials is None)
         self.assertTrue(tex_maps is None)
 
     def test_load_obj_error_textures(self):
-        obj_file = "\n".join(["vt 0.1"])
+        obj_file = '\n'.join(['vt 0.1'])
         obj_file = StringIO(obj_file)
 
         with self.assertRaises(ValueError) as err:
             load_obj(obj_file)
-        self.assertTrue("does not have 2 values" in str(err.exception))
+        self.assertTrue('does not have 2 values' in str(err.exception))
 
     def test_load_obj_error_normals(self):
-        obj_file = "\n".join(["vn 0.1"])
+        obj_file = '\n'.join(['vn 0.1'])
         obj_file = StringIO(obj_file)
 
         with self.assertRaises(ValueError) as err:
             load_obj(obj_file)
-        self.assertTrue("does not have 3 values" in str(err.exception))
+        self.assertTrue('does not have 3 values' in str(err.exception))
 
     def test_load_obj_error_vertices(self):
-        obj_file = "\n".join(["v 1"])
+        obj_file = '\n'.join(['v 1'])
         obj_file = StringIO(obj_file)
 
         with self.assertRaises(ValueError) as err:
             load_obj(obj_file)
-        self.assertTrue("does not have 3 values" in str(err.exception))
+        self.assertTrue('does not have 3 values' in str(err.exception))
 
     def test_load_obj_error_inconsistent_triplets(self):
-        obj_file = "\n".join(["f 2//1 3/1 4/1/2"])
+        obj_file = '\n'.join(['f 2//1 3/1 4/1/2'])
         obj_file = StringIO(obj_file)
 
         with self.assertRaises(ValueError) as err:
             load_obj(obj_file)
-        self.assertTrue("Vertex properties are inconsistent" in str(err.exception))
+        self.assertTrue(
+            'Vertex properties are inconsistent' in str(err.exception)
+        )
 
     def test_load_obj_error_too_many_vertex_properties(self):
-        obj_file = "\n".join(["f 2/1/1/3"])
+        obj_file = '\n'.join(['f 2/1/1/3'])
         obj_file = StringIO(obj_file)
 
         with self.assertRaises(ValueError) as err:
             load_obj(obj_file)
-        self.assertTrue("Face vertices can ony have 3 properties" in str(err.exception))
+        self.assertTrue(
+            'Face vertices can ony have 3 properties' in str(err.exception)
+        )
 
     def test_load_obj_error_invalid_vertex_indices(self):
-        obj_file = "\n".join(
-            ["v 0.1 0.2 0.3", "v 0.1 0.2 0.3", "v 0.1 0.2 0.3", "f -2 5 1"]
+        obj_file = '\n'.join(
+            ['v 0.1 0.2 0.3', 'v 0.1 0.2 0.3', 'v 0.1 0.2 0.3', 'f -2 5 1']
         )
         obj_file = StringIO(obj_file)
 
-        with self.assertWarnsRegex(UserWarning, "Faces have invalid indices"):
+        with self.assertWarnsRegex(UserWarning, 'Faces have invalid indices'):
             load_obj(obj_file)
 
     def test_load_obj_error_invalid_normal_indices(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "v 0.1 0.2 0.3",
-                "v 0.1 0.2 0.3",
-                "v 0.1 0.2 0.3",
-                "vn 0.1 0.2 0.3",
-                "vn 0.1 0.2 0.3",
-                "vn 0.1 0.2 0.3",
-                "f -2/2 2/4 1/1",
+                'v 0.1 0.2 0.3',
+                'v 0.1 0.2 0.3',
+                'v 0.1 0.2 0.3',
+                'vn 0.1 0.2 0.3',
+                'vn 0.1 0.2 0.3',
+                'vn 0.1 0.2 0.3',
+                'f -2/2 2/4 1/1',
             ]
         )
         obj_file = StringIO(obj_file)
 
-        with self.assertWarnsRegex(UserWarning, "Faces have invalid indices"):
+        with self.assertWarnsRegex(UserWarning, 'Faces have invalid indices'):
             load_obj(obj_file)
 
     def test_load_obj_error_invalid_texture_indices(self):
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "v 0.1 0.2 0.3",
-                "v 0.1 0.2 0.3",
-                "v 0.1 0.2 0.3",
-                "vt 0.1 0.2",
-                "vt 0.1 0.2",
-                "vt 0.1 0.2",
-                "f -2//2 2//6 1//1",
+                'v 0.1 0.2 0.3',
+                'v 0.1 0.2 0.3',
+                'v 0.1 0.2 0.3',
+                'vt 0.1 0.2',
+                'vt 0.1 0.2',
+                'vt 0.1 0.2',
+                'f -2//2 2//6 1//1',
             ]
         )
         obj_file = StringIO(obj_file)
 
-        with self.assertWarnsRegex(UserWarning, "Faces have invalid indices"):
+        with self.assertWarnsRegex(UserWarning, 'Faces have invalid indices'):
             load_obj(obj_file)
 
     def test_save_obj_invalid_shapes(self):
@@ -305,9 +339,7 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
             verts = torch.FloatTensor([[0.1, 0.2, 0.3, 0.4]])  # (V, 4)
             faces = torch.LongTensor([[0, 1, 2]])
             save_obj(StringIO(), verts, faces)
-        expected_message = (
-            "Argument 'verts' should either be empty or of shape (num_verts, 3)."
-        )
+        expected_message = "Argument 'verts' should either be empty or of shape (num_verts, 3)."
         self.assertTrue(expected_message, error.exception)
 
         # Invalid faces shape
@@ -315,13 +347,11 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
             verts = torch.FloatTensor([[0.1, 0.2, 0.3]])
             faces = torch.LongTensor([[0, 1, 2, 3]])  # (F, 4)
             save_obj(StringIO(), verts, faces)
-        expected_message = (
-            "Argument 'faces' should either be empty or of shape (num_faces, 3)."
-        )
+        expected_message = "Argument 'faces' should either be empty or of shape (num_faces, 3)."
         self.assertTrue(expected_message, error.exception)
 
     def test_save_obj_invalid_indices(self):
-        message_regex = "Faces have invalid indices"
+        message_regex = 'Faces have invalid indices'
         verts = torch.FloatTensor([[0.1, 0.2, 0.3]])
         faces = torch.LongTensor([[0, 1, 2]])
         with self.assertWarnsRegex(UserWarning, message_regex):
@@ -354,7 +384,7 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self._test_save_load(verts, faces)
 
         # Faces + empty vertices
-        message_regex = "Faces have invalid indices"
+        message_regex = 'Faces have invalid indices'
         verts = torch.FloatTensor([])
         faces = torch.LongTensor([[0, 1, 2]])
         with self.assertWarnsRegex(UserWarning, message_regex):
@@ -384,7 +414,12 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
     def test_save_obj(self):
         verts = torch.tensor(
-            [[0.01, 0.2, 0.301], [0.2, 0.03, 0.408], [0.3, 0.4, 0.05], [0.6, 0.7, 0.8]],
+            [
+                [0.01, 0.2, 0.301],
+                [0.2, 0.03, 0.408],
+                [0.3, 0.4, 0.05],
+                [0.6, 0.7, 0.8],
+            ],
             dtype=torch.float32,
         )
         faces = torch.tensor(
@@ -392,24 +427,26 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         )
         obj_file = StringIO()
         save_obj(obj_file, verts, faces, decimal_places=2)
-        expected_file = "\n".join(
+        expected_file = '\n'.join(
             [
-                "v 0.01 0.20 0.30",
-                "v 0.20 0.03 0.41",
-                "v 0.30 0.40 0.05",
-                "v 0.60 0.70 0.80",
-                "f 1 3 2",
-                "f 1 2 3",
-                "f 4 3 2",
-                "f 4 2 1",
+                'v 0.01 0.20 0.30',
+                'v 0.20 0.03 0.41',
+                'v 0.30 0.40 0.05',
+                'v 0.60 0.70 0.80',
+                'f 1 3 2',
+                'f 1 2 3',
+                'f 4 3 2',
+                'f 4 2 1',
             ]
         )
         actual_file = obj_file.getvalue()
         self.assertEqual(actual_file, expected_file)
 
     def test_load_mtl(self):
-        DATA_DIR = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        obj_filename = "cow_mesh/cow.obj"
+        DATA_DIR = (
+            Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        )
+        obj_filename = 'cow_mesh/cow.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
         verts, faces, aux = load_obj(filename)
         materials = aux.material_colors
@@ -417,18 +454,18 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
         dtype = torch.float32
         expected_materials = {
-            "material_1": {
-                "ambient_color": torch.tensor([1.0, 1.0, 1.0], dtype=dtype),
-                "diffuse_color": torch.tensor([1.0, 1.0, 1.0], dtype=dtype),
-                "specular_color": torch.tensor([0.0, 0.0, 0.0], dtype=dtype),
-                "shininess": torch.tensor([10.0], dtype=dtype),
+            'material_1': {
+                'ambient_color': torch.tensor([1.0, 1.0, 1.0], dtype=dtype),
+                'diffuse_color': torch.tensor([1.0, 1.0, 1.0], dtype=dtype),
+                'specular_color': torch.tensor([0.0, 0.0, 0.0], dtype=dtype),
+                'shininess': torch.tensor([10.0], dtype=dtype),
             }
         }
         # Texture atlas is not created as `create_texture_atlas=True` was
         # not set in the load_obj args
         self.assertTrue(aux.texture_atlas is None)
         # Check that there is an image with material name material_1.
-        self.assertTrue(tuple(tex_maps.keys()) == ("material_1",))
+        self.assertTrue(tuple(tex_maps.keys()) == ('material_1',))
         self.assertTrue(torch.is_tensor(tuple(tex_maps.values())[0]))
         self.assertTrue(
             torch.all(faces.materials_idx == torch.zeros(len(faces.verts_idx)))
@@ -437,24 +474,30 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         # Check all keys and values in dictionary are the same.
         for n1, n2 in zip(materials.keys(), expected_materials.keys()):
             self.assertTrue(n1 == n2)
-            for k1, k2 in zip(materials[n1].keys(), expected_materials[n2].keys()):
+            for k1, k2 in zip(
+                materials[n1].keys(), expected_materials[n2].keys()
+            ):
                 self.assertTrue(
-                    torch.allclose(materials[n1][k1], expected_materials[n2][k2])
+                    torch.allclose(
+                        materials[n1][k1], expected_materials[n2][k2]
+                    )
                 )
 
     def test_load_mtl_texture_atlas_compare_softras(self):
         # Load saved texture atlas created with SoftRas.
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         DATA_DIR = Path(__file__).resolve().parent.parent
-        obj_filename = DATA_DIR / "docs/tutorials/data/cow_mesh/cow.obj"
-        expected_atlas_fname = DATA_DIR / "tests/data/cow_texture_atlas_softras.pt"
+        obj_filename = DATA_DIR / 'docs/tutorials/data/cow_mesh/cow.obj'
+        expected_atlas_fname = (
+            DATA_DIR / 'tests/data/cow_texture_atlas_softras.pt'
+        )
 
         # Note, the reference texture atlas generated using SoftRas load_obj function
         # is too large to check in to the repo. Download the file to run the test locally.
         if not os.path.exists(expected_atlas_fname):
-            url = "https://dl.fbaipublicfiles.com/pytorch3d/data/tests/cow_texture_atlas_softras.pt"
+            url = 'https://dl.fbaipublicfiles.com/pytorch3d/data/tests/cow_texture_atlas_softras.pt'
             msg = (
-                "cow_texture_atlas_softras.pt not found, download from %s, save it at the path %s, and rerun"
+                'cow_texture_atlas_softras.pt not found, download from %s, save it at the path %s, and rerun'
                 % (url, expected_atlas_fname)
             )
             warnings.warn(msg)
@@ -467,14 +510,16 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
             device=device,
             create_texture_atlas=True,
             texture_atlas_size=15,
-            texture_wrap="repeat",
+            texture_wrap='repeat',
         )
 
         self.assertClose(expected_atlas, aux.texture_atlas, atol=5e-5)
 
     def test_load_mtl_noload(self):
-        DATA_DIR = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        obj_filename = "cow_mesh/cow.obj"
+        DATA_DIR = (
+            Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        )
+        obj_filename = 'cow_mesh/cow.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
         verts, faces, aux = load_obj(filename, load_textures=False)
 
@@ -483,23 +528,28 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
     def test_load_mtl_fail(self):
         # Faces have a material
-        obj_file = "\n".join(
+        obj_file = '\n'.join(
             [
-                "v 0.1 0.2 0.3",
-                "v 0.2 0.3 0.4",
-                "v 0.3 0.4 0.5",
-                "v 0.4 0.5 0.6",
-                "usemtl material_1",
-                "f 1 2 3",
-                "f 1 2 4",
+                'v 0.1 0.2 0.3',
+                'v 0.2 0.3 0.4',
+                'v 0.3 0.4 0.5',
+                'v 0.4 0.5 0.6',
+                'usemtl material_1',
+                'f 1 2 3',
+                'f 1 2 4',
             ]
         )
         obj_file = StringIO(obj_file)
-        with self.assertWarnsRegex(UserWarning, "No mtl file provided"):
+        with self.assertWarnsRegex(UserWarning, 'No mtl file provided'):
             verts, faces, aux = load_obj(obj_file)
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor([[0, 1, 2], [0, 1, 3]], dtype=torch.int64)
@@ -511,14 +561,19 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(aux.verts_uvs is None)
 
     def test_load_obj_missing_texture(self):
-        DATA_DIR = Path(__file__).resolve().parent / "data"
-        obj_filename = "missing_files_obj/model.obj"
+        DATA_DIR = Path(__file__).resolve().parent / 'data'
+        obj_filename = 'missing_files_obj/model.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
-        with self.assertWarnsRegex(UserWarning, "Texture file does not exist"):
+        with self.assertWarnsRegex(UserWarning, 'Texture file does not exist'):
             verts, faces, aux = load_obj(filename)
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor([[0, 1, 2], [0, 1, 3]], dtype=torch.int64)
@@ -526,13 +581,18 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(torch.allclose(faces.verts_idx, expected_faces))
 
     def test_load_obj_missing_texture_noload(self):
-        DATA_DIR = Path(__file__).resolve().parent / "data"
-        obj_filename = "missing_files_obj/model.obj"
+        DATA_DIR = Path(__file__).resolve().parent / 'data'
+        obj_filename = 'missing_files_obj/model.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
         verts, faces, aux = load_obj(filename, load_textures=False)
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor([[0, 1, 2], [0, 1, 3]], dtype=torch.int64)
@@ -542,14 +602,19 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(aux.texture_images is None)
 
     def test_load_obj_missing_mtl(self):
-        DATA_DIR = Path(__file__).resolve().parent / "data"
-        obj_filename = "missing_files_obj/model2.obj"
+        DATA_DIR = Path(__file__).resolve().parent / 'data'
+        obj_filename = 'missing_files_obj/model2.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
-        with self.assertWarnsRegex(UserWarning, "Mtl file does not exist"):
+        with self.assertWarnsRegex(UserWarning, 'Mtl file does not exist'):
             verts, faces, aux = load_obj(filename)
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor([[0, 1, 2], [0, 1, 3]], dtype=torch.int64)
@@ -557,13 +622,18 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertTrue(torch.allclose(faces.verts_idx, expected_faces))
 
     def test_load_obj_missing_mtl_noload(self):
-        DATA_DIR = Path(__file__).resolve().parent / "data"
-        obj_filename = "missing_files_obj/model2.obj"
+        DATA_DIR = Path(__file__).resolve().parent / 'data'
+        obj_filename = 'missing_files_obj/model2.obj'
         filename = os.path.join(DATA_DIR, obj_filename)
         verts, faces, aux = load_obj(filename, load_textures=False)
 
         expected_verts = torch.tensor(
-            [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]],
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+                [0.4, 0.5, 0.6],
+            ],
             dtype=torch.float32,
         )
         expected_faces = torch.tensor([[0, 1, 2], [0, 1, 3]], dtype=torch.int64)
@@ -591,30 +661,39 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
             check_item(mesh.verts_padded(), mesh3.verts_padded())
             check_item(mesh.faces_padded(), mesh3.faces_padded())
             if mesh.textures is not None:
-                check_item(mesh.textures.maps_padded(), mesh3.textures.maps_padded())
                 check_item(
-                    mesh.textures.faces_uvs_padded(), mesh3.textures.faces_uvs_padded()
+                    mesh.textures.maps_padded(), mesh3.textures.maps_padded()
                 )
                 check_item(
-                    mesh.textures.verts_uvs_padded(), mesh3.textures.verts_uvs_padded()
+                    mesh.textures.faces_uvs_padded(),
+                    mesh3.textures.faces_uvs_padded(),
                 )
                 check_item(
-                    mesh.textures.verts_rgb_padded(), mesh3.textures.verts_rgb_padded()
+                    mesh.textures.verts_uvs_padded(),
+                    mesh3.textures.verts_uvs_padded(),
+                )
+                check_item(
+                    mesh.textures.verts_rgb_padded(),
+                    mesh3.textures.verts_rgb_padded(),
                 )
 
-        DATA_DIR = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        obj_filename = DATA_DIR / "cow_mesh/cow.obj"
+        DATA_DIR = (
+            Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        )
+        obj_filename = DATA_DIR / 'cow_mesh/cow.obj'
 
         mesh = load_objs_as_meshes([obj_filename])
         mesh3 = load_objs_as_meshes([obj_filename, obj_filename, obj_filename])
         check_triple(mesh, mesh3)
-        self.assertTupleEqual(mesh.textures.maps_padded().shape, (1, 1024, 1024, 3))
+        self.assertTupleEqual(
+            mesh.textures.maps_padded().shape, (1, 1024, 1024, 3)
+        )
 
         # Try mismatched texture map sizes, which needs a call to interpolate()
         mesh2048 = mesh.clone()
         maps = mesh.textures.maps_padded()
         mesh2048.textures._maps_padded = torch.cat([maps, maps], dim=1)
-        join_meshes_as_batch([mesh.to("cuda:0"), mesh2048.to("cuda:0")])
+        join_meshes_as_batch([mesh.to('cuda:0'), mesh2048.to('cuda:0')])
 
         mesh_notex = load_objs_as_meshes([obj_filename], load_textures=False)
         mesh3_notex = load_objs_as_meshes(
@@ -633,17 +712,21 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         mesh_rgb3 = join_meshes_as_batch([mesh_rgb, mesh_rgb, mesh_rgb])
         check_triple(mesh_rgb, mesh_rgb3)
 
-        teapot_obj = DATA_DIR / "teapot.obj"
+        teapot_obj = DATA_DIR / 'teapot.obj'
         mesh_teapot = load_objs_as_meshes([teapot_obj])
         teapot_verts, teapot_faces = mesh_teapot.get_mesh_verts_faces(0)
-        mix_mesh = load_objs_as_meshes([obj_filename, teapot_obj], load_textures=False)
+        mix_mesh = load_objs_as_meshes(
+            [obj_filename, teapot_obj], load_textures=False
+        )
         self.assertEqual(len(mix_mesh), 2)
         self.assertClose(mix_mesh.verts_list()[0], mesh.verts_list()[0])
         self.assertClose(mix_mesh.faces_list()[0], mesh.faces_list()[0])
         self.assertClose(mix_mesh.verts_list()[1], teapot_verts)
         self.assertClose(mix_mesh.faces_list()[1], teapot_faces)
 
-        cow3_tea = join_meshes_as_batch([mesh3, mesh_teapot], include_textures=False)
+        cow3_tea = join_meshes_as_batch(
+            [mesh3, mesh_teapot], include_textures=False
+        )
         self.assertEqual(len(cow3_tea), 4)
         check_triple(mesh_notex, cow3_tea[:3])
         self.assertClose(cow3_tea.verts_list()[3], mesh_teapot.verts_list()[0])
@@ -656,8 +739,10 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         """
 
         # Load cow mesh.
-        DATA_DIR = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        cow_obj = DATA_DIR / "cow_mesh/cow.obj"
+        DATA_DIR = (
+            Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        )
+        cow_obj = DATA_DIR / 'cow_mesh/cow.obj'
 
         cow_mesh = load_objs_as_meshes([cow_obj])
         cow_verts, cow_faces = cow_mesh.get_mesh_verts_faces(0)
@@ -666,13 +751,17 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         cow_mesh3 = join_mesh([cow_mesh, cow_mesh, cow_mesh])
 
         def check_item(x, y, offset):
-            self.assertClose(torch.cat([x, x + offset, x + 2 * offset], dim=1), y)
+            self.assertClose(
+                torch.cat([x, x + offset, x + 2 * offset], dim=1), y
+            )
 
         check_item(cow_mesh.verts_padded(), cow_mesh3.verts_padded(), 0)
-        check_item(cow_mesh.faces_padded(), cow_mesh3.faces_padded(), cow_mesh._V)
+        check_item(
+            cow_mesh.faces_padded(), cow_mesh3.faces_padded(), cow_mesh._V
+        )
 
         # Test the joining of meshes of different sizes.
-        teapot_obj = DATA_DIR / "teapot.obj"
+        teapot_obj = DATA_DIR / 'teapot.obj'
         teapot_mesh = load_objs_as_meshes([teapot_obj])
         teapot_verts, teapot_faces = teapot_mesh.get_mesh_verts_faces(0)
 
@@ -686,11 +775,15 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
         self.assertClose(mix_faces[cow_mesh._F :], teapot_faces + cow_mesh._V)
 
     @staticmethod
-    def _bm_save_obj(verts: torch.Tensor, faces: torch.Tensor, decimal_places: int):
+    def _bm_save_obj(
+        verts: torch.Tensor, faces: torch.Tensor, decimal_places: int
+    ):
         return lambda: save_obj(StringIO(), verts, faces, decimal_places)
 
     @staticmethod
-    def _bm_load_obj(verts: torch.Tensor, faces: torch.Tensor, decimal_places: int):
+    def _bm_load_obj(
+        verts: torch.Tensor, faces: torch.Tensor, decimal_places: int
+    ):
         f = StringIO()
         save_obj(f, verts, faces, decimal_places)
         s = f.getvalue()
@@ -723,10 +816,12 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def bm_load_texture_atlas(R: int):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         torch.cuda.set_device(device)
-        DATA_DIR = "/data/users/nikhilar/fbsource/fbcode/vision/fair/pytorch3d/docs/"
-        obj_filename = os.path.join(DATA_DIR, "tutorials/data/cow_mesh/cow.obj")
+        DATA_DIR = (
+            '/data/users/nikhilar/fbsource/fbcode/vision/fair/pytorch3d/docs/'
+        )
+        obj_filename = os.path.join(DATA_DIR, 'tutorials/data/cow_mesh/cow.obj')
         torch.cuda.synchronize()
 
         def load():
@@ -743,7 +838,7 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def bm_bilinear_sampling_vectorized(S: int, F: int, R: int):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         torch.cuda.set_device(device)
         image = torch.rand((S, S, 3))
         grid = torch.rand((F, R, R, 2))
@@ -757,7 +852,7 @@ class TestMeshObjIO(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def bm_bilinear_sampling_grid_sample(S: int, F: int, R: int):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         torch.cuda.set_device(device)
         image = torch.rand((S, S, 3))
         grid = torch.rand((F, R, R, 2))

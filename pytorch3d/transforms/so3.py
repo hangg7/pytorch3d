@@ -61,12 +61,14 @@ def so3_rotation_angle(R, eps: float = 1e-4, cos_angle: bool = False):
 
     N, dim1, dim2 = R.shape
     if dim1 != 3 or dim2 != 3:
-        raise ValueError("Input has to be a batch of 3x3 Tensors.")
+        raise ValueError('Input has to be a batch of 3x3 Tensors.')
 
     rot_trace = R[:, 0, 0] + R[:, 1, 1] + R[:, 2, 2]
 
     if ((rot_trace < -1.0 - eps) + (rot_trace > 3.0 + eps)).any():
-        raise ValueError("A matrix has trace outside valid range [-1-eps,3+eps].")
+        raise ValueError(
+            'A matrix has trace outside valid range [-1-eps,3+eps].'
+        )
 
     # clamp to valid range
     rot_trace = torch.clamp(rot_trace, -1.0, 3.0)
@@ -108,7 +110,7 @@ def so3_exponential_map(log_rot, eps: float = 0.0001):
 
     _, dim = log_rot.shape
     if dim != 3:
-        raise ValueError("Input tensor shape has to be Nx3.")
+        raise ValueError('Input tensor shape has to be Nx3.')
 
     nrms = (log_rot * log_rot).sum(1)
     # phis ... rotation angles
@@ -150,7 +152,7 @@ def so3_log_map(R, eps: float = 0.0001):
 
     N, dim1, dim2 = R.shape
     if dim1 != 3 or dim2 != 3:
-        raise ValueError("Input has to be a batch of 3x3 Tensors.")
+        raise ValueError('Input has to be a batch of 3x3 Tensors.')
 
     phi = so3_rotation_angle(R)
 
@@ -161,7 +163,9 @@ def so3_log_map(R, eps: float = 0.0001):
         + (phi_sin == 0).type_as(phi) * eps
     )
 
-    log_rot_hat = (phi / (2.0 * phi_denom))[:, None, None] * (R - R.permute(0, 2, 1))
+    log_rot_hat = (phi / (2.0 * phi_denom))[:, None, None] * (
+        R - R.permute(0, 2, 1)
+    )
     log_rot = hat_inv(log_rot_hat)
 
     return log_rot
@@ -186,11 +190,11 @@ def hat_inv(h):
 
     N, dim1, dim2 = h.shape
     if dim1 != 3 or dim2 != 3:
-        raise ValueError("Input has to be a batch of 3x3 Tensors.")
+        raise ValueError('Input has to be a batch of 3x3 Tensors.')
 
     ss_diff = (h + h.permute(0, 2, 1)).abs().max()
     if float(ss_diff) > HAT_INV_SKEW_SYMMETRIC_TOL:
-        raise ValueError("One of input matrices not skew-symmetric.")
+        raise ValueError('One of input matrices not skew-symmetric.')
 
     x = h[:, 2, 1]
     y = h[:, 0, 2]
@@ -223,7 +227,7 @@ def hat(v):
 
     N, dim = v.shape
     if dim != 3:
-        raise ValueError("Input vectors have to be 3-dimensional.")
+        raise ValueError('Input vectors have to be 3-dimensional.')
 
     h = v.new_zeros(N, 3, 3)
 

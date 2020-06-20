@@ -20,7 +20,7 @@ def get_camera_wireframe(scale: float = 0.3):
     return lines
 
 
-def plot_cameras(ax, cameras, color: str = "blue"):
+def plot_cameras(ax, cameras, color: str = 'blue'):
     """
     Plots a set of `cameras` objects into the maplotlib axis `ax` with
     color `color`.
@@ -44,26 +44,26 @@ def plot_camera_scene(cameras, cameras_gt, status: str):
     a string passed inside the `status` argument.
     """
     fig = plt.figure()
-    ax = fig.gca(projection="3d")
+    ax = fig.gca(projection='3d')
     ax.clear()
     ax.set_title(status)
-    handle_cam = plot_cameras(ax, cameras, color="#FF7D1E")
-    handle_cam_gt = plot_cameras(ax, cameras_gt, color="#812CE5")
+    handle_cam = plot_cameras(ax, cameras, color='#FF7D1E')
+    handle_cam_gt = plot_cameras(ax, cameras_gt, color='#812CE5')
     plot_radius = 3
     ax.set_xlim3d([-plot_radius, plot_radius])
     ax.set_ylim3d([3 - plot_radius, 3 + plot_radius])
     ax.set_zlim3d([-plot_radius, plot_radius])
-    ax.set_xlabel("x")
-    ax.set_ylabel("z")
-    ax.set_zlabel("y")
+    ax.set_xlabel('x')
+    ax.set_ylabel('z')
+    ax.set_zlabel('y')
     labels_handles = {
-        "Estimated cameras": handle_cam[0],
-        "GT cameras": handle_cam_gt[0],
+        'Estimated cameras': handle_cam[0],
+        'GT cameras': handle_cam_gt[0],
     }
     ax.legend(
         labels_handles.values(),
         labels_handles.keys(),
-        loc="upper center",
+        loc='upper center',
         bbox_to_anchor=(0.5, 0),
     )
     plt.show()

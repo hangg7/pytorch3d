@@ -13,7 +13,7 @@ from pytorch3d.structures.pointclouds import Pointclouds
 
 # Output of init_pointclouds
 points_normals = namedtuple(
-    "points_normals", "p1_lengths p2_lengths cloud1 cloud2 p1 p2 n1 n2 weights"
+    'points_normals', 'p1_lengths p2_lengths cloud1 cloud2 p1 p2 n1 n2 weights'
 )
 
 
@@ -33,8 +33,12 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         used directly as a leaf node.
         """
         low = 0 if allow_empty else 1
-        p1_lengths = torch.randint(low, P1, size=(N,), dtype=torch.int64, device=device)
-        p2_lengths = torch.randint(low, P2, size=(N,), dtype=torch.int64, device=device)
+        p1_lengths = torch.randint(
+            low, P1, size=(N,), dtype=torch.int64, device=device
+        )
+        p2_lengths = torch.randint(
+            low, P2, size=(N,), dtype=torch.int64, device=device
+        )
         P1 = p1_lengths.max().item()
         P2 = p2_lengths.max().item()
         weights = torch.rand((N,), dtype=torch.float32, device=device)
@@ -83,7 +87,7 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         )
 
     @staticmethod
-    def chamfer_distance_naive_pointclouds(p1, p2, device="cpu"):
+    def chamfer_distance_naive_pointclouds(p1, p2, device='cpu'):
         """
         Naive iterative implementation of nearest neighbor and chamfer distance.
         x and y are assumed to be pointclouds objects with points and optionally normals.
@@ -102,7 +106,9 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         return_normals = x_normals is not None and y_normals is not None
 
         # Initialize all distances to + inf
-        dist = torch.ones((N, P1, P2), dtype=torch.float32, device=device) * np.inf
+        dist = (
+            torch.ones((N, P1, P2), dtype=torch.float32, device=device) * np.inf
+        )
 
         x_mask = (
             torch.arange(P1, device=x.device)[None] >= x_lengths[:, None]
@@ -117,7 +123,9 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         for n in range(N):
             for i1 in range(x_lengths[n]):
                 for i2 in range(y_lengths[n]):
-                    dist[n, i1, i2] = torch.sum((x[n, i1, :] - y[n, i2, :]) ** 2)
+                    dist[n, i1, i2] = torch.sum(
+                        (x[n, i1, :] - y[n, i2, :]) ** 2
+                    )
 
         x_dist = torch.min(dist, dim=2)[0]  # (N, P1)
         y_dist = torch.min(dist, dim=1)[0]  # (N, P2)
@@ -170,7 +178,9 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         for n in range(N):
             for i1 in range(P1):
                 for i2 in range(P2):
-                    dist[n, i1, i2] = torch.sum((x[n, i1, :] - y[n, i2, :]) ** 2)
+                    dist[n, i1, i2] = torch.sum(
+                        (x[n, i1, :] - y[n, i2, :]) ** 2
+                    )
 
         loss = [
             torch.min(dist, dim=2)[0],  # (N, P1)
@@ -272,7 +282,8 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         pred_norm_loss[0] *= weights.view(N, 1)
         pred_norm_loss[1] *= weights.view(N, 1)
         pred_norm_loss_mean = (
-            pred_norm_loss[0].sum(1) / x_lengths + pred_norm_loss[1].sum(1) / y_lengths
+            pred_norm_loss[0].sum(1) / x_lengths
+            + pred_norm_loss[1].sum(1) / y_lengths
         )
         pred_norm_loss_mean = pred_norm_loss_mean.sum() / weights.sum()
 
@@ -302,12 +313,12 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         device = get_random_cuda_device()
 
         reductions = [
-            ("sum", "sum"),
-            ("mean", "sum"),
-            ("sum", "mean"),
-            ("mean", "mean"),
-            ("sum", None),
-            ("mean", None),
+            ('sum', 'sum'),
+            ('mean', 'sum'),
+            ('sum', 'mean'),
+            ('mean', 'mean'),
+            ('sum', None),
+            ('mean', None),
         ]
         for (point_reduction, batch_reduction) in reductions:
 
@@ -362,12 +373,12 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         device = get_random_cuda_device()
 
         reductions = [
-            ("sum", "sum"),
-            ("mean", "sum"),
-            ("sum", "mean"),
-            ("mean", "mean"),
-            ("sum", None),
-            ("mean", None),
+            ('sum', 'sum'),
+            ('mean', 'sum'),
+            ('sum', 'mean'),
+            ('mean', 'mean'),
+            ('sum', None),
+            ('mean', None),
         ]
         for (point_reduction, batch_reduction) in reductions:
 
@@ -441,7 +452,7 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             y_normals=p2_normals,
             weights=weights,
             batch_reduction=None,
-            point_reduction="mean",
+            point_reduction='mean',
         )
         pred_loss_mean = pred_loss[0].sum(1) / P1 + pred_loss[1].sum(1) / P2
         pred_loss_mean *= weights
@@ -455,7 +466,14 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
 
         # Check gradients
         self._check_gradients(
-            loss, loss_norm, pred_loss_mean, pred_loss_norm_mean, p1, p11, p2, p22
+            loss,
+            loss_norm,
+            pred_loss_mean,
+            pred_loss_norm_mean,
+            p1,
+            p11,
+            p2,
+            p22,
         )
 
     def test_chamfer_point_reduction_sum(self):
@@ -487,7 +505,7 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             y_normals=p2_normals,
             weights=weights,
             batch_reduction=None,
-            point_reduction="sum",
+            point_reduction='sum',
         )
         pred_loss_sum = pred_loss[0].sum(1) + pred_loss[1].sum(1)
         pred_loss_sum *= weights
@@ -553,7 +571,9 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         x1 and x2 can be of different types e.g. list or tensor - compare appropriately
         based on the types.
         """
-        error_msg = "All values for gradient checks must be tensors or lists of tensors"
+        error_msg = (
+            'All values for gradient checks must be tensors or lists of tensors'
+        )
 
         if all(isinstance(p, list) for p in [x1, x2]):
             # Lists of tensors
@@ -564,7 +584,9 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
 
             # List of tensors vs padded tensor
             for i in range(len(x1)):
-                self.assertClose(x1[i].grad, x2.grad[i, : lengths[i]], atol=1e-7)
+                self.assertClose(
+                    x1[i].grad, x2.grad[i, : lengths[i]], atol=1e-7
+                )
                 self.assertTrue(x2.grad[i, lengths[i] :].sum().item() == 0.0)
         elif all(torch.is_tensor(p) for p in [x1, x2]):
             # Two tensors
@@ -602,8 +624,8 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             x_normals=p1_normals,
             y_normals=p2_normals,
             weights=weights,
-            batch_reduction="sum",
-            point_reduction="sum",
+            batch_reduction='sum',
+            point_reduction='sum',
         )
         pred_loss[0] *= weights.view(N, 1)
         pred_loss[1] *= weights.view(N, 1)
@@ -626,8 +648,8 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             x_normals=p1_normals,
             y_normals=p2_normals,
             weights=weights,
-            batch_reduction="mean",
-            point_reduction="sum",
+            batch_reduction='mean',
+            point_reduction='sum',
         )
         pred_loss_sum /= weights.sum()
         self.assertClose(loss, pred_loss_sum)
@@ -642,8 +664,8 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             x_normals=p1_normals,
             y_normals=p2_normals,
             weights=weights,
-            batch_reduction="sum",
-            point_reduction="mean",
+            batch_reduction='sum',
+            point_reduction='mean',
         )
         pred_loss_mean = pred_loss[0].sum(1) / P1 + pred_loss[1].sum(1) / P2
         pred_loss_mean = pred_loss_mean.sum()
@@ -662,8 +684,8 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
             x_normals=p1_normals,
             y_normals=p2_normals,
             weights=weights,
-            batch_reduction="mean",
-            point_reduction="mean",
+            batch_reduction='mean',
+            point_reduction='mean',
         )
         pred_loss_mean /= weights.sum()
         self.assertClose(loss, pred_loss_mean)
@@ -672,11 +694,15 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         self.assertClose(loss_norm, pred_loss_norm_mean)
 
         # Error when batch_reduction is not in ["mean", "sum"] or None.
-        with self.assertRaisesRegex(ValueError, "batch_reduction must be one of"):
-            chamfer_distance(p1, p2, weights=weights, batch_reduction="max")
+        with self.assertRaisesRegex(
+            ValueError, 'batch_reduction must be one of'
+        ):
+            chamfer_distance(p1, p2, weights=weights, batch_reduction='max')
 
         # Error when point_reduction is not in ["mean", "sum"].
-        with self.assertRaisesRegex(ValueError, "point_reduction must be one of"):
+        with self.assertRaisesRegex(
+            ValueError, 'point_reduction must be one of'
+        ):
             chamfer_distance(p1, p2, weights=weights, point_reduction=None)
 
     def test_incorrect_weights(self):
@@ -691,7 +717,7 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
 
         weights = torch.zeros((N,), dtype=torch.float32, device=device)
         loss, loss_norm = chamfer_distance(
-            p1, p2, weights=weights, batch_reduction="mean"
+            p1, p2, weights=weights, batch_reduction='mean'
         )
         self.assertClose(loss.cpu(), torch.zeros(()))
         self.assertTrue(loss.requires_grad)
@@ -723,19 +749,29 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         p1_normals = points_normals.n1
 
         # Normals of wrong shape
-        with self.assertRaisesRegex(ValueError, "Expected normals to be of shape"):
+        with self.assertRaisesRegex(
+            ValueError, 'Expected normals to be of shape'
+        ):
             chamfer_distance(p1, p2, x_normals=p1_normals[None])
 
         # Points of wrong shape
-        with self.assertRaisesRegex(ValueError, "Expected points to be of shape"):
+        with self.assertRaisesRegex(
+            ValueError, 'Expected points to be of shape'
+        ):
             chamfer_distance(p1[None], p2)
 
         # Lengths of wrong shape
-        with self.assertRaisesRegex(ValueError, "Expected lengths to be of shape"):
-            chamfer_distance(p1, p2, x_lengths=torch.tensor([1, 2, 3], device=device))
+        with self.assertRaisesRegex(
+            ValueError, 'Expected lengths to be of shape'
+        ):
+            chamfer_distance(
+                p1, p2, x_lengths=torch.tensor([1, 2, 3], device=device)
+            )
 
         # Points are not a tensor or Pointclouds
-        with self.assertRaisesRegex(ValueError, "Pointclouds objects or torch.Tensor"):
+        with self.assertRaisesRegex(
+            ValueError, 'Pointclouds objects or torch.Tensor'
+        ):
             chamfer_distance(x=[1, 1, 1], y=[1, 1, 1])
 
     @staticmethod
@@ -745,9 +781,11 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
         P2: int,
         return_normals: bool,
         homogeneous: bool,
-        device="cpu",
+        device='cpu',
     ):
-        points_normals = TestChamfer.init_pointclouds(batch_size, P1, P2, device=device)
+        points_normals = TestChamfer.init_pointclouds(
+            batch_size, P1, P2, device=device
+        )
         l1 = points_normals.p1_lengths
         l2 = points_normals.p2_lengths
         if homogeneous:
@@ -773,9 +811,11 @@ class TestChamfer(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def chamfer_naive_with_init(
-        batch_size: int, P1: int, P2: int, return_normals: bool, device="cpu"
+        batch_size: int, P1: int, P2: int, return_normals: bool, device='cpu'
     ):
-        points_normals = TestChamfer.init_pointclouds(batch_size, P1, P2, device=device)
+        points_normals = TestChamfer.init_pointclouds(
+            batch_size, P1, P2, device=device
+        )
         torch.cuda.synchronize()
 
         def loss():

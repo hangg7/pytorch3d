@@ -20,13 +20,13 @@ class Fragments(NamedTuple):
 # Class to store the mesh rasterization params with defaults
 class RasterizationSettings:
     __slots__ = [
-        "image_size",
-        "blur_radius",
-        "faces_per_pixel",
-        "bin_size",
-        "max_faces_per_bin",
-        "perspective_correct",
-        "cull_backfaces",
+        'image_size',
+        'blur_radius',
+        'faces_per_pixel',
+        'bin_size',
+        'max_faces_per_bin',
+        'perspective_correct',
+        'cull_backfaces',
     ]
 
     def __init__(
@@ -87,24 +87,26 @@ class MeshRasterizer(nn.Module):
         NOTE: keeping this as a separate function for readability but it could
         be moved into forward.
         """
-        cameras = kwargs.get("cameras", self.cameras)
+        cameras = kwargs.get('cameras', self.cameras)
         if cameras is None:
-            msg = "Cameras must be specified either at initialization \
-                or in the forward pass of MeshRasterizer"
+            msg = 'Cameras must be specified either at initialization \
+                or in the forward pass of MeshRasterizer'
             raise ValueError(msg)
         verts_world = meshes_world.verts_padded()
 
         # NOTE: Retaining view space z coordinate for now.
         # TODO: Revisit whether or not to transform z coordinate to [-1, 1] or
         # [0, 1] range.
-        verts_view = cameras.get_world_to_view_transform(**kwargs).transform_points(
-            verts_world
-        )
-        verts_screen = cameras.get_projection_transform(**kwargs).transform_points(
-            verts_view
-        )
+        verts_view = cameras.get_world_to_view_transform(
+            **kwargs
+        ).transform_points(verts_world)
+        verts_screen = cameras.get_projection_transform(
+            **kwargs
+        ).transform_points(verts_view)
         verts_screen[..., 2] = verts_view[..., 2]
-        meshes_screen = meshes_world.update_padded(new_verts_padded=verts_screen)
+        meshes_screen = meshes_world.update_padded(
+            new_verts_padded=verts_screen
+        )
         return meshes_screen
 
     def forward(self, meshes_world, **kwargs) -> Fragments:
@@ -116,7 +118,7 @@ class MeshRasterizer(nn.Module):
             Fragments: Rasterization outputs as a named tuple.
         """
         meshes_screen = self.transform(meshes_world, **kwargs)
-        raster_settings = kwargs.get("raster_settings", self.raster_settings)
+        raster_settings = kwargs.get('raster_settings', self.raster_settings)
         # TODO(jcjohns): Should we try to set perspective_correct automatically
         # based on the type of the camera?
         pix_to_face, zbuf, bary_coords, dists = rasterize_meshes(
@@ -130,5 +132,8 @@ class MeshRasterizer(nn.Module):
             cull_backfaces=raster_settings.cull_backfaces,
         )
         return Fragments(
-            pix_to_face=pix_to_face, zbuf=zbuf, bary_coords=bary_coords, dists=dists
+            pix_to_face=pix_to_face,
+            zbuf=zbuf,
+            bary_coords=bary_coords,
+            dists=dists,
         )

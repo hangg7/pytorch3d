@@ -15,7 +15,7 @@ class GraphConv(nn.Module):
         self,
         input_dim: int,
         output_dim: int,
-        init: str = "normal",
+        init: str = 'normal',
         directed: bool = False,
     ):
         """
@@ -32,13 +32,13 @@ class GraphConv(nn.Module):
         self.w0 = nn.Linear(input_dim, output_dim)
         self.w1 = nn.Linear(input_dim, output_dim)
 
-        if init == "normal":
+        if init == 'normal':
             nn.init.normal_(self.w0.weight, mean=0, std=0.01)
             nn.init.normal_(self.w1.weight, mean=0, std=0.01)
             # pyre-fixme[16]: Optional type has no attribute `data`.
             self.w0.bias.data.zero_()
             self.w1.bias.data.zero_()
-        elif init == "zero":
+        elif init == 'zero':
             self.w0.weight.data.zero_()
             self.w1.weight.data.zero_()
         else:
@@ -60,7 +60,9 @@ class GraphConv(nn.Module):
             number of output features per vertex.
         """
         if verts.is_cuda != edges.is_cuda:
-            raise ValueError("verts and edges tensors must be on the same device.")
+            raise ValueError(
+                'verts and edges tensors must be on the same device.'
+            )
         if verts.shape[0] == 0:
             # empty graph.
             return verts.new_zeros((0, self.output_dim)) * verts.sum()
@@ -81,7 +83,7 @@ class GraphConv(nn.Module):
 
     def __repr__(self):
         Din, Dout, directed = self.input_dim, self.output_dim, self.directed
-        return "GraphConv(%d -> %d, directed=%r)" % (Din, Dout, directed)
+        return 'GraphConv(%d -> %d, directed=%r)' % (Din, Dout, directed)
 
 
 def gather_scatter_python(input, edges, directed: bool = False):
@@ -104,11 +106,11 @@ def gather_scatter_python(input, edges, directed: bool = False):
         output: Tensor of same shape as input.
     """
     if not (input.dim() == 2):
-        raise ValueError("input can only have 2 dimensions.")
+        raise ValueError('input can only have 2 dimensions.')
     if not (edges.dim() == 2):
-        raise ValueError("edges can only have 2 dimensions.")
+        raise ValueError('edges can only have 2 dimensions.')
     if not (edges.shape[1] == 2):
-        raise ValueError("edges must be of shape (num_edges, 2).")
+        raise ValueError('edges must be of shape (num_edges, 2).')
 
     num_vertices, input_feature_dim = input.shape
     num_edges = edges.shape[0]
@@ -141,13 +143,13 @@ class GatherScatter(Function):
             output: Tensor of same shape as input.
         """
         if not (input.dim() == 2):
-            raise ValueError("input can only have 2 dimensions.")
+            raise ValueError('input can only have 2 dimensions.')
         if not (edges.dim() == 2):
-            raise ValueError("edges can only have 2 dimensions.")
+            raise ValueError('edges can only have 2 dimensions.')
         if not (edges.shape[1] == 2):
-            raise ValueError("edges must be of shape (num_edges, 2).")
+            raise ValueError('edges must be of shape (num_edges, 2).')
         if not (input.dtype == torch.float32):
-            raise ValueError("input has to be of type torch.float32.")
+            raise ValueError('input has to be of type torch.float32.')
 
         ctx.directed = directed
         input, edges = input.contiguous(), edges.contiguous()

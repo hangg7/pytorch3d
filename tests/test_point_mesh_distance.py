@@ -25,7 +25,7 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         num_verts: int = 1000,
         num_faces: int = 3000,
         num_points: int = 3000,
-        device: str = "cuda:0",
+        device: str = 'cuda:0',
     ):
         device = torch.device(device)
         nump = torch.randint(low=1, high=num_points, size=(batch_size,))
@@ -58,7 +58,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
             faces_list.append(faces)
 
             # Randomly choose points
-            points = torch.rand((nump[i], 3), dtype=torch.float32, device=device)
+            points = torch.rand(
+                (nump[i], 3), dtype=torch.float32, device=device
+            )
             points.requires_grad_(True)
 
             points_list.append(points)
@@ -105,7 +107,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         return bary
 
     @staticmethod
-    def _is_inside_triangle(point: torch.Tensor, tri: torch.Tensor) -> torch.Tensor:
+    def _is_inside_triangle(
+        point: torch.Tensor, tri: torch.Tensor
+    ) -> torch.Tensor:
         """
         Computes whether point is inside triangle tri
         Note that point needs to live in the space spanned by tri = (a, b, c)
@@ -158,7 +162,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         return dist
 
     @staticmethod
-    def _point_to_tri_distance(point: torch.Tensor, tri: torch.Tensor) -> torch.Tensor:
+    def _point_to_tri_distance(
+        point: torch.Tensor, tri: torch.Tensor
+    ) -> torch.Tensor:
         """
         Computes the squared euclidean distance of points to edges
         Args:
@@ -180,9 +186,15 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         dist_p = tt * tt
 
         # Compute the distance of p to all edge segments
-        e01_dist = TestPointMeshDistance._point_to_edge_distance(point, tri[[0, 1]])
-        e02_dist = TestPointMeshDistance._point_to_edge_distance(point, tri[[0, 2]])
-        e12_dist = TestPointMeshDistance._point_to_edge_distance(point, tri[[1, 2]])
+        e01_dist = TestPointMeshDistance._point_to_edge_distance(
+            point, tri[[0, 1]]
+        )
+        e02_dist = TestPointMeshDistance._point_to_edge_distance(
+            point, tri[[0, 2]]
+        )
+        e12_dist = TestPointMeshDistance._point_to_edge_distance(
+            point, tri[[1, 2]]
+        )
 
         with torch.no_grad():
             inside_tri = TestPointMeshDistance._is_inside_triangle(p0, tri)
@@ -282,7 +294,11 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Cuda Implementation: forward
         dists_cuda, idx_cuda = _C.point_edge_dist_forward(
-            points_packed, points_first_idx, edges_packed, edges_first_idx, max_p
+            points_packed,
+            points_first_idx,
+            edges_packed,
+            edges_first_idx,
+            max_p,
         )
         # Cuda Implementation: backward
         grad_points_cuda, grad_edges_cuda = _C.point_edge_dist_backward(
@@ -300,17 +316,24 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         # Cpu Implementation: backward
         # Note that using idx_cpu doesn't pass - there seems to be a problem with tied results.
         grad_points_cpu, grad_edges_cpu = _C.point_edge_dist_backward(
-            points_packed.cpu(), edges_packed.cpu(), idx_cuda.cpu(), grad_dists.cpu()
+            points_packed.cpu(),
+            edges_packed.cpu(),
+            idx_cuda.cpu(),
+            grad_dists.cpu(),
         )
 
         # Naive Implementation: forward
-        edges_list = packed_to_list(edges_packed, meshes.num_edges_per_mesh().tolist())
+        edges_list = packed_to_list(
+            edges_packed, meshes.num_edges_per_mesh().tolist()
+        )
         dists_naive = []
         for i in range(N):
             points = pcls.points_list()[i]
             edges = edges_list[i]
             dists_temp = torch.zeros(
-                (points.shape[0], edges.shape[0]), dtype=torch.float32, device=device
+                (points.shape[0], edges.shape[0]),
+                dtype=torch.float32,
+                device=device,
             )
             for p in range(points.shape[0]):
                 for e in range(edges.shape[0]):
@@ -324,7 +347,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
             # then feed the cuda indices to the naive output
 
             start = points_first_idx[i]
-            end = points_first_idx[i + 1] if i < N - 1 else points_packed.shape[0]
+            end = (
+                points_first_idx[i + 1] if i < N - 1 else points_packed.shape[0]
+            )
 
             min_idx = idx_cuda[start:end] - edges_first_idx[i]
             iidx = torch.arange(points.shape[0], device=device)
@@ -340,11 +365,15 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Naive Implementation: backward
         dists_naive.backward(grad_dists)
-        grad_points_naive = torch.cat([cloud.grad for cloud in pcls.points_list()])
+        grad_points_naive = torch.cat(
+            [cloud.grad for cloud in pcls.points_list()]
+        )
         grad_edges_naive = edges_packed.grad.cpu()
 
         # Compare
-        self.assertClose(grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7)
+        self.assertClose(
+            grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7
+        )
         self.assertClose(grad_edges_naive, grad_edges_cuda.cpu(), atol=5e-7)
         self.assertClose(grad_points_naive.cpu(), grad_points_cpu, atol=1e-7)
         self.assertClose(grad_edges_naive, grad_edges_cpu, atol=5e-7)
@@ -380,7 +409,11 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Cuda Implementation: forward
         dists_cuda, idx_cuda = _C.edge_point_dist_forward(
-            points_packed, points_first_idx, edges_packed, edges_first_idx, max_e
+            points_packed,
+            points_first_idx,
+            edges_packed,
+            edges_first_idx,
+            max_e,
         )
 
         # Cuda Implementation: backward
@@ -403,13 +436,17 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         )
 
         # Naive Implementation: forward
-        edges_list = packed_to_list(edges_packed, meshes.num_edges_per_mesh().tolist())
+        edges_list = packed_to_list(
+            edges_packed, meshes.num_edges_per_mesh().tolist()
+        )
         dists_naive = []
         for i in range(N):
             points = pcls.points_list()[i]
             edges = edges_list[i]
             dists_temp = torch.zeros(
-                (edges.shape[0], points.shape[0]), dtype=torch.float32, device=device
+                (edges.shape[0], points.shape[0]),
+                dtype=torch.float32,
+                device=device,
             )
             for e in range(edges.shape[0]):
                 for p in range(points.shape[0]):
@@ -440,11 +477,15 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Naive Implementation: backward
         dists_naive.backward(grad_dists)
-        grad_points_naive = torch.cat([cloud.grad for cloud in pcls.points_list()])
+        grad_points_naive = torch.cat(
+            [cloud.grad for cloud in pcls.points_list()]
+        )
         grad_edges_naive = edges_packed.grad.cpu()
 
         # Compare
-        self.assertClose(grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7)
+        self.assertClose(
+            grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7
+        )
         self.assertClose(grad_edges_naive, grad_edges_cuda.cpu(), atol=5e-7)
         self.assertClose(grad_points_naive.cpu(), grad_points_cpu, atol=1e-7)
         self.assertClose(grad_edges_naive, grad_edges_cpu, atol=5e-7)
@@ -474,7 +515,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Naive implementation: forward & backward
         edges_packed = meshes.edges_packed()
-        edges_list = packed_to_list(edges_packed, meshes.num_edges_per_mesh().tolist())
+        edges_list = packed_to_list(
+            edges_packed, meshes.num_edges_per_mesh().tolist()
+        )
         loss_naive = torch.zeros(N, dtype=torch.float32, device=device)
         for i in range(N):
             points = pcls.points_list()[i]
@@ -484,7 +527,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
             num_p = points.shape[0]
             num_e = edges.shape[0]
-            dists = torch.zeros((num_p, num_e), dtype=torch.float32, device=device)
+            dists = torch.zeros(
+                (num_p, num_e), dtype=torch.float32, device=device
+            )
             for p in range(num_p):
                 for e in range(num_e):
                     dist = self._point_to_edge_distance(points[p], edges[e])
@@ -516,7 +561,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
             self.assertClose(
                 meshes.verts_list()[i].grad, meshes_op.verts_list()[i].grad
             )
-            self.assertClose(pcls.points_list()[i].grad, pcls_op.points_list()[i].grad)
+            self.assertClose(
+                pcls.points_list()[i].grad, pcls_op.points_list()[i].grad
+            )
 
     def test_point_face_array_distance(self):
         """
@@ -604,7 +651,11 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Cuda Implementation: forward
         dists_cuda, idx_cuda = _C.point_face_dist_forward(
-            points_packed, points_first_idx, faces_packed, faces_first_idx, max_p
+            points_packed,
+            points_first_idx,
+            faces_packed,
+            faces_first_idx,
+            max_p,
         )
 
         # Cuda Implementation: backward
@@ -624,17 +675,24 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         # Cpu Implementation: backward
         # Note that using idx_cpu doesn't pass - there seems to be a problem with tied results.
         grad_points_cpu, grad_faces_cpu = _C.point_face_dist_backward(
-            points_packed.cpu(), faces_packed.cpu(), idx_cuda.cpu(), grad_dists.cpu()
+            points_packed.cpu(),
+            faces_packed.cpu(),
+            idx_cuda.cpu(),
+            grad_dists.cpu(),
         )
 
         # Naive Implementation: forward
-        faces_list = packed_to_list(faces_packed, meshes.num_faces_per_mesh().tolist())
+        faces_list = packed_to_list(
+            faces_packed, meshes.num_faces_per_mesh().tolist()
+        )
         dists_naive = []
         for i in range(N):
             points = pcls.points_list()[i]
             tris = faces_list[i]
             dists_temp = torch.zeros(
-                (points.shape[0], tris.shape[0]), dtype=torch.float32, device=device
+                (points.shape[0], tris.shape[0]),
+                dtype=torch.float32,
+                device=device,
             )
             for p in range(points.shape[0]):
                 for t in range(tris.shape[0]):
@@ -649,7 +707,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
             # then feed the cuda indices to the naive output
 
             start = points_first_idx[i]
-            end = points_first_idx[i + 1] if i < N - 1 else points_packed.shape[0]
+            end = (
+                points_first_idx[i + 1] if i < N - 1 else points_packed.shape[0]
+            )
 
             min_idx = idx_cuda.cpu()[start:end] - faces_first_idx[i].cpu()
             iidx = torch.arange(points.shape[0], device=device)
@@ -665,11 +725,15 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         #  Naive Implementation: backward
         dists_naive.backward(grad_dists)
-        grad_points_naive = torch.cat([cloud.grad for cloud in pcls.points_list()])
+        grad_points_naive = torch.cat(
+            [cloud.grad for cloud in pcls.points_list()]
+        )
         grad_faces_naive = faces_packed.grad.cpu()
 
         # Compare
-        self.assertClose(grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7)
+        self.assertClose(
+            grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7
+        )
         self.assertClose(grad_faces_naive, grad_faces_cuda.cpu(), atol=5e-7)
         self.assertClose(grad_points_naive.cpu(), grad_points_cpu, atol=1e-7)
         self.assertClose(grad_faces_naive, grad_faces_cpu, atol=5e-7)
@@ -705,7 +769,11 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Cuda Implementation: forward
         dists_cuda, idx_cuda = _C.face_point_dist_forward(
-            points_packed, points_first_idx, faces_packed, faces_first_idx, max_f
+            points_packed,
+            points_first_idx,
+            faces_packed,
+            faces_first_idx,
+            max_f,
         )
 
         # Cuda Implementation: backward
@@ -728,13 +796,17 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
         )
 
         # Naive Implementation: forward
-        faces_list = packed_to_list(faces_packed, meshes.num_faces_per_mesh().tolist())
+        faces_list = packed_to_list(
+            faces_packed, meshes.num_faces_per_mesh().tolist()
+        )
         dists_naive = []
         for i in range(N):
             points = pcls.points_list()[i]
             tris = faces_list[i]
             dists_temp = torch.zeros(
-                (tris.shape[0], points.shape[0]), dtype=torch.float32, device=device
+                (tris.shape[0], points.shape[0]),
+                dtype=torch.float32,
+                device=device,
             )
             for t in range(tris.shape[0]):
                 for p in range(points.shape[0]):
@@ -765,12 +837,18 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
         # Naive Implementation: backward
         dists_naive.backward(grad_dists)
-        grad_points_naive = torch.cat([cloud.grad for cloud in pcls.points_list()])
+        grad_points_naive = torch.cat(
+            [cloud.grad for cloud in pcls.points_list()]
+        )
         grad_faces_naive = faces_packed.grad
 
         # Compare
-        self.assertClose(grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7)
-        self.assertClose(grad_faces_naive.cpu(), grad_faces_cuda.cpu(), atol=5e-7)
+        self.assertClose(
+            grad_points_naive.cpu(), grad_points_cuda.cpu(), atol=1e-7
+        )
+        self.assertClose(
+            grad_faces_naive.cpu(), grad_faces_cuda.cpu(), atol=5e-7
+        )
         self.assertClose(grad_points_naive.cpu(), grad_points_cpu, atol=1e-7)
         self.assertClose(grad_faces_naive.cpu(), grad_faces_cpu, atol=5e-7)
 
@@ -804,7 +882,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
 
             num_p = points.shape[0]
             num_t = tris.shape[0]
-            dists = torch.zeros((num_p, num_t), dtype=torch.float32, device=device)
+            dists = torch.zeros(
+                (num_p, num_t), dtype=torch.float32, device=device
+            )
             for p in range(num_p):
                 for t in range(num_t):
                     dist = self._point_to_tri_distance(points[p], tris[t])
@@ -834,7 +914,9 @@ class TestPointMeshDistance(TestCaseMixin, unittest.TestCase):
             self.assertClose(
                 meshes.verts_list()[i].grad, meshes_op.verts_list()[i].grad
             )
-            self.assertClose(pcls.points_list()[i].grad, pcls_op.points_list()[i].grad)
+            self.assertClose(
+                pcls.points_list()[i].grad, pcls_op.points_list()[i].grad
+            )
 
     @staticmethod
     def point_mesh_edge(N: int, V: int, F: int, P: int, device: str):

@@ -19,14 +19,17 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
         num_meshes: int = 10,
         num_verts: int = 1000,
         num_faces: int = 3000,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         device = torch.device(device)
         verts_list = []
         faces_list = []
         for _ in range(num_meshes):
             verts = torch.rand(
-                (num_verts, 3), dtype=torch.float32, device=device, requires_grad=True
+                (num_verts, 3),
+                dtype=torch.float32,
+                device=device,
+                requires_grad=True,
             )
             faces = torch.randint(
                 num_verts, size=(num_faces, 3), dtype=torch.int64, device=device
@@ -51,7 +54,9 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
         v02 = vertices_faces[:, 2] - vertices_faces[:, 0]
         normals = torch.cross(v01, v02, dim=1)  # (F, 3)
         face_areas = normals.norm(dim=-1) / 2
-        face_normals = torch.nn.functional.normalize(normals, p=2, dim=1, eps=1e-6)
+        face_normals = torch.nn.functional.normalize(
+            normals, p=2, dim=1, eps=1e-6
+        )
         return face_areas, face_normals
 
     def _test_face_areas_normals_helper(self, device, dtype=torch.float32):
@@ -70,7 +75,10 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
         verts_torch = verts.detach().clone().to(dtype)
         verts_torch.requires_grad = True
         faces_torch = faces.detach().clone()
-        (areas_torch, normals_torch) = TestFaceAreasNormals.face_areas_normals_python(
+        (
+            areas_torch,
+            normals_torch,
+        ) = TestFaceAreasNormals.face_areas_normals_python(
             verts_torch, faces_torch
         )
         self.assertClose(areas_torch, areas, atol=1e-7)
@@ -91,14 +99,14 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
         self.assertClose(grad_verts_torch, grad_verts, atol=1e-6)
 
     def test_face_areas_normals_cpu(self):
-        self._test_face_areas_normals_helper("cpu")
+        self._test_face_areas_normals_helper('cpu')
 
     def test_face_areas_normals_cuda(self):
         device = get_random_cuda_device()
         self._test_face_areas_normals_helper(device)
 
     def test_nonfloats_cpu(self):
-        self._test_face_areas_normals_helper("cpu", dtype=torch.double)
+        self._test_face_areas_normals_helper('cpu', dtype=torch.double)
 
     def test_nonfloats_cuda(self):
         device = get_random_cuda_device()
@@ -106,7 +114,7 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def face_areas_normals_with_init(
-        num_meshes: int, num_verts: int, num_faces: int, device: str = "cpu"
+        num_meshes: int, num_verts: int, num_faces: int, device: str = 'cpu'
     ):
         meshes = TestFaceAreasNormals.init_meshes(
             num_meshes, num_verts, num_faces, device
@@ -123,7 +131,7 @@ class TestFaceAreasNormals(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def face_areas_normals_with_init_torch(
-        num_meshes: int, num_verts: int, num_faces: int, device: str = "cpu"
+        num_meshes: int, num_verts: int, num_faces: int, device: str = 'cpu'
     ):
         meshes = TestFaceAreasNormals.init_meshes(
             num_meshes, num_verts, num_faces, device

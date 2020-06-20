@@ -92,7 +92,7 @@ def matrix_to_quaternion(matrix):
         quaternions with real part first, as tensor of shape (..., 4).
     """
     if matrix.size(-1) != 3 or matrix.size(-2) != 3:
-        raise ValueError(f"Invalid rotation matrix  shape f{matrix.shape}.")
+        raise ValueError(f'Invalid rotation matrix  shape f{matrix.shape}.')
     zero = matrix.new_zeros((1,))
     m00 = matrix[..., 0, 0]
     m11 = matrix[..., 1, 1]
@@ -125,11 +125,11 @@ def _axis_angle_rotation(axis: str, angle):
     one = torch.ones_like(angle)
     zero = torch.zeros_like(angle)
 
-    if axis == "X":
+    if axis == 'X':
         R_flat = (one, zero, zero, zero, cos, -sin, zero, sin, cos)
-    if axis == "Y":
+    if axis == 'Y':
         R_flat = (cos, zero, sin, zero, one, zero, -sin, zero, cos)
-    if axis == "Z":
+    if axis == 'Z':
         R_flat = (cos, -sin, zero, sin, cos, zero, zero, zero, one)
 
     return torch.stack(R_flat, -1).reshape(angle.shape + (3, 3))
@@ -148,15 +148,17 @@ def euler_angles_to_matrix(euler_angles, convention: str):
         Rotation matrices as tensor of shape (..., 3, 3).
     """
     if euler_angles.dim() == 0 or euler_angles.shape[-1] != 3:
-        raise ValueError("Invalid input euler angles.")
+        raise ValueError('Invalid input euler angles.')
     if len(convention) != 3:
-        raise ValueError("Convention must have 3 letters.")
+        raise ValueError('Convention must have 3 letters.')
     if convention[1] in (convention[0], convention[2]):
-        raise ValueError(f"Invalid convention {convention}.")
+        raise ValueError(f'Invalid convention {convention}.')
     for letter in convention:
-        if letter not in ("X", "Y", "Z"):
-            raise ValueError(f"Invalid letter {letter} in convention string.")
-    matrices = map(_axis_angle_rotation, convention, torch.unbind(euler_angles, -1))
+        if letter not in ('X', 'Y', 'Z'):
+            raise ValueError(f'Invalid letter {letter} in convention string.')
+    matrices = map(
+        _axis_angle_rotation, convention, torch.unbind(euler_angles, -1)
+    )
     return functools.reduce(torch.matmul, matrices)
 
 
@@ -182,10 +184,10 @@ def _angle_from_tan(
         of shape (...).
     """
 
-    i1, i2 = {"X": (2, 1), "Y": (0, 2), "Z": (1, 0)}[axis]
+    i1, i2 = {'X': (2, 1), 'Y': (0, 2), 'Z': (1, 0)}[axis]
     if horizontal:
         i2, i1 = i1, i2
-    even = (axis + other_axis) in ["XY", "YZ", "ZX"]
+    even = (axis + other_axis) in ['XY', 'YZ', 'ZX']
     if horizontal == even:
         return torch.atan2(data[..., i1], data[..., i2])
     if tait_bryan:
@@ -194,11 +196,11 @@ def _angle_from_tan(
 
 
 def _index_from_letter(letter: str):
-    if letter == "X":
+    if letter == 'X':
         return 0
-    if letter == "Y":
+    if letter == 'Y':
         return 1
-    if letter == "Z":
+    if letter == 'Z':
         return 2
 
 
@@ -214,14 +216,14 @@ def matrix_to_euler_angles(matrix, convention: str):
         Euler angles in radians as tensor of shape (..., 3).
     """
     if len(convention) != 3:
-        raise ValueError("Convention must have 3 letters.")
+        raise ValueError('Convention must have 3 letters.')
     if convention[1] in (convention[0], convention[2]):
-        raise ValueError(f"Invalid convention {convention}.")
+        raise ValueError(f'Invalid convention {convention}.')
     for letter in convention:
-        if letter not in ("X", "Y", "Z"):
-            raise ValueError(f"Invalid letter {letter} in convention string.")
+        if letter not in ('X', 'Y', 'Z'):
+            raise ValueError(f'Invalid letter {letter} in convention string.')
     if matrix.size(-1) != 3 or matrix.size(-2) != 3:
-        raise ValueError(f"Invalid rotation matrix  shape f{matrix.shape}.")
+        raise ValueError(f'Invalid rotation matrix  shape f{matrix.shape}.')
     i0 = _index_from_letter(convention[0])
     i2 = _index_from_letter(convention[2])
     tait_bryan = i0 != i2
@@ -245,7 +247,10 @@ def matrix_to_euler_angles(matrix, convention: str):
 
 
 def random_quaternions(
-    n: int, dtype: Optional[torch.dtype] = None, device=None, requires_grad=False
+    n: int,
+    dtype: Optional[torch.dtype] = None,
+    device=None,
+    requires_grad=False,
 ):
     """
     Generate random quaternions representing rotations,
@@ -262,14 +267,19 @@ def random_quaternions(
     Returns:
         Quaternions as tensor of shape (N, 4).
     """
-    o = torch.randn((n, 4), dtype=dtype, device=device, requires_grad=requires_grad)
+    o = torch.randn(
+        (n, 4), dtype=dtype, device=device, requires_grad=requires_grad
+    )
     s = (o * o).sum(1)
     o = o / _copysign(torch.sqrt(s), o[:, 0])[:, None]
     return o
 
 
 def random_rotations(
-    n: int, dtype: Optional[torch.dtype] = None, device=None, requires_grad=False
+    n: int,
+    dtype: Optional[torch.dtype] = None,
+    device=None,
+    requires_grad=False,
 ):
     """
     Generate random rotations as 3x3 rotation matrices.
@@ -392,7 +402,7 @@ def quaternion_apply(quaternion, point):
         Tensor of rotated points of shape (..., 3).
     """
     if point.size(-1) != 3:
-        raise ValueError(f"Points are not in 3D, f{point.shape}.")
+        raise ValueError(f'Points are not in 3D, f{point.shape}.')
     real_parts = point.new_zeros(point.shape[:-1] + (1,))
     point_as_quaternion = torch.cat((real_parts, point), -1)
     out = quaternion_raw_multiply(

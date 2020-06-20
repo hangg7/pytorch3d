@@ -15,28 +15,28 @@ import numpy as np
 import torch
 
 
-_PlyTypeData = namedtuple("_PlyTypeData", "size struct_char np_type")
+_PlyTypeData = namedtuple('_PlyTypeData', 'size struct_char np_type')
 
 _PLY_TYPES = {
-    "char": _PlyTypeData(1, "b", np.byte),
-    "uchar": _PlyTypeData(1, "B", np.ubyte),
-    "short": _PlyTypeData(2, "h", np.short),
-    "ushort": _PlyTypeData(2, "H", np.ushort),
-    "int": _PlyTypeData(4, "i", np.int32),
-    "uint": _PlyTypeData(4, "I", np.uint32),
-    "float": _PlyTypeData(4, "f", np.float32),
-    "double": _PlyTypeData(8, "d", np.float64),
-    "int8": _PlyTypeData(1, "b", np.byte),
-    "uint8": _PlyTypeData(1, "B", np.ubyte),
-    "int16": _PlyTypeData(2, "h", np.short),
-    "uint16": _PlyTypeData(2, "H", np.ushort),
-    "int32": _PlyTypeData(4, "i", np.int32),
-    "uint32": _PlyTypeData(4, "I", np.uint32),
-    "float32": _PlyTypeData(4, "f", np.float32),
-    "float64": _PlyTypeData(8, "d", np.float64),
+    'char': _PlyTypeData(1, 'b', np.byte),
+    'uchar': _PlyTypeData(1, 'B', np.ubyte),
+    'short': _PlyTypeData(2, 'h', np.short),
+    'ushort': _PlyTypeData(2, 'H', np.ushort),
+    'int': _PlyTypeData(4, 'i', np.int32),
+    'uint': _PlyTypeData(4, 'I', np.uint32),
+    'float': _PlyTypeData(4, 'f', np.float32),
+    'double': _PlyTypeData(8, 'd', np.float64),
+    'int8': _PlyTypeData(1, 'b', np.byte),
+    'uint8': _PlyTypeData(1, 'B', np.ubyte),
+    'int16': _PlyTypeData(2, 'h', np.short),
+    'uint16': _PlyTypeData(2, 'H', np.ushort),
+    'int32': _PlyTypeData(4, 'i', np.int32),
+    'uint32': _PlyTypeData(4, 'I', np.uint32),
+    'float32': _PlyTypeData(4, 'f', np.float32),
+    'float64': _PlyTypeData(8, 'd', np.float64),
 }
 
-_Property = namedtuple("_Property", "name data_type list_size_type")
+_Property = namedtuple('_Property', 'name data_type list_size_type')
 
 
 class _PlyElementType:
@@ -67,7 +67,7 @@ class _PlyElementType:
         """
         for property in self.properties:
             if property.name == name:
-                msg = "Cannot have two properties called %s in %s."
+                msg = 'Cannot have two properties called %s in %s.'
                 raise ValueError(msg % (name, self.name))
         self.properties.append(_Property(name, data_type, list_size_type))
 
@@ -125,56 +125,56 @@ class _PlyHeader:
         Args:
             f: file-like object.
         """
-        if f.readline() not in [b"ply\n", b"ply\r\n", "ply\n"]:
-            raise ValueError("Invalid file header.")
+        if f.readline() not in [b'ply\n', b'ply\r\n', 'ply\n']:
+            raise ValueError('Invalid file header.')
         seen_format = False
         self.elements = []
         self.obj_info = {}
         while True:
             line = f.readline()
             if isinstance(line, bytes):
-                line = line.decode("ascii")
+                line = line.decode('ascii')
             line = line.strip()
-            if line == "end_header":
+            if line == 'end_header':
                 if not self.elements:
-                    raise ValueError("No elements found.")
+                    raise ValueError('No elements found.')
                 if not self.elements[-1].properties:
-                    raise ValueError("Found an element with no properties.")
+                    raise ValueError('Found an element with no properties.')
                 if not seen_format:
-                    raise ValueError("No format line found.")
+                    raise ValueError('No format line found.')
                 break
             if not seen_format:
-                if line == "format ascii 1.0":
+                if line == 'format ascii 1.0':
                     seen_format = True
                     self.ascii = True
                     continue
-                if line == "format binary_little_endian 1.0":
+                if line == 'format binary_little_endian 1.0':
                     seen_format = True
                     self.ascii = False
                     self.big_endian = False
                     continue
-                if line == "format binary_big_endian 1.0":
+                if line == 'format binary_big_endian 1.0':
                     seen_format = True
                     self.ascii = False
                     self.big_endian = True
                     continue
-            if line.startswith("format"):
-                raise ValueError("Invalid format line.")
-            if line.startswith("comment") or len(line) == 0:
+            if line.startswith('format'):
+                raise ValueError('Invalid format line.')
+            if line.startswith('comment') or len(line) == 0:
                 continue
-            if line.startswith("element"):
+            if line.startswith('element'):
                 self._parse_element(line)
                 continue
-            if line.startswith("obj_info"):
-                items = line.split(" ")
+            if line.startswith('obj_info'):
+                items = line.split(' ')
                 if len(items) != 3:
-                    raise ValueError("Invalid line: %s" % line)
+                    raise ValueError('Invalid line: %s' % line)
                 self.obj_info[items[1]] = items[2]
                 continue
-            if line.startswith("property"):
+            if line.startswith('property'):
                 self._parse_property(line)
                 continue
-            raise ValueError("Invalid line: %s." % line)
+            raise ValueError('Invalid line: %s.' % line)
 
     def _parse_property(self, line: str):
         """
@@ -184,21 +184,21 @@ class _PlyHeader:
             line: (str) the ply file's line.
         """
         if not self.elements:
-            raise ValueError("Encountered property before any element.")
-        items = line.split(" ")
+            raise ValueError('Encountered property before any element.')
+        items = line.split(' ')
         if len(items) not in [3, 5]:
-            raise ValueError("Invalid line: %s" % line)
+            raise ValueError('Invalid line: %s' % line)
         datatype = items[1]
         name = items[-1]
-        if datatype == "list":
+        if datatype == 'list':
             datatype = items[3]
             list_size_type = items[2]
             if list_size_type not in _PLY_TYPES:
-                raise ValueError("Invalid datatype: %s" % list_size_type)
+                raise ValueError('Invalid datatype: %s' % list_size_type)
         else:
             list_size_type = None
         if datatype not in _PLY_TYPES:
-            raise ValueError("Invalid datatype: %s" % datatype)
+            raise ValueError('Invalid datatype: %s' % datatype)
         self.elements[-1].add_property(name, datatype, list_size_type)
 
     def _parse_element(self, line: str):
@@ -209,14 +209,14 @@ class _PlyHeader:
             line: (str) the ply file's line.
         """
         if self.elements and not self.elements[-1].properties:
-            raise ValueError("Found an element with no properties.")
-        items = line.split(" ")
+            raise ValueError('Found an element with no properties.')
+        items = line.split(' ')
         if len(items) != 3:
-            raise ValueError("Invalid line: %s" % line)
+            raise ValueError('Invalid line: %s' % line)
         try:
             count = int(items[2])
         except ValueError:
-            msg = "Number of items for %s was not a number."
+            msg = 'Number of items for %s was not a number.'
             raise ValueError(msg % items[1])
         self.elements.append(_PlyElementType(items[1], count))
 
@@ -249,7 +249,7 @@ def _read_ply_fixed_size_element_ascii(f, definition: _PlyElementType):
     old_offset = f.tell()
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            "ignore", message=".* Empty input file.*", category=UserWarning
+            'ignore', message='.* Empty input file.*', category=UserWarning
         )
         data = np.loadtxt(
             f, dtype=np_type, comments=None, ndmin=2, max_rows=definition.count
@@ -257,9 +257,9 @@ def _read_ply_fixed_size_element_ascii(f, definition: _PlyElementType):
     if not len(data):  # np.loadtxt() seeks even on empty data
         f.seek(old_offset)
     if definition.count and data.shape[1] != len(definition.properties):
-        raise ValueError("Inconsistent data for %s." % definition.name)
+        raise ValueError('Inconsistent data for %s.' % definition.name)
     if data.shape[0] != definition.count:
-        raise ValueError("Not enough data for %s." % definition.name)
+        raise ValueError('Not enough data for %s.' % definition.name)
     return data
 
 
@@ -282,10 +282,14 @@ def _try_read_ply_constant_list_ascii(f, definition: _PlyElementType):
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings(
-                "ignore", message=".* Empty input file.*", category=UserWarning
+                'ignore', message='.* Empty input file.*', category=UserWarning
             )
             data = np.loadtxt(
-                f, dtype=np_type, comments=None, ndmin=2, max_rows=definition.count
+                f,
+                dtype=np_type,
+                comments=None,
+                ndmin=2,
+                max_rows=definition.count,
             )
     except ValueError:
         f.seek(old_offset)
@@ -293,10 +297,10 @@ def _try_read_ply_constant_list_ascii(f, definition: _PlyElementType):
     if not len(data):  # np.loadtxt() seeks even on empty data
         f.seek(old_offset)
     if (data.shape[1] - 1 != data[:, 0]).any():
-        msg = "A line of %s data did not have the specified length."
+        msg = 'A line of %s data did not have the specified length.'
         raise ValueError(msg % definition.name)
     if data.shape[0] != definition.count:
-        raise ValueError("Not enough data for %s." % definition.name)
+        raise ValueError('Not enough data for %s.' % definition.name)
     return data[:, 1:]
 
 
@@ -313,29 +317,31 @@ def _parse_heterogenous_property_ascii(datum, line_iter, property: _Property):
     """
     value = next(line_iter, None)
     if value is None:
-        raise ValueError("Too little data for an element.")
+        raise ValueError('Too little data for an element.')
     if property.list_size_type is None:
         try:
-            if property.data_type in ["double", "float"]:
+            if property.data_type in ['double', 'float']:
                 datum.append(float(value))
             else:
                 datum.append(int(value))
         except ValueError:
-            raise ValueError("Bad numerical data.")
+            raise ValueError('Bad numerical data.')
     else:
         try:
             length = int(value)
         except ValueError:
-            raise ValueError("A list length was not a number.")
-        list_value = np.zeros(length, dtype=_PLY_TYPES[property.data_type].np_type)
+            raise ValueError('A list length was not a number.')
+        list_value = np.zeros(
+            length, dtype=_PLY_TYPES[property.data_type].np_type
+        )
         for i in range(length):
             inner_value = next(line_iter, None)
             if inner_value is None:
-                raise ValueError("Too little data for an element.")
+                raise ValueError('Too little data for an element.')
             try:
                 list_value[i] = float(inner_value)
             except ValueError:
-                raise ValueError("Bad numerical data.")
+                raise ValueError('Bad numerical data.')
         datum.append(list_value)
 
 
@@ -365,15 +371,15 @@ def _read_ply_element_ascii(f, definition: _PlyElementType):
     data = []
     for _i in range(definition.count):
         line_string = f.readline()
-        if line_string == "":
-            raise ValueError("Not enough data for %s." % definition.name)
+        if line_string == '':
+            raise ValueError('Not enough data for %s.' % definition.name)
         datum = []
         line_iter = iter(line_string.strip().split())
         for property in definition.properties:
             _parse_heterogenous_property_ascii(datum, line_iter, property)
         data.append(datum)
         if next(line_iter, None) is not None:
-            raise ValueError("Too much data for an element.")
+            raise ValueError('Too much data for an element.')
     return data
 
 
@@ -400,10 +406,10 @@ def _read_ply_fixed_size_element_binary(
     needed_bytes = needed_length * type_size
     bytes_data = f.read(needed_bytes)
     if len(bytes_data) != needed_bytes:
-        raise ValueError("Not enough data for %s." % definition.name)
+        raise ValueError('Not enough data for %s.' % definition.name)
     data = np.frombuffer(bytes_data, dtype=np_type)
 
-    if (sys.byteorder == "big") != big_endian:
+    if (sys.byteorder == 'big') != big_endian:
         data = data.byteswap()
     return data.reshape(definition.count, len(definition.properties))
 
@@ -427,8 +433,9 @@ def _read_ply_element_struct(f, definition: _PlyElementType, endian_str: str):
         2D numpy array corresponding to the data. The rows are the different
         values. There is one column for each property.
     """
-    format = "".join(
-        _PLY_TYPES[property.data_type].struct_char for property in definition.properties
+    format = ''.join(
+        _PLY_TYPES[property.data_type].struct_char
+        for property in definition.properties
     )
     format = endian_str + format
     pattern = struct.Struct(format)
@@ -436,8 +443,11 @@ def _read_ply_element_struct(f, definition: _PlyElementType, endian_str: str):
     needed_bytes = size * definition.count
     bytes_data = f.read(needed_bytes)
     if len(bytes_data) != needed_bytes:
-        raise ValueError("Not enough data for %s." % definition.name)
-    data = [pattern.unpack_from(bytes_data, i * size) for i in range(definition.count)]
+        raise ValueError('Not enough data for %s.' % definition.name)
+    data = [
+        pattern.unpack_from(bytes_data, i * size)
+        for i in range(definition.count)
+    ]
     return data
 
 
@@ -459,14 +469,14 @@ def _try_read_ply_constant_list_binary(
         data. The rows are the different values. Otherwise None.
     """
     property = definition.properties[0]
-    endian_str = ">" if big_endian else "<"
+    endian_str = '>' if big_endian else '<'
     length_format = endian_str + _PLY_TYPES[property.list_size_type].struct_char
     length_struct = struct.Struct(length_format)
 
     def get_length():
         bytes_data = f.read(length_struct.size)
         if len(bytes_data) != length_struct.size:
-            raise ValueError("Not enough data for %s." % definition.name)
+            raise ValueError('Not enough data for %s.' % definition.name)
         [length] = length_struct.unpack(bytes_data)
         return length
 
@@ -482,20 +492,22 @@ def _try_read_ply_constant_list_binary(
     for i in range(definition.count):
         bytes_data = f.read(data_size)
         if len(bytes_data) != data_size:
-            raise ValueError("Not enough data for %s" % definition.name)
+            raise ValueError('Not enough data for %s' % definition.name)
         output[i] = np.frombuffer(bytes_data, dtype=np_type)
         if i + 1 == definition.count:
             break
         if length != get_length():
             f.seek(old_offset)
             return None
-    if (sys.byteorder == "big") != big_endian:
+    if (sys.byteorder == 'big') != big_endian:
         output = output.byteswap()
 
     return output
 
 
-def _read_ply_element_binary(f, definition: _PlyElementType, big_endian: bool) -> list:
+def _read_ply_element_binary(
+    f, definition: _PlyElementType, big_endian: bool
+) -> list:
     """
     Decode all instances of a single element from a binary .ply file.
 
@@ -511,7 +523,7 @@ def _read_ply_element_binary(f, definition: _PlyElementType, big_endian: bool) -
         each occurence of the element, and the inner lists have one value per
         property.
     """
-    endian_str = ">" if big_endian else "<"
+    endian_str = '>' if big_endian else '<'
 
     if definition.is_constant_type_fixed_size():
         return _read_ply_fixed_size_element_binary(f, definition, big_endian)
@@ -533,11 +545,13 @@ def _read_ply_element_binary(f, definition: _PlyElementType, big_endian: bool) -
     data = []
     for _i in range(definition.count):
         datum = []
-        for property, property_struct in zip(definition.properties, property_structs):
+        for property, property_struct in zip(
+            definition.properties, property_structs
+        ):
             size = property_struct.size
             initial_data = f.read(size)
             if len(initial_data) != size:
-                raise ValueError("Not enough data for %s" % definition.name)
+                raise ValueError('Not enough data for %s' % definition.name)
             [initial] = property_struct.unpack(initial_data)
             if property.list_size_type is None:
                 datum.append(initial)
@@ -546,10 +560,10 @@ def _read_ply_element_binary(f, definition: _PlyElementType, big_endian: bool) -
                 needed_bytes = type_size * initial
                 list_data = f.read(needed_bytes)
                 if len(list_data) != needed_bytes:
-                    raise ValueError("Not enough data for %s" % definition.name)
+                    raise ValueError('Not enough data for %s' % definition.name)
                 np_type = _PLY_TYPES[property.data_type].np_type
                 list_np = np.frombuffer(list_data, dtype=np_type)
-                if (sys.byteorder == "big") != big_endian:
+                if (sys.byteorder == 'big') != big_endian:
                     list_np = list_np.byteswap()
                 datum.append(list_np)
         data.append(datum)
@@ -582,7 +596,7 @@ def _load_ply_raw_stream(f) -> Tuple[_PlyHeader, dict]:
             elements[element.name] = _read_ply_element_binary(f, element, big)
     end = f.read().strip()
     if len(end) != 0:
-        raise ValueError("Extra data at end of file: " + str(end[:20]))
+        raise ValueError('Extra data at end of file: ' + str(end[:20]))
     return header, elements
 
 
@@ -606,10 +620,10 @@ def _load_ply_raw(f) -> Tuple[_PlyHeader, dict]:
     new_f = False
     if isinstance(f, str):
         new_f = True
-        f = open(f, "rb")
+        f = open(f, 'rb')
     elif isinstance(f, pathlib.Path):
         new_f = True
-        f = f.open("rb")
+        f = f.open('rb')
     try:
         header, elements = _load_ply_raw_stream(f)
     finally:
@@ -664,46 +678,57 @@ def load_ply(f):
     """
     header, elements = _load_ply_raw(f)
 
-    vertex = elements.get("vertex", None)
+    vertex = elements.get('vertex', None)
     if vertex is None:
-        raise ValueError("The ply file has no vertex element.")
+        raise ValueError('The ply file has no vertex element.')
 
-    face = elements.get("face", None)
+    face = elements.get('face', None)
     if face is None:
-        raise ValueError("The ply file has no face element.")
+        raise ValueError('The ply file has no face element.')
 
     if len(vertex) and (
-        not isinstance(vertex, np.ndarray) or vertex.ndim != 2 or vertex.shape[1] != 3
+        not isinstance(vertex, np.ndarray)
+        or vertex.ndim != 2
+        or vertex.shape[1] != 3
     ):
-        raise ValueError("Invalid vertices in file.")
+        raise ValueError('Invalid vertices in file.')
     verts = _make_tensor(vertex, cols=3, dtype=torch.float32)
 
-    face_head = next(head for head in header.elements if head.name == "face")
-    if len(face_head.properties) != 1 or face_head.properties[0].list_size_type is None:
-        raise ValueError("Unexpected form of faces data.")
+    face_head = next(head for head in header.elements if head.name == 'face')
+    if (
+        len(face_head.properties) != 1
+        or face_head.properties[0].list_size_type is None
+    ):
+        raise ValueError('Unexpected form of faces data.')
     # face_head.properties[0].name is usually "vertex_index" or "vertex_indices"
     # but we don't need to enforce this.
 
     if not len(face):
         faces = torch.zeros(size=(0, 3), dtype=torch.int64)
-    elif isinstance(face, np.ndarray) and face.ndim == 2:  # Homogeneous elements
+    elif (
+        isinstance(face, np.ndarray) and face.ndim == 2
+    ):  # Homogeneous elements
         if face.shape[1] < 3:
-            raise ValueError("Faces must have at least 3 vertices.")
-        face_arrays = [face[:, [0, i + 1, i + 2]] for i in range(face.shape[1] - 2)]
+            raise ValueError('Faces must have at least 3 vertices.')
+        face_arrays = [
+            face[:, [0, i + 1, i + 2]] for i in range(face.shape[1] - 2)
+        ]
         faces = torch.LongTensor(np.vstack(face_arrays))
     else:
         face_list = []
         for face_item in face:
             if face_item.ndim != 1:
-                raise ValueError("Bad face data.")
+                raise ValueError('Bad face data.')
             if face_item.shape[0] < 3:
-                raise ValueError("Faces must have at least 3 vertices.")
+                raise ValueError('Faces must have at least 3 vertices.')
             for i in range(face_item.shape[0] - 2):
-                face_list.append([face_item[0], face_item[i + 1], face_item[i + 2]])
+                face_list.append(
+                    [face_item[0], face_item[i + 1], face_item[i + 2]]
+                )
         faces = _make_tensor(face_list, cols=3, dtype=torch.int64)
 
     if torch.any(faces >= verts.shape[0]) or torch.any(faces < 0):
-        warnings.warn("Faces have invalid indices")
+        warnings.warn('Faces have invalid indices')
 
     return verts, faces
 
@@ -731,27 +756,27 @@ def _save_ply(
         verts_normals.dim() == 2 and verts_normals.size(1) == 3
     )
 
-    print("ply\nformat ascii 1.0", file=f)
-    print(f"element vertex {verts.shape[0]}", file=f)
-    print("property float x", file=f)
-    print("property float y", file=f)
-    print("property float z", file=f)
+    print('ply\nformat ascii 1.0', file=f)
+    print(f'element vertex {verts.shape[0]}', file=f)
+    print('property float x', file=f)
+    print('property float y', file=f)
+    print('property float z', file=f)
     if verts_normals.numel() > 0:
-        print("property float nx", file=f)
-        print("property float ny", file=f)
-        print("property float nz", file=f)
-    print(f"element face {faces.shape[0]}", file=f)
-    print("property list uchar int vertex_index", file=f)
-    print("end_header", file=f)
+        print('property float nx', file=f)
+        print('property float ny', file=f)
+        print('property float nz', file=f)
+    print(f'element face {faces.shape[0]}', file=f)
+    print('property list uchar int vertex_index', file=f)
+    print('end_header', file=f)
 
     if not (len(verts) or len(faces)):
         warnings.warn("Empty 'verts' and 'faces' arguments provided")
         return
 
     if decimal_places is None:
-        float_str = "%f"
+        float_str = '%f'
     else:
-        float_str = "%" + ".%df" % decimal_places
+        float_str = '%' + '.%df' % decimal_places
 
     vert_data = torch.cat((verts, verts_normals), dim=1)
     np.savetxt(f, vert_data.detach().numpy(), float_str)
@@ -759,10 +784,10 @@ def _save_ply(
     faces_array = faces.detach().numpy()
 
     if torch.any(faces >= verts.shape[0]) or torch.any(faces < 0):
-        warnings.warn("Faces have invalid indices")
+        warnings.warn('Faces have invalid indices')
 
     if len(faces_array):
-        np.savetxt(f, faces_array, "3 %d %d %d")
+        np.savetxt(f, faces_array, '3 %d %d %d')
 
 
 def save_ply(
@@ -783,7 +808,9 @@ def save_ply(
         decimal_places: Number of decimal places for saving.
     """
 
-    verts_normals = torch.FloatTensor([]) if verts_normals is None else verts_normals
+    verts_normals = (
+        torch.FloatTensor([]) if verts_normals is None else verts_normals
+    )
     faces = torch.LongTensor([]) if faces is None else faces
 
     if len(verts) and not (verts.dim() == 2 and verts.size(1) == 3):
@@ -805,10 +832,10 @@ def save_ply(
     new_f = False
     if isinstance(f, str):
         new_f = True
-        f = open(f, "w")
+        f = open(f, 'w')
     elif isinstance(f, pathlib.Path):
         new_f = True
-        f = f.open("w")
+        f = f.open('w')
     try:
         _save_ply(f, verts, faces, verts_normals, decimal_places)
     finally:

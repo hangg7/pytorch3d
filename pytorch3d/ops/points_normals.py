@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def estimate_pointcloud_normals(
-    pointclouds: Union[torch.Tensor, "Pointclouds"],
+    pointclouds: Union[torch.Tensor, 'Pointclouds'],
     neighborhood_size: int = 50,
     disambiguate_directions: bool = True,
 ) -> torch.Tensor:
@@ -53,7 +53,7 @@ def estimate_pointcloud_normals(
 
 
 def estimate_pointcloud_local_coord_frames(
-    pointclouds: Union[torch.Tensor, "Pointclouds"],
+    pointclouds: Union[torch.Tensor, 'Pointclouds'],
     neighborhood_size: int = 50,
     disambiguate_directions: bool = True,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -106,13 +106,13 @@ def estimate_pointcloud_local_coord_frames(
     ba, N, dim = points_padded.shape
     if dim != 3:
         raise ValueError(
-            "The pointclouds argument has to be of shape (minibatch, N, 3)"
+            'The pointclouds argument has to be of shape (minibatch, N, 3)'
         )
 
     if (num_points <= neighborhood_size).any():
         raise ValueError(
-            "The neighborhood_size argument has to be"
-            + " >= size of each of the point clouds."
+            'The neighborhood_size argument has to be'
+            + ' >= size of each of the point clouds.'
         )
 
     # undo global mean for stability
@@ -121,7 +121,9 @@ def estimate_pointcloud_local_coord_frames(
     points_centered = points_padded - pcl_mean[:, None, :]
 
     # get the per-point covariance and nearest neighbors used to compute it
-    cov, knns = get_point_covariances(points_centered, num_points, neighborhood_size)
+    cov, knns = get_point_covariances(
+        points_centered, num_points, neighborhood_size
+    )
 
     # get the local coord frames as principal directions of
     # the per-point covariance

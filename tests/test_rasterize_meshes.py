@@ -16,15 +16,21 @@ from pytorch3d.utils import ico_sphere
 
 class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
     def test_simple_python(self):
-        device = torch.device("cpu")
-        self._simple_triangle_raster(rasterize_meshes_python, device, bin_size=-1)
+        device = torch.device('cpu')
+        self._simple_triangle_raster(
+            rasterize_meshes_python, device, bin_size=-1
+        )
         self._simple_blurry_raster(rasterize_meshes_python, device, bin_size=-1)
         self._test_behind_camera(rasterize_meshes_python, device, bin_size=-1)
-        self._test_perspective_correct(rasterize_meshes_python, device, bin_size=-1)
-        self._test_back_face_culling(rasterize_meshes_python, device, bin_size=-1)
+        self._test_perspective_correct(
+            rasterize_meshes_python, device, bin_size=-1
+        )
+        self._test_back_face_culling(
+            rasterize_meshes_python, device, bin_size=-1
+        )
 
     def test_simple_cpu_naive(self):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         self._simple_triangle_raster(rasterize_meshes, device, bin_size=0)
         self._simple_blurry_raster(rasterize_meshes, device, bin_size=0)
         self._test_behind_camera(rasterize_meshes, device, bin_size=0)
@@ -49,12 +55,12 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
 
     def test_python_vs_cpu_vs_cuda(self):
         torch.manual_seed(231)
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         image_size = 32
         blur_radius = 0.1 ** 2
         faces_per_pixel = 3
 
-        for d in ["cpu", get_random_cuda_device()]:
+        for d in ['cpu', get_random_cuda_device()]:
             device = torch.device(d)
             compare_grads = True
             # Mesh with a single face.
@@ -158,7 +164,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         image_size = 64
         radius = 0.1 ** 2
         faces_per_pixel = 3
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         meshes_cpu = ico_sphere(0, device)
         verts1, faces1 = meshes_cpu.get_mesh_verts_faces(0)
         verts1.requires_grad = True
@@ -183,7 +189,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         )
 
     def test_coarse_cpu(self):
-        return self._test_coarse_rasterize(torch.device("cpu"))
+        return self._test_coarse_rasterize(torch.device('cpu'))
 
     def test_coarse_cuda(self):
         return self._test_coarse_rasterize(get_random_cuda_device())
@@ -199,7 +205,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         grad_dist = torch.randn(N, image_size, image_size, faces_per_pixel)
         grad_bary = torch.randn(N, image_size, image_size, faces_per_pixel, 3)
 
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         meshes = ico_sphere(0, device)
         verts, faces = meshes.get_mesh_verts_faces(0)
         verts.requires_grad = True
@@ -283,7 +289,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         bin_size = 32
         max_faces_per_bin = 20
 
-        device = torch.device("cpu")
+        device = torch.device('cpu')
 
         meshes = ico_sphere(2, device)
         faces = meshes.faces_packed()
@@ -344,14 +350,16 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         meshes1 = Meshes(verts1, faces)
         meshes2 = Meshes(verts2, faces)
 
-        kwargs = {"image_size": 24, "perspective_correct": True}
+        kwargs = {'image_size': 24, 'perspective_correct': True}
         fn1 = functools.partial(rasterize_meshes, meshes1, **kwargs)
         fn2 = functools.partial(rasterize_meshes_python, meshes2, **kwargs)
         args = ()
-        self._compare_impls(fn1, fn2, args, args, verts1, verts2, compare_grads=True)
+        self._compare_impls(
+            fn1, fn2, args, args, verts1, verts2, compare_grads=True
+        )
 
     def test_cpp_vs_cuda_perspective_correct(self):
-        meshes = ico_sphere(2, device=torch.device("cpu"))
+        meshes = ico_sphere(2, device=torch.device('cpu'))
         verts1, faces1 = meshes.get_mesh_verts_faces(0)
         verts1.requires_grad = True
         meshes1 = Meshes(verts=[verts1], faces=[faces1])
@@ -360,11 +368,13 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         faces2 = faces1.detach().clone().to(device)
         meshes2 = Meshes(verts=[verts2], faces=[faces2])
 
-        kwargs = {"image_size": 64, "perspective_correct": True}
+        kwargs = {'image_size': 64, 'perspective_correct': True}
         fn1 = functools.partial(rasterize_meshes, meshes1, **kwargs)
         fn2 = functools.partial(rasterize_meshes, meshes2, bin_size=0, **kwargs)
         args = ()
-        self._compare_impls(fn1, fn2, args, args, verts1, verts2, compare_grads=True)
+        self._compare_impls(
+            fn1, fn2, args, args, verts1, verts2, compare_grads=True
+        )
 
     def test_cuda_naive_vs_binned_perspective_correct(self):
         device = get_random_cuda_device()
@@ -376,17 +386,19 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         faces2 = faces1.detach().clone()
         meshes2 = Meshes(verts=[verts2], faces=[faces2])
 
-        kwargs = {"image_size": 64, "perspective_correct": True}
+        kwargs = {'image_size': 64, 'perspective_correct': True}
         fn1 = functools.partial(rasterize_meshes, meshes1, bin_size=0, **kwargs)
         fn2 = functools.partial(rasterize_meshes, meshes2, bin_size=8, **kwargs)
         args = ()
-        self._compare_impls(fn1, fn2, args, args, verts1, verts2, compare_grads=True)
+        self._compare_impls(
+            fn1, fn2, args, args, verts1, verts2, compare_grads=True
+        )
 
     def test_bin_size_error(self):
         meshes = ico_sphere(2)
         image_size = 1024
         bin_size = 16
-        with self.assertRaisesRegex(ValueError, "bin_size too small"):
+        with self.assertRaisesRegex(ValueError, 'bin_size too small'):
             rasterize_meshes(meshes, image_size, 0.0, 2, bin_size)
 
     def _test_back_face_culling(self, rasterize_meshes_fn, device, bin_size):
@@ -411,15 +423,15 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         # fmt: on
         mesh = Meshes(verts=[verts], faces=[faces])
         kwargs = {
-            "meshes": mesh,
-            "image_size": 10,
-            "faces_per_pixel": 2,
-            "blur_radius": 0.0,
-            "perspective_correct": False,
-            "cull_backfaces": False,
+            'meshes': mesh,
+            'image_size': 10,
+            'faces_per_pixel': 2,
+            'blur_radius': 0.0,
+            'perspective_correct': False,
+            'cull_backfaces': False,
         }
         if bin_size != -1:
-            kwargs["bin_size"] = bin_size
+            kwargs['bin_size'] = bin_size
 
         # fmt: off
         pix_to_face_frontface = torch.tensor([
@@ -454,15 +466,23 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         # rasterized and for k=1, the back face (i.e. face 3) is
         # rasterized.
         idx_f, zbuf_f, bary_f, dists_f = rasterize_meshes_fn(**kwargs)
-        self.assertTrue(torch.all(idx_f[..., 0].squeeze() == pix_to_face_frontface))
-        self.assertTrue(torch.all(idx_f[..., 1].squeeze() == pix_to_face_backface))
+        self.assertTrue(
+            torch.all(idx_f[..., 0].squeeze() == pix_to_face_frontface)
+        )
+        self.assertTrue(
+            torch.all(idx_f[..., 1].squeeze() == pix_to_face_backface)
+        )
 
         # With culling, for k=0, the front face (i.e. face 2) is
         # rasterized and for k=1, there are no faces rasterized
-        kwargs["cull_backfaces"] = True
+        kwargs['cull_backfaces'] = True
         idx_t, zbuf_t, bary_t, dists_t = rasterize_meshes_fn(**kwargs)
-        self.assertTrue(torch.all(idx_t[..., 0].squeeze() == pix_to_face_frontface))
-        self.assertTrue(torch.all(idx_t[..., 1].squeeze() == pix_to_face_padded))
+        self.assertTrue(
+            torch.all(idx_t[..., 0].squeeze() == pix_to_face_frontface)
+        )
+        self.assertTrue(
+            torch.all(idx_t[..., 1].squeeze() == pix_to_face_padded)
+        )
 
     def _compare_impls(
         self,
@@ -509,7 +529,9 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         grad_verts2 = grad_var2.grad.data.clone().cpu()
         self.assertClose(grad_verts1, grad_verts2, rtol=2e-3)
 
-    def _test_perspective_correct(self, rasterize_meshes_fn, device, bin_size=None):
+    def _test_perspective_correct(
+        self, rasterize_meshes_fn, device, bin_size=None
+    ):
         # fmt: off
         verts = torch.tensor([
                 [-0.4, -0.4, 10],  # noqa: E241, E201
@@ -520,19 +542,19 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         faces = torch.tensor([[0, 1, 2]], device=device)
         meshes = Meshes(verts=[verts], faces=[faces])
         kwargs = {
-            "meshes": meshes,
-            "image_size": 11,
-            "faces_per_pixel": 1,
-            "blur_radius": 0.2,
-            "perspective_correct": False,
+            'meshes': meshes,
+            'image_size': 11,
+            'faces_per_pixel': 1,
+            'blur_radius': 0.2,
+            'perspective_correct': False,
         }
         if bin_size != -1:
-            kwargs["bin_size"] = bin_size
+            kwargs['bin_size'] = bin_size
 
         # Run with and without perspective correction
         idx_f, zbuf_f, bary_f, dists_f = rasterize_meshes_fn(**kwargs)
 
-        kwargs["perspective_correct"] = True
+        kwargs['perspective_correct'] = True
         idx_t, zbuf_t, bary_t, dists_t = rasterize_meshes_fn(**kwargs)
 
         # Expected output tensors in the format with axes +X left, +Y up, +Z in
@@ -616,8 +638,12 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         zbuf_f_bary = w0_f * z0 + w1_f * z1 + w2_f * z2
         zbuf_t_bary = w0_t * z0 + w1_t * z1 + w2_t * z2
         mask = idx_expected != -1
-        zbuf_f_bary_diff = (zbuf_f_bary[mask] - zbuf_f_expected[mask]).abs().max()
-        zbuf_t_bary_diff = (zbuf_t_bary[mask] - zbuf_t_expected[mask]).abs().max()
+        zbuf_f_bary_diff = (
+            (zbuf_f_bary[mask] - zbuf_f_expected[mask]).abs().max()
+        )
+        zbuf_t_bary_diff = (
+            (zbuf_t_bary[mask] - zbuf_t_expected[mask]).abs().max()
+        )
         self.assertLess(zbuf_f_bary_diff, 1e-4)
         self.assertLess(zbuf_t_bary_diff, 1e-4)
 
@@ -789,7 +815,9 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
 
         # k = 1, second closest point.
         expected_p2face_k1 = expected_p2face_k0.clone()
-        expected_p2face_k1[0, :] = torch.ones_like(expected_p2face_k1[0, :]) * -1
+        expected_p2face_k1[0, :] = (
+            torch.ones_like(expected_p2face_k1[0, :]) * -1
+        )
 
         # fmt: off
         expected_p2face_k1[1, :] = torch.tensor(
@@ -831,7 +859,9 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
         #  Coordinate conventions +Y up, +Z in, +X left
         if bin_size == -1:
             # simple python, no bin_size
-            p2face, zbuf, bary, pix_dists = raster_fn(meshes, image_size, 0.0, 2)
+            p2face, zbuf, bary, pix_dists = raster_fn(
+                meshes, image_size, 0.0, 2
+            )
         else:
             p2face, zbuf, bary, pix_dists = raster_fn(
                 meshes, image_size, 0.0, 2, bin_size
@@ -980,7 +1010,9 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
 
         # Expected faces using axes convention +Y down, + X right, + Z in
         bin_faces_expected = (
-            torch.ones((1, 2, 2, max_faces_per_bin), dtype=torch.int32, device=device)
+            torch.ones(
+                (1, 2, 2, max_faces_per_bin), dtype=torch.int32, device=device
+            )
             * -1
         )
         bin_faces_expected[0, 1, 1, 0] = torch.tensor([1])
@@ -1006,7 +1038,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
     def rasterize_meshes_python_with_init(
         num_meshes: int, ico_level: int, image_size: int, blur_radius: float
     ):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         meshes = ico_sphere(ico_level, device)
         meshes_batch = meshes.extend(num_meshes)
 
@@ -1019,7 +1051,7 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
     def rasterize_meshes_cpu_with_init(
         num_meshes: int, ico_level: int, image_size: int, blur_radius: float
     ):
-        meshes = ico_sphere(ico_level, torch.device("cpu"))
+        meshes = ico_sphere(ico_level, torch.device('cpu'))
         meshes_batch = meshes.extend(num_meshes)
 
         def rasterize():
@@ -1043,7 +1075,12 @@ class TestRasterizeMeshes(TestCaseMixin, unittest.TestCase):
 
         def rasterize():
             rasterize_meshes(
-                meshes_batch, image_size, blur_radius, 8, bin_size, max_faces_per_bin
+                meshes_batch,
+                image_size,
+                blur_radius,
+                8,
+                bin_size,
+                max_faces_per_bin,
             )
             torch.cuda.synchronize()
 

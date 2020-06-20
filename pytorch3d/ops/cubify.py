@@ -16,7 +16,7 @@ def unravel_index(idx, dims) -> torch.Tensor:
     Implemented only for dims=(N, H, W, D)
     """
     if len(dims) != 4:
-        raise ValueError("Expects a 4-element list.")
+        raise ValueError('Expects a 4-element list.')
     N, H, W, D = dims
     n = idx // (H * W * D)
     h = (idx - n * H * W * D) // (W * D)
@@ -36,16 +36,16 @@ def ravel_index(idx, dims) -> torch.Tensor:
     Implemented only for dims=(H, W, D)
     """
     if len(dims) != 3:
-        raise ValueError("Expects a 3-element list")
+        raise ValueError('Expects a 3-element list')
     if idx.shape[1] != 3:
-        raise ValueError("Expects an index tensor of shape Nx3")
+        raise ValueError('Expects an index tensor of shape Nx3')
     H, W, D = dims
     linind = idx[:, 0] * W * D + idx[:, 1] * D + idx[:, 2]
     return linind
 
 
 @torch.no_grad()
-def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
+def cubify(voxels, thresh, device=None, align: str = 'topleft') -> Meshes:
     r"""
     Converts a voxel to a mesh by replacing each occupied voxel with a cube
     consisting of 12 faces and 8 vertices. Shared vertices are merged, and
@@ -83,8 +83,8 @@ def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
     if device is None:
         device = voxels.device
 
-    if align not in ["topleft", "corner", "center"]:
-        raise ValueError("Align mode must be one of (topleft, corner, center).")
+    if align not in ['topleft', 'corner', 'center']:
+        raise ValueError('Align mode must be one of (topleft, corner, center).')
 
     if len(voxels) == 0:
         return Meshes(verts=[], faces=[])
@@ -198,12 +198,12 @@ def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
     x = x.to(device=device, dtype=torch.float32)
     z = z.to(device=device, dtype=torch.float32)
 
-    if align == "center":
+    if align == 'center':
         x = x - 0.5
         y = y - 0.5
         z = z - 0.5
 
-    margin = 0.0 if align == "corner" else 1.0
+    margin = 0.0 if align == 'corner' else 1.0
     y = y * 2.0 / (H - margin) - 1.0
     x = x * 2.0 / (W - margin) - 1.0
     z = z * 2.0 / (D - margin) - 1.0
@@ -230,9 +230,13 @@ def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
 
     verts_list = [
         # pyre-fixme[16]: `Tensor` has no attribute `index_select`.
-        grid_verts.index_select(0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0])
+        grid_verts.index_select(
+            0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0]
+        )
         for n in range(N)
     ]
-    faces_list = [nface - idlenum[n][nface] for n, nface in enumerate(faces_list)]
+    faces_list = [
+        nface - idlenum[n][nface] for n, nface in enumerate(faces_list)
+    ]
 
     return Meshes(verts=verts_list, faces=faces_list)

@@ -15,7 +15,9 @@ from pytorch3d.io.utils import _open_file
 from pytorch3d.structures import Meshes, Textures, join_meshes_as_batch
 
 
-def _make_tensor(data, cols: int, dtype: torch.dtype, device="cpu") -> torch.Tensor:
+def _make_tensor(
+    data, cols: int, dtype: torch.dtype, device='cpu'
+) -> torch.Tensor:
     """
     Return a 2D tensor with the specified cols and dtype filled with data,
     even when data is empty.
@@ -27,9 +29,10 @@ def _make_tensor(data, cols: int, dtype: torch.dtype, device="cpu") -> torch.Ten
 
 
 # Faces & Aux type returned from load_obj function.
-_Faces = namedtuple("Faces", "verts_idx normals_idx textures_idx materials_idx")
+_Faces = namedtuple('Faces', 'verts_idx normals_idx textures_idx materials_idx')
 _Aux = namedtuple(
-    "Properties", "normals verts_uvs material_colors texture_images texture_atlas"
+    'Properties',
+    'normals verts_uvs material_colors texture_images texture_atlas',
 )
 
 
@@ -67,7 +70,7 @@ def _format_faces_indices(faces_indices, max_index, device, pad_value=None):
 
     # Check indices are valid.
     if torch.any(faces_indices >= max_index) or torch.any(faces_indices < 0):
-        warnings.warn("Faces have invalid indices")
+        warnings.warn('Faces have invalid indices')
 
     return faces_indices
 
@@ -77,8 +80,8 @@ def load_obj(
     load_textures=True,
     create_texture_atlas: bool = False,
     texture_atlas_size: int = 4,
-    texture_wrap: Optional[str] = "repeat",
-    device="cpu",
+    texture_wrap: Optional[str] = 'repeat',
+    device='cpu',
 ):
     """
     Load a mesh from a .obj file and optionally textures from a .mtl file.
@@ -211,7 +214,7 @@ def load_obj(
               will have a uniform white texture.  Otherwise `texture_atlas` will be
               None.
     """
-    data_dir = "./"
+    data_dir = './'
     if isinstance(f_obj, (str, bytes, os.PathLike)):
         # pyre-fixme[6]: Expected `_PathLike[Variable[typing.AnyStr <: [str,
         #  bytes]]]` for 1st param but got `Union[_PathLike[typing.Any], bytes, str]`.
@@ -262,7 +265,9 @@ def load_objs_as_meshes(files: list, device=None, load_textures: bool = True):
             image = list(tex_maps.values())[0].to(device)[None]
             tex = Textures(verts_uvs=verts_uvs, faces_uvs=faces_uvs, maps=image)
 
-        mesh = Meshes(verts=[verts], faces=[faces.verts_idx.to(device)], textures=tex)
+        mesh = Meshes(
+            verts=[verts], faces=[faces.verts_idx.to(device)], textures=tex
+        )
         mesh_list.append(mesh)
     if len(mesh_list) == 1:
         return mesh_list[0]
@@ -278,7 +283,7 @@ def _parse_face(
     faces_materials_idx,
 ):
     face = line.split()[1:]
-    face_list = [f.split("/") for f in face]
+    face_list = [f.split('/') for f in face]
     face_verts = []
     face_normals = []
     face_textures = []
@@ -287,7 +292,7 @@ def _parse_face(
         # Vertex index.
         face_verts.append(int(vert_props[0]))
         if len(vert_props) > 1:
-            if vert_props[1] != "":
+            if vert_props[1] != '':
                 # Texture index is present e.g. f 4/1/1.
                 face_textures.append(int(vert_props[1]))
             if len(vert_props) > 2:
@@ -295,8 +300,8 @@ def _parse_face(
                 face_normals.append(int(vert_props[2]))
             if len(vert_props) > 3:
                 raise ValueError(
-                    "Face vertices can ony have 3 properties. \
-                                Face vert %s, Line: %s"
+                    'Face vertices can ony have 3 properties. \
+                                Face vert %s, Line: %s'
                     % (str(vert_props), str(line))
                 )
 
@@ -310,8 +315,8 @@ def _parse_face(
     if len(face_normals) > 0:
         if not (len(face_verts) == len(face_normals)):
             raise ValueError(
-                "Face %s is an illegal statement. \
-                        Vertex properties are inconsistent. Line: %s"
+                'Face %s is an illegal statement. \
+                        Vertex properties are inconsistent. Line: %s'
                 % (str(face), str(line))
             )
     else:
@@ -319,8 +324,8 @@ def _parse_face(
     if len(face_textures) > 0:
         if not (len(face_verts) == len(face_textures)):
             raise ValueError(
-                "Face %s is an illegal statement. \
-                        Vertex properties are inconsistent. Line: %s"
+                'Face %s is an illegal statement. \
+                        Vertex properties are inconsistent. Line: %s'
                 % (str(face), str(line))
             )
     else:
@@ -329,7 +334,9 @@ def _parse_face(
     # Subdivide faces with more than 3 vertices.
     # See comments of the load_obj function for more details.
     for i in range(len(face_verts) - 2):
-        faces_verts_idx.append((face_verts[0], face_verts[i + 1], face_verts[i + 2]))
+        faces_verts_idx.append(
+            (face_verts[0], face_verts[i + 1], face_verts[i + 2])
+        )
         faces_normals_idx.append(
             (face_normals[0], face_normals[i + 1], face_normals[i + 2])
         )
@@ -345,8 +352,8 @@ def _load(
     load_textures: bool = True,
     create_texture_atlas: bool = False,
     texture_atlas_size: int = 4,
-    texture_wrap: Optional[str] = "repeat",
-    device="cpu",
+    texture_wrap: Optional[str] = 'repeat',
+    device='cpu',
 ):
     """
     Load a mesh from a file-like object. See load_obj function more details.
@@ -354,7 +361,7 @@ def _load(
     directory given by data_dir.
     """
 
-    if texture_wrap is not None and texture_wrap not in ["repeat", "clamp"]:
+    if texture_wrap is not None and texture_wrap not in ['repeat', 'clamp']:
         msg = "texture_wrap must be one of ['repeat', 'clamp'] or None, got %s"
         raise ValueError(msg % texture_wrap)
 
@@ -373,17 +380,17 @@ def _load(
     # startswith expects each line to be a string. If the file is read in as
     # bytes then first decode to strings.
     if lines and isinstance(lines[0], bytes):
-        lines = [l.decode("utf-8") for l in lines]
+        lines = [l.decode('utf-8') for l in lines]
 
     for line in lines:
-        if line.startswith("mtllib"):
+        if line.startswith('mtllib'):
             if len(line.split()) < 2:
-                raise ValueError("material file name is not specified")
+                raise ValueError('material file name is not specified')
             # NOTE: only allow one .mtl file per .obj.
             # Definitions for multiple materials can be included
             # in this one .mtl file.
             f_mtl = os.path.join(data_dir, line.split()[1])
-        elif len(line.split()) != 0 and line.split()[0] == "usemtl":
+        elif len(line.split()) != 0 and line.split()[0] == 'usemtl':
             material_name = line.split()[1]
             # materials are often repeated for different parts
             # of a mesh.
@@ -392,29 +399,30 @@ def _load(
                 materials_idx = len(material_names) - 1
             else:
                 materials_idx = material_names.index(material_name)
-        elif line.startswith("v "):
+        elif line.startswith('v '):
             # Line is a vertex.
             vert = [float(x) for x in line.split()[1:4]]
             if len(vert) != 3:
-                msg = "Vertex %s does not have 3 values. Line: %s"
+                msg = 'Vertex %s does not have 3 values. Line: %s'
                 raise ValueError(msg % (str(vert), str(line)))
             verts.append(vert)
-        elif line.startswith("vt "):
+        elif line.startswith('vt '):
             # Line is a texture.
             tx = [float(x) for x in line.split()[1:3]]
             if len(tx) != 2:
                 raise ValueError(
-                    "Texture %s does not have 2 values. Line: %s" % (str(tx), str(line))
+                    'Texture %s does not have 2 values. Line: %s'
+                    % (str(tx), str(line))
                 )
             verts_uvs.append(tx)
-        elif line.startswith("vn "):
+        elif line.startswith('vn '):
             # Line is a normal.
             norm = [float(x) for x in line.split()[1:4]]
             if len(norm) != 3:
-                msg = "Normal %s does not have 3 values. Line: %s"
+                msg = 'Normal %s does not have 3 values. Line: %s'
                 raise ValueError(msg % (str(norm), str(line)))
             normals.append(norm)
-        elif line.startswith("f "):
+        elif line.startswith('f '):
             # Line is a face update face properties info.
             _parse_face(
                 line,
@@ -425,7 +433,9 @@ def _load(
                 faces_materials_idx,
             )
 
-    verts = _make_tensor(verts, cols=3, dtype=torch.float32, device=device)  # (V, 3)
+    verts = _make_tensor(
+        verts, cols=3, dtype=torch.float32, device=device
+    )  # (V, 3)
     normals = _make_tensor(
         normals, cols=3, dtype=torch.float32, device=device
     )  # (N, 3)
@@ -470,7 +480,7 @@ def _load(
                     # If faces_materials_idx == -1 then that face doesn't have a material.
                     idx = faces_materials_idx.cpu().numpy()
                     face_material_names = np.array(material_names)[idx]  # (F,)
-                    face_material_names[idx == -1] = ""
+                    face_material_names[idx == -1] = ''
 
                     # Get the uv coords for each vert in each face
                     faces_verts_uvs = verts_uvs[faces_textures_idx]  # (F, 3, 2)
@@ -485,9 +495,9 @@ def _load(
                         texture_wrap,
                     )
             else:
-                warnings.warn(f"Mtl file does not exist: {f_mtl}")
+                warnings.warn(f'Mtl file does not exist: {f_mtl}')
         elif len(material_names) > 0:
-            warnings.warn("No mtl file provided")
+            warnings.warn('No mtl file provided')
 
     faces = _Faces(
         verts_idx=faces_verts_idx,
@@ -527,10 +537,10 @@ def save_obj(f, verts, faces, decimal_places: Optional[int] = None):
     new_f = False
     if isinstance(f, str):
         new_f = True
-        f = open(f, "w")
+        f = open(f, 'w')
     elif isinstance(f, pathlib.Path):
         new_f = True
-        f = f.open("w")
+        f = f.open('w')
     try:
         return _save(f, verts, faces, decimal_places)
     finally:
@@ -549,30 +559,30 @@ def _save(f, verts, faces, decimal_places: Optional[int] = None) -> None:
 
     verts, faces = verts.cpu(), faces.cpu()
 
-    lines = ""
+    lines = ''
 
     if len(verts):
         if decimal_places is None:
-            float_str = "%f"
+            float_str = '%f'
         else:
-            float_str = "%" + ".%df" % decimal_places
+            float_str = '%' + '.%df' % decimal_places
 
         V, D = verts.shape
         for i in range(V):
             vert = [float_str % verts[i, j] for j in range(D)]
-            lines += "v %s\n" % " ".join(vert)
+            lines += 'v %s\n' % ' '.join(vert)
 
     if torch.any(faces >= verts.shape[0]) or torch.any(faces < 0):
-        warnings.warn("Faces have invalid indices")
+        warnings.warn('Faces have invalid indices')
 
     if len(faces):
         F, P = faces.shape
         for i in range(F):
-            face = ["%d" % (faces[i, j] + 1) for j in range(P)]
+            face = ['%d' % (faces[i, j] + 1) for j in range(P)]
             if i + 1 < F:
-                lines += "f %s\n" % " ".join(face)
+                lines += 'f %s\n' % ' '.join(face)
             elif i + 1 == F:
                 # No newline at the end of the file.
-                lines += "f %s" % " ".join(face)
+                lines += 'f %s' % ' '.join(face)
 
     f.write(lines)

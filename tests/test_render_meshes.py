@@ -12,10 +12,16 @@ import torch
 from common_testing import TestCaseMixin, load_rgb_image
 from PIL import Image
 from pytorch3d.io import load_objs_as_meshes
-from pytorch3d.renderer.cameras import OpenGLPerspectiveCameras, look_at_view_transform
+from pytorch3d.renderer.cameras import (
+    OpenGLPerspectiveCameras,
+    look_at_view_transform,
+)
 from pytorch3d.renderer.lighting import PointLights
 from pytorch3d.renderer.materials import Materials
-from pytorch3d.renderer.mesh.rasterizer import MeshRasterizer, RasterizationSettings
+from pytorch3d.renderer.mesh.rasterizer import (
+    MeshRasterizer,
+    RasterizationSettings,
+)
 from pytorch3d.renderer.mesh.renderer import MeshRenderer
 from pytorch3d.renderer.mesh.shader import (
     BlendParams,
@@ -33,7 +39,7 @@ from pytorch3d.utils.ico_sphere import ico_sphere
 # If DEBUG=True, save out images generated in the tests for debugging.
 # All saved images have prefix DEBUG_
 DEBUG = False
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent / 'data'
 
 
 class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
@@ -46,26 +52,28 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
             elevated_camera: Defines whether the camera observing the scene should
                            have an elevation of 45 degrees.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # Init mesh
         sphere_mesh = ico_sphere(5, device)
         verts_padded = sphere_mesh.verts_padded()
         faces_padded = sphere_mesh.faces_padded()
         textures = Textures(verts_rgb=torch.ones_like(verts_padded))
-        sphere_mesh = Meshes(verts=verts_padded, faces=faces_padded, textures=textures)
+        sphere_mesh = Meshes(
+            verts=verts_padded, faces=faces_padded, textures=textures
+        )
 
         # Init rasterizer settings
         if elevated_camera:
             # Elevated and rotated camera
             R, T = look_at_view_transform(dist=2.7, elev=45.0, azim=45.0)
-            postfix = "_elevated_camera"
+            postfix = '_elevated_camera'
             # If y axis is up, the spot of light should
             # be on the bottom left of the sphere.
         else:
             # No elevation or azimuth rotation
             R, T = look_at_view_transform(2.7, 0.0, 0.0)
-            postfix = ""
+            postfix = ''
         cameras = OpenGLPerspectiveCameras(device=device, R=R, T=T)
 
         # Init shader settings
@@ -76,14 +84,16 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         raster_settings = RasterizationSettings(
             image_size=512, blur_radius=0.0, faces_per_pixel=1
         )
-        rasterizer = MeshRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = MeshRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
         blend_params = BlendParams(1e-4, 1e-4, (0, 0, 0))
 
         # Test several shaders
         shaders = {
-            "phong": HardPhongShader,
-            "gouraud": HardGouraudShader,
-            "flat": HardFlatShader,
+            'phong': HardPhongShader,
+            'gouraud': HardGouraudShader,
+            'flat': HardFlatShader,
         }
         for (name, shader_init) in shaders.items():
             shader = shader_init(
@@ -94,11 +104,11 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
             )
             renderer = MeshRenderer(rasterizer=rasterizer, shader=shader)
             images = renderer(sphere_mesh)
-            filename = "simple_sphere_light_%s%s.png" % (name, postfix)
-            image_ref = load_rgb_image("test_%s" % filename, DATA_DIR)
+            filename = 'simple_sphere_light_%s%s.png' % (name, postfix)
+            image_ref = load_rgb_image('test_%s' % filename, DATA_DIR)
             rgb = images[0, ..., :3].squeeze().cpu()
             if DEBUG:
-                filename = "DEBUG_%s" % filename
+                filename = 'DEBUG_%s' % filename
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
                     DATA_DIR / filename
                 )
@@ -116,18 +126,20 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
             materials=materials,
             blend_params=blend_params,
         )
-        phong_renderer = MeshRenderer(rasterizer=rasterizer, shader=phong_shader)
+        phong_renderer = MeshRenderer(
+            rasterizer=rasterizer, shader=phong_shader
+        )
         images = phong_renderer(sphere_mesh, lights=lights)
         rgb = images[0, ..., :3].squeeze().cpu()
         if DEBUG:
-            filename = "DEBUG_simple_sphere_dark%s.png" % postfix
+            filename = 'DEBUG_simple_sphere_dark%s.png' % postfix
             Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
                 DATA_DIR / filename
             )
 
         # Load reference image
         image_ref_phong_dark = load_rgb_image(
-            "test_simple_sphere_dark%s.png" % postfix, DATA_DIR
+            'test_simple_sphere_dark%s.png' % postfix, DATA_DIR
         )
         self.assertClose(rgb, image_ref_phong_dark, atol=0.05)
 
@@ -146,7 +158,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         is rendered correctly with Phong, Gouraud and Flat Shaders.
         """
         batch_size = 20
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # Init mesh with vertex textures.
         sphere_meshes = ico_sphere(5, device).extend(batch_size)
@@ -174,11 +186,13 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         blend_params = BlendParams(1e-4, 1e-4, (0, 0, 0))
 
         # Init renderer
-        rasterizer = MeshRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = MeshRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
         shaders = {
-            "phong": HardPhongShader,
-            "gouraud": HardGouraudShader,
-            "flat": HardFlatShader,
+            'phong': HardPhongShader,
+            'gouraud': HardGouraudShader,
+            'flat': HardFlatShader,
         }
         for (name, shader_init) in shaders.items():
             shader = shader_init(
@@ -190,7 +204,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
             renderer = MeshRenderer(rasterizer=rasterizer, shader=shader)
             images = renderer(sphere_meshes)
             image_ref = load_rgb_image(
-                "test_simple_sphere_light_%s.png" % name, DATA_DIR
+                'test_simple_sphere_light_%s.png' % name, DATA_DIR
             )
             for i in range(batch_size):
                 rgb = images[i, ..., :3].squeeze().cpu()
@@ -200,8 +214,8 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         """
         Test silhouette blending. Also check that gradient calculation works.
         """
-        device = torch.device("cuda:0")
-        ref_filename = "test_silhouette.png"
+        device = torch.device('cuda:0')
+        ref_filename = 'test_silhouette.png'
         image_ref_filename = DATA_DIR / ref_filename
         sphere_mesh = ico_sphere(5, device)
         verts, faces = sphere_mesh.get_mesh_verts_faces(0)
@@ -220,14 +234,16 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
 
         # Init renderer
         renderer = MeshRenderer(
-            rasterizer=MeshRasterizer(cameras=cameras, raster_settings=raster_settings),
+            rasterizer=MeshRasterizer(
+                cameras=cameras, raster_settings=raster_settings
+            ),
             shader=SoftSilhouetteShader(blend_params=blend_params),
         )
         images = renderer(sphere_mesh)
         alpha = images[0, ..., 3].squeeze().cpu()
         if DEBUG:
             Image.fromarray((alpha.numpy() * 255).astype(np.uint8)).save(
-                DATA_DIR / "DEBUG_silhouette.png"
+                DATA_DIR / 'DEBUG_silhouette.png'
             )
 
         with Image.open(image_ref_filename) as raw_image_ref:
@@ -247,9 +263,9 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         Test a mesh with a texture map is loaded and rendered correctly.
         The pupils in the eyes of the cow should always be looking to the left.
         """
-        device = torch.device("cuda:0")
-        obj_dir = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        obj_filename = obj_dir / "cow_mesh/cow.obj"
+        device = torch.device('cuda:0')
+        obj_dir = Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        obj_filename = obj_dir / 'cow_mesh/cow.obj'
 
         # Load mesh + texture
         mesh = load_objs_as_meshes([obj_filename], device=device)
@@ -271,14 +287,16 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
 
         # Init renderer
         renderer = MeshRenderer(
-            rasterizer=MeshRasterizer(cameras=cameras, raster_settings=raster_settings),
+            rasterizer=MeshRasterizer(
+                cameras=cameras, raster_settings=raster_settings
+            ),
             shader=TexturedSoftPhongShader(
                 lights=lights, cameras=cameras, materials=materials
             ),
         )
 
         # Load reference image
-        image_ref = load_rgb_image("test_texture_map_back.png", DATA_DIR)
+        image_ref = load_rgb_image('test_texture_map_back.png', DATA_DIR)
 
         for bin_size in [0, None]:
             # Check both naive and coarse to fine produce the same output.
@@ -288,7 +306,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
 
             if DEBUG:
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
-                    DATA_DIR / "DEBUG_texture_map_back.png"
+                    DATA_DIR / 'DEBUG_texture_map_back.png'
                 )
 
             # NOTE some pixels can be flaky and will not lead to
@@ -300,7 +318,9 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         # Check grad exists
         [verts] = mesh.verts_list()
         verts.requires_grad = True
-        mesh2 = Meshes(verts=[verts], faces=mesh.faces_list(), textures=mesh.textures)
+        mesh2 = Meshes(
+            verts=[verts], faces=mesh.faces_list(), textures=mesh.textures
+        )
         images = renderer(mesh2)
         images[0, ...].sum().backward()
         self.assertIsNotNone(verts.grad)
@@ -316,7 +336,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         lights.location = torch.tensor([0.0, 0.0, -2.0], device=device)[None]
 
         # Load reference image
-        image_ref = load_rgb_image("test_texture_map_front.png", DATA_DIR)
+        image_ref = load_rgb_image('test_texture_map_front.png', DATA_DIR)
 
         for bin_size in [0, None]:
             # Check both naive and coarse to fine produce the same output.
@@ -327,7 +347,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
 
             if DEBUG:
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
-                    DATA_DIR / "DEBUG_texture_map_front.png"
+                    DATA_DIR / 'DEBUG_texture_map_front.png'
                 )
 
             # NOTE some pixels can be flaky and will not lead to
@@ -349,7 +369,9 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         )
 
         # Load reference image
-        image_ref = load_rgb_image("test_blurry_textured_rendering.png", DATA_DIR)
+        image_ref = load_rgb_image(
+            'test_blurry_textured_rendering.png', DATA_DIR
+        )
 
         for bin_size in [0, None]:
             # Check both naive and coarse to fine produce the same output.
@@ -365,7 +387,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
 
             if DEBUG:
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
-                    DATA_DIR / "DEBUG_blurry_textured_rendering.png"
+                    DATA_DIR / 'DEBUG_blurry_textured_rendering.png'
                 )
 
             self.assertClose(rgb, image_ref, atol=0.05)
@@ -376,7 +398,7 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         the single mesh is rendered correctly with Phong, Gouraud
         and Flat Shaders.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # Init mesh with vertex textures.
         # Initialize a list containing two ico spheres of different sizes.
@@ -413,11 +435,13 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
         blend_params = BlendParams(1e-4, 1e-4, (0, 0, 0))
 
         # Init renderer
-        rasterizer = MeshRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = MeshRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
         shaders = {
-            "phong": HardPhongShader,
-            "gouraud": HardGouraudShader,
-            "flat": HardFlatShader,
+            'phong': HardPhongShader,
+            'gouraud': HardGouraudShader,
+            'flat': HardFlatShader,
         }
         for (name, shader_init) in shaders.items():
             shader = shader_init(
@@ -430,9 +454,11 @@ class TestRenderMeshes(TestCaseMixin, unittest.TestCase):
             image = renderer(joined_sphere_mesh)
             rgb = image[..., :3].squeeze().cpu()
             if DEBUG:
-                file_name = "DEBUG_joined_spheres_%s.png" % name
+                file_name = 'DEBUG_joined_spheres_%s.png' % name
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
                     DATA_DIR / file_name
                 )
-            image_ref = load_rgb_image("test_joined_spheres_%s.png" % name, DATA_DIR)
+            image_ref = load_rgb_image(
+                'test_joined_spheres_%s.png' % name, DATA_DIR
+            )
             self.assertClose(rgb, image_ref, atol=0.05)

@@ -11,7 +11,7 @@ from test_sample_points_from_meshes import TestSamplePoints
 
 class TestMeshEdgeLoss(TestCaseMixin, unittest.TestCase):
     def test_empty_meshes(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         target_length = 0
         N = 10
         V = 32
@@ -26,7 +26,9 @@ class TestMeshEdgeLoss(TestCaseMixin, unittest.TestCase):
         mesh = Meshes(verts=verts_list, faces=faces_list)
         loss = mesh_edge_loss(mesh, target_length=target_length)
 
-        self.assertClose(loss, torch.tensor([0.0], dtype=torch.float32, device=device))
+        self.assertClose(
+            loss, torch.tensor([0.0], dtype=torch.float32, device=device)
+        )
         self.assertTrue(loss.requires_grad)
 
     @staticmethod
@@ -50,7 +52,9 @@ class TestMeshEdgeLoss(TestCaseMixin, unittest.TestCase):
             num_edges = mesh_edges.size(0)
             for e in range(num_edges):
                 v0, v1 = verts_edges[e, 0], verts_edges[e, 1]
-                predlosses[b] += ((v0 - v1).norm(dim=0, p=2) - target_length) ** 2.0
+                predlosses[b] += (
+                    (v0 - v1).norm(dim=0, p=2) - target_length
+                ) ** 2.0
 
             if num_edges > 0:
                 predlosses[b] = predlosses[b] / num_edges
@@ -61,7 +65,7 @@ class TestMeshEdgeLoss(TestCaseMixin, unittest.TestCase):
         """
         Check outputs of tensorized and iterative implementations are the same.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         target_length = 0.5
         num_meshes = 10
         num_verts = 32
@@ -91,8 +95,12 @@ class TestMeshEdgeLoss(TestCaseMixin, unittest.TestCase):
         self.assertClose(loss, predloss)
 
     @staticmethod
-    def mesh_edge_loss(num_meshes: int = 10, max_v: int = 100, max_f: int = 300):
-        meshes = TestSamplePoints.init_meshes(num_meshes, max_v, max_f, device="cuda:0")
+    def mesh_edge_loss(
+        num_meshes: int = 10, max_v: int = 100, max_f: int = 300
+    ):
+        meshes = TestSamplePoints.init_meshes(
+            num_meshes, max_v, max_f, device='cuda:0'
+        )
         torch.cuda.synchronize()
 
         def compute_loss():

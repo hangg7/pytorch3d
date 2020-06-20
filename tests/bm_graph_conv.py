@@ -9,9 +9,9 @@ from test_graph_conv import TestGraphConv
 
 
 def bm_graph_conv() -> None:
-    backends = ["cpu"]
+    backends = ['cpu']
     if torch.cuda.is_available():
-        backends.append("cuda")
+        backends.append('cuda')
 
     kwargs_list = []
     gconv_dim = [128, 256]
@@ -26,17 +26,17 @@ def bm_graph_conv() -> None:
         g, n, v, f, d, b = case
         kwargs_list.append(
             {
-                "gconv_dim": g,
-                "num_meshes": n,
-                "num_verts": v,
-                "num_faces": f,
-                "directed": d,
-                "backend": b,
+                'gconv_dim': g,
+                'num_meshes': n,
+                'num_verts': v,
+                'num_faces': f,
+                'directed': d,
+                'backend': b,
             }
         )
     benchmark(
         TestGraphConv.graph_conv_forward_backward,
-        "GRAPH CONV",
+        'GRAPH CONV',
         kwargs_list,
         warmup_iters=1,
     )

@@ -18,7 +18,9 @@ from pytorch3d.transforms.transform3d import (
 class TestTransform(unittest.TestCase):
     def test_to(self):
         tr = Translate(torch.FloatTensor([[1.0, 2.0, 3.0]]))
-        R = torch.FloatTensor([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+        R = torch.FloatTensor(
+            [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]
+        )
         R = Rotate(R)
         t = Transform3d().compose(R, tr)
         for _ in range(3):
@@ -34,7 +36,9 @@ class TestTransform(unittest.TestCase):
         the same as composition of clones of translation and rotation.
         """
         tr = Translate(torch.FloatTensor([[1.0, 2.0, 3.0]]))
-        R = torch.FloatTensor([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+        R = torch.FloatTensor(
+            [[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]
+        )
         R = Rotate(R)
 
         # check that the _matrix property of clones of
@@ -62,19 +66,27 @@ class TestTransform(unittest.TestCase):
             t = Transform3d(matrix=matrix)
             self.assertTrue(t.device == matrix.device)
             self.assertTrue(t._matrix.dtype == matrix.dtype)
-            self.assertTrue(torch.allclose(t._matrix, matrix.view(t._matrix.shape)))
+            self.assertTrue(
+                torch.allclose(t._matrix, matrix.view(t._matrix.shape))
+            )
 
     def test_init_with_custom_matrix_errors(self):
-        bad_shapes = [[10, 5, 4], [3, 4], [10, 4, 4, 1], [10, 4, 4, 2], [4, 4, 4, 3]]
+        bad_shapes = [
+            [10, 5, 4],
+            [3, 4],
+            [10, 4, 4, 1],
+            [10, 4, 4, 2],
+            [4, 4, 4, 3],
+        ]
         for bad_shape in bad_shapes:
             matrix = torch.randn(*bad_shape).float()
             self.assertRaises(ValueError, Transform3d, matrix=matrix)
 
     def test_translate(self):
         t = Transform3d().translate(1, 2, 3)
-        points = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]).view(
-            1, 3, 3
-        )
+        points = torch.tensor(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]
+        ).view(1, 3, 3)
         normals = torch.tensor(
             [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]
         ).view(1, 3, 3)
@@ -91,9 +103,9 @@ class TestTransform(unittest.TestCase):
 
     def test_scale(self):
         t = Transform3d().scale(2.0).scale(0.5, 0.25, 1.0)
-        points = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]).view(
-            1, 3, 3
-        )
+        points = torch.tensor(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]
+        ).view(1, 3, 3)
         normals = torch.tensor(
             [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]
         ).view(1, 3, 3)
@@ -110,9 +122,9 @@ class TestTransform(unittest.TestCase):
 
     def test_scale_translate(self):
         t = Transform3d().scale(2, 1, 3).translate(1, 2, 3)
-        points = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]).view(
-            1, 3, 3
-        )
+        points = torch.tensor(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]
+        ).view(1, 3, 3)
         normals = torch.tensor(
             [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]
         ).view(1, 3, 3)
@@ -128,10 +140,10 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(torch.allclose(normals_out, normals_out_expected))
 
     def test_rotate_axis_angle(self):
-        t = Transform3d().rotate_axis_angle(90.0, axis="Z")
-        points = torch.tensor([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 1.0]]).view(
-            1, 3, 3
-        )
+        t = Transform3d().rotate_axis_angle(90.0, axis='Z')
+        points = torch.tensor(
+            [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 1.0]]
+        ).view(1, 3, 3)
         normals = torch.tensor(
             [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
         ).view(1, 3, 3)
@@ -182,7 +194,7 @@ class TestTransform(unittest.TestCase):
         self.assertTrue(bool(torch.isfinite(proj_eps.sum())))
 
     def test_inverse(self, batch_size=5):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # generate a random chain of transforms
         for _ in range(10):  # 10 different tries
@@ -203,7 +215,9 @@ class TestTransform(unittest.TestCase):
                     t_ = Rotate(
                         so3_exponential_map(
                             torch.randn(
-                                (batch_size, 3), dtype=torch.float32, device=device
+                                (batch_size, 3),
+                                dtype=torch.float32,
+                                device=device,
                             )
                         ),
                         device=device,
@@ -297,8 +311,8 @@ class TestTranslate(unittest.TestCase):
         z = torch.tensor(0.4)
         t = Translate(x, y, z)
         t._matrix.sum().backward()
-        self.assertTrue(hasattr(x, "grad"))
-        self.assertTrue(hasattr(y, "grad"))
+        self.assertTrue(hasattr(x, 'grad'))
+        self.assertTrue(hasattr(y, 'grad'))
         self.assertTrue(torch.allclose(x.grad, x.new_ones(x.shape)))
         self.assertTrue(torch.allclose(y.grad, y.new_ones(y.shape)))
 
@@ -387,8 +401,8 @@ class TestTranslate(unittest.TestCase):
         z = torch.tensor([0.4, 4.0], requires_grad=True)
         t = Translate(x, y, z)
         t._matrix.sum().backward()
-        self.assertTrue(hasattr(y, "grad"))
-        self.assertTrue(hasattr(z, "grad"))
+        self.assertTrue(hasattr(y, 'grad'))
+        self.assertTrue(hasattr(z, 'grad'))
         y_grad = torch.tensor(2.0)
         z_grad = torch.tensor([1.0, 1.0])
         self.assertEqual(y.grad.shape, y_grad.shape)
@@ -600,8 +614,8 @@ class TestScale(unittest.TestCase):
         )
         self.assertTrue(torch.allclose(t._matrix, matrix))
         t._matrix.sum().backward()
-        self.assertTrue(hasattr(y, "grad"))
-        self.assertTrue(hasattr(z, "grad"))
+        self.assertTrue(hasattr(y, 'grad'))
+        self.assertTrue(hasattr(z, 'grad'))
         y_grad = torch.tensor(2.0)
         z_grad = torch.tensor([1.0, 1.0])
         self.assertTrue(torch.allclose(y.grad, y_grad))
@@ -723,8 +737,10 @@ class TestRotate(unittest.TestCase):
             Rotate(R)
 
     def test_inverse(self, batch_size=5):
-        device = torch.device("cuda:0")
-        log_rot = torch.randn((batch_size, 3), dtype=torch.float32, device=device)
+        device = torch.device('cuda:0')
+        log_rot = torch.randn(
+            (batch_size, 3), dtype=torch.float32, device=device
+        )
         R = so3_exponential_map(log_rot)
         t = Rotate(R)
         im = t.inverse()._matrix
@@ -736,7 +752,7 @@ class TestRotate(unittest.TestCase):
 
 class TestRotateAxisAngle(unittest.TestCase):
     def test_rotate_x_python_scalar(self):
-        t = RotateAxisAngle(angle=90, axis="X")
+        t = RotateAxisAngle(angle=90, axis='X')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -754,13 +770,15 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 0.0, 1.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix))
 
     def test_rotate_x_torch_scalar(self):
         angle = torch.tensor(90.0)
-        t = RotateAxisAngle(angle=angle, axis="X")
+        t = RotateAxisAngle(angle=angle, axis='X')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -778,13 +796,15 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 0.0, 1.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_x_torch_tensor(self):
         angle = torch.tensor([0, 45.0, 90.0])  # (N)
-        t = RotateAxisAngle(angle=angle, axis="X")
+        t = RotateAxisAngle(angle=angle, axis='X')
         r2_i = 1 / math.sqrt(2)
         r2_2 = math.sqrt(2) / 2
         # fmt: off
@@ -814,11 +834,11 @@ class TestRotateAxisAngle(unittest.TestCase):
         # fmt: on
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
         angle = angle
-        t = RotateAxisAngle(angle=angle, axis="X")
+        t = RotateAxisAngle(angle=angle, axis='X')
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_y_python_scalar(self):
-        t = RotateAxisAngle(angle=90, axis="Y")
+        t = RotateAxisAngle(angle=90, axis='Y')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -836,7 +856,9 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 0.0, -1.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
@@ -847,7 +869,7 @@ class TestRotateAxisAngle(unittest.TestCase):
         point along the negative z axis.
         """
         angle = torch.tensor(90.0)
-        t = RotateAxisAngle(angle=angle, axis="Y")
+        t = RotateAxisAngle(angle=angle, axis='Y')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -865,13 +887,15 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 0.0, -1.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_y_torch_tensor(self):
         angle = torch.tensor([0, 45.0, 90.0])
-        t = RotateAxisAngle(angle=angle, axis="Y")
+        t = RotateAxisAngle(angle=angle, axis='Y')
         r2_i = 1 / math.sqrt(2)
         r2_2 = math.sqrt(2) / 2
         # fmt: off
@@ -902,7 +926,7 @@ class TestRotateAxisAngle(unittest.TestCase):
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_z_python_scalar(self):
-        t = RotateAxisAngle(angle=90, axis="Z")
+        t = RotateAxisAngle(angle=90, axis='Z')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -920,13 +944,15 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 1.0, 0.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_z_torch_scalar(self):
         angle = torch.tensor(90.0)
-        t = RotateAxisAngle(angle=angle, axis="Z")
+        t = RotateAxisAngle(angle=angle, axis='Z')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -944,13 +970,15 @@ class TestRotateAxisAngle(unittest.TestCase):
         transformed_points = t.transform_points(points)
         expected_points = torch.tensor([0.0, 1.0, 0.0])
         self.assertTrue(
-            torch.allclose(transformed_points.squeeze(), expected_points, atol=1e-7)
+            torch.allclose(
+                transformed_points.squeeze(), expected_points, atol=1e-7
+            )
         )
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_rotate_z_torch_tensor(self):
         angle = torch.tensor([0, 45.0, 90.0])
-        t = RotateAxisAngle(angle=angle, axis="Z")
+        t = RotateAxisAngle(angle=angle, axis='Z')
         r2_i = 1 / math.sqrt(2)
         r2_2 = math.sqrt(2) / 2
         # fmt: off
@@ -982,9 +1010,9 @@ class TestRotateAxisAngle(unittest.TestCase):
 
     def test_rotate_compose_x_y_z(self):
         angle = torch.tensor(90.0)
-        t1 = RotateAxisAngle(angle=angle, axis="X")
-        t2 = RotateAxisAngle(angle=angle, axis="Y")
-        t3 = RotateAxisAngle(angle=angle, axis="Z")
+        t1 = RotateAxisAngle(angle=angle, axis='X')
+        t2 = RotateAxisAngle(angle=angle, axis='Y')
+        t3 = RotateAxisAngle(angle=angle, axis='Z')
         t = t1.compose(t2, t3)
         # fmt: off
         matrix1 = torch.tensor(
@@ -1027,7 +1055,7 @@ class TestRotateAxisAngle(unittest.TestCase):
         self.assertTrue(torch.allclose(composed_matrix, matrix, atol=1e-7))
 
     def test_rotate_angle_radians(self):
-        t = RotateAxisAngle(angle=math.pi / 2, degrees=False, axis="Z")
+        t = RotateAxisAngle(angle=math.pi / 2, degrees=False, axis='Z')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -1044,7 +1072,7 @@ class TestRotateAxisAngle(unittest.TestCase):
         self.assertTrue(torch.allclose(t._matrix, matrix, atol=1e-7))
 
     def test_lower_case_axis(self):
-        t = RotateAxisAngle(angle=90.0, axis="z")
+        t = RotateAxisAngle(angle=90.0, axis='z')
         # fmt: off
         matrix = torch.tensor(
             [
@@ -1062,9 +1090,9 @@ class TestRotateAxisAngle(unittest.TestCase):
 
     def test_axis_fail(self):
         with self.assertRaises(ValueError):
-            RotateAxisAngle(angle=90.0, axis="P")
+            RotateAxisAngle(angle=90.0, axis='P')
 
     def test_rotate_angle_fail(self):
         angle = torch.tensor([[0, 45.0, 90.0], [0, 45.0, 90.0]])
         with self.assertRaises(ValueError):
-            RotateAxisAngle(angle=angle, axis="X")
+            RotateAxisAngle(angle=angle, axis='X')

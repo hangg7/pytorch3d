@@ -49,12 +49,16 @@ class MeshRenderer(nn.Module):
         the range for the corresponding face.
         """
         fragments = self.rasterizer(meshes_world, **kwargs)
-        raster_settings = kwargs.get("raster_settings", self.rasterizer.raster_settings)
+        raster_settings = kwargs.get(
+            'raster_settings', self.rasterizer.raster_settings
+        )
         if raster_settings.blur_radius > 0.0:
             # TODO: potentially move barycentric clipping to the rasterizer
             # if no downstream functions requires unclipped values.
             # This will avoid unnecssary re-interpolation of the z buffer.
-            clipped_bary_coords = _clip_barycentric_coordinates(fragments.bary_coords)
+            clipped_bary_coords = _clip_barycentric_coordinates(
+                fragments.bary_coords
+            )
             clipped_zbuf = _interpolate_zbuf(
                 fragments.pix_to_face, clipped_bary_coords, meshes_world
             )

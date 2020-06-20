@@ -30,8 +30,8 @@ class ICPSolution(NamedTuple):
 
 
 def iterative_closest_point(
-    X: Union[torch.Tensor, "Pointclouds"],
-    Y: Union[torch.Tensor, "Pointclouds"],
+    X: Union[torch.Tensor, 'Pointclouds'],
+    Y: Union[torch.Tensor, 'Pointclouds'],
     init_transform: Optional[SimilarityTransform] = None,
     max_iterations: int = 100,
     relative_rmse_thr: float = 1e-6,
@@ -101,13 +101,13 @@ def iterative_closest_point(
 
     if (Xt.shape[2] != Yt.shape[2]) or (Xt.shape[0] != Yt.shape[0]):
         raise ValueError(
-            "Point sets X and Y have to have the same "
-            + "number of batches and data dimensions."
+            'Point sets X and Y have to have the same '
+            + 'number of batches and data dimensions.'
         )
 
-    if ((num_points_Y < Yt.shape[1]).any() or (num_points_X < Xt.shape[1]).any()) and (
-        num_points_Y != num_points_X
-    ).any():
+    if (
+        (num_points_Y < Yt.shape[1]).any() or (num_points_X < Xt.shape[1]).any()
+    ) and (num_points_Y != num_points_X).any():
         # we have a heterogeneous input (e.g. because X/Y is
         # an instance of Pointclouds)
         mask_X = (
@@ -131,12 +131,12 @@ def iterative_closest_point(
             )
         except Exception:
             raise ValueError(
-                "The initial transformation init_transform has to be "
-                "a named tuple SimilarityTransform with elements (R, T, s). "
-                "R are dim x dim orthonormal matrices of shape "
-                "(minibatch, dim, dim), T is a batch of dim-dimensional "
-                "translations of shape (minibatch, dim) and s is a batch "
-                "of scalars of shape (minibatch,)."
+                'The initial transformation init_transform has to be '
+                'a named tuple SimilarityTransform with elements (R, T, s). '
+                'R are dim x dim orthonormal matrices of shape '
+                '(minibatch, dim, dim), T is a batch of dim-dimensional '
+                'translations of shape (minibatch, dim) and s is a batch '
+                'of scalars of shape (minibatch,).'
             )
         # apply the init transform to the input point cloud
         Xt = _apply_similarity_transform(Xt, R, T, s)
@@ -157,7 +157,12 @@ def iterative_closest_point(
     # the main loop over ICP iterations
     for iteration in range(max_iterations):
         Xt_nn_points = knn_points(
-            Xt, Yt, lengths1=num_points_X, lengths2=num_points_Y, K=1, return_nn=True
+            Xt,
+            Yt,
+            lengths1=num_points_X,
+            lengths2=num_points_Y,
+            K=1,
+            return_nn=True,
         ).knn[:, :, 0, :]
 
         # get the alignment of the nearest neighbors from Yt with Xt_init
@@ -187,9 +192,9 @@ def iterative_closest_point(
 
         if verbose:
             rmse_msg = (
-                f"ICP iteration {iteration}: mean/max rmse = "
-                + f"{rmse.mean():1.2e}/{rmse.max():1.2e} "
-                + f"; mean relative rmse = {relative_rmse.mean():1.2e}"
+                f'ICP iteration {iteration}: mean/max rmse = '
+                + f'{rmse.mean():1.2e}/{rmse.max():1.2e} '
+                + f'; mean relative rmse = {relative_rmse.mean():1.2e}'
             )
             print(rmse_msg)
 
@@ -203,14 +208,16 @@ def iterative_closest_point(
 
     if verbose:
         if converged:
-            print(f"ICP has converged in {iteration + 1} iterations.")
+            print(f'ICP has converged in {iteration + 1} iterations.')
         else:
-            print(f"ICP has not converged in {max_iterations} iterations.")
+            print(f'ICP has not converged in {max_iterations} iterations.')
 
     if oputil.is_pointclouds(X):
         Xt = X.update_padded(Xt)  # type: ignore
 
-    return ICPSolution(converged, rmse, Xt, SimilarityTransform(R, T, s), t_history)
+    return ICPSolution(
+        converged, rmse, Xt, SimilarityTransform(R, T, s), t_history
+    )
 
 
 # threshold for checking that point crosscorelation
@@ -219,8 +226,8 @@ AMBIGUOUS_ROT_SINGULAR_THR = 1e-15
 
 
 def corresponding_points_alignment(
-    X: Union[torch.Tensor, "Pointclouds"],
-    Y: Union[torch.Tensor, "Pointclouds"],
+    X: Union[torch.Tensor, 'Pointclouds'],
+    Y: Union[torch.Tensor, 'Pointclouds'],
     weights: Union[torch.Tensor, List[torch.Tensor], None] = None,
     estimate_scale: bool = False,
     allow_reflection: bool = False,
@@ -272,21 +279,23 @@ def corresponding_points_alignment(
 
     if (Xt.shape != Yt.shape) or (num_points != num_points_Y).any():
         raise ValueError(
-            "Point sets X and Y have to have the same \
-            number of batches, points and dimensions."
+            'Point sets X and Y have to have the same \
+            number of batches, points and dimensions.'
         )
     if weights is not None:
         if isinstance(weights, list):
             if any(np != w.shape[0] for np, w in zip(num_points, weights)):
                 raise ValueError(
-                    "number of weights should equal to the "
-                    + "number of points in the point cloud."
+                    'number of weights should equal to the '
+                    + 'number of points in the point cloud.'
                 )
             weights = [w[..., None] for w in weights]
             weights = strutil.list_to_padded(weights)[..., 0]
 
         if Xt.shape[:2] != weights.shape:
-            raise ValueError("weights should have the same first two dimensions as X.")
+            raise ValueError(
+                'weights should have the same first two dimensions as X.'
+            )
 
     b, n, dim = Xt.shape
 
@@ -315,8 +324,8 @@ def corresponding_points_alignment(
 
     if (num_points < (dim + 1)).any():
         warnings.warn(
-            "The size of one of the point clouds is <= dim+1. "
-            + "corresponding_points_alignment cannot return a unique rotation."
+            'The size of one of the point clouds is <= dim+1. '
+            + 'corresponding_points_alignment cannot return a unique rotation.'
         )
 
     # compute the covariance XYcov between the point sets Xc, Yc
@@ -331,13 +340,15 @@ def corresponding_points_alignment(
         num_points < (dim + 1)
     ).any():
         warnings.warn(
-            "Excessively low rank of "
-            + "cross-correlation between aligned point clouds. "
-            + "corresponding_points_alignment cannot return a unique rotation."
+            'Excessively low rank of '
+            + 'cross-correlation between aligned point clouds. '
+            + 'corresponding_points_alignment cannot return a unique rotation.'
         )
 
     # identity matrix used for fixing reflections
-    E = torch.eye(dim, dtype=XYcov.dtype, device=XYcov.device)[None].repeat(b, 1, 1)
+    E = torch.eye(dim, dtype=XYcov.dtype, device=XYcov.device)[None].repeat(
+        b, 1, 1
+    )
 
     if not allow_reflection:
         # reflection test:

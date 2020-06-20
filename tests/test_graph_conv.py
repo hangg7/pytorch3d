@@ -6,7 +6,11 @@ import torch
 import torch.nn as nn
 from common_testing import TestCaseMixin, get_random_cuda_device
 from pytorch3d import _C
-from pytorch3d.ops.graph_conv import GraphConv, gather_scatter, gather_scatter_python
+from pytorch3d.ops.graph_conv import (
+    GraphConv,
+    gather_scatter,
+    gather_scatter_python,
+)
 from pytorch3d.structures.meshes import Meshes
 from pytorch3d.utils import ico_sphere
 
@@ -84,7 +88,8 @@ class TestGraphConv(TestCaseMixin, unittest.TestCase):
         w1 = torch.tensor([[-1, -1, -1]], dtype=dtype)
 
         expected_y = torch.tensor(
-            [[1 + 2 + 3 - 4 - 5 - 6 - 7 - 8 - 9], [4 + 5 + 6], [7 + 8 + 9]], dtype=dtype
+            [[1 + 2 + 3 - 4 - 5 - 6 - 7 - 8 - 9], [4 + 5 + 6], [7 + 8 + 9]],
+            dtype=dtype,
         )
 
         conv = GraphConv(3, 1, directed=True).to(dtype)
@@ -115,18 +120,22 @@ class TestGraphConv(TestCaseMixin, unittest.TestCase):
 
     def test_repr(self):
         conv = GraphConv(32, 64, directed=True)
-        self.assertEqual(repr(conv), "GraphConv(32 -> 64, directed=True)")
+        self.assertEqual(repr(conv), 'GraphConv(32 -> 64, directed=True)')
 
     def test_cpu_cuda_tensor_error(self):
         device = get_random_cuda_device()
         verts = torch.tensor(
-            [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=torch.float32, device=device
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            dtype=torch.float32,
+            device=device,
         )
         edges = torch.tensor([[0, 1], [0, 2]])
         conv = GraphConv(3, 1, directed=True).to(torch.float32)
         with self.assertRaises(Exception) as err:
             conv(verts, edges)
-        self.assertTrue("tensors must be on the same device." in str(err.exception))
+        self.assertTrue(
+            'tensors must be on the same device.' in str(err.exception)
+        )
 
     def test_gather_scatter(self):
         """
@@ -149,7 +158,7 @@ class TestGraphConv(TestCaseMixin, unittest.TestCase):
         self.assertClose(output_cuda.cpu(), output_cpu)
         with self.assertRaises(Exception) as err:
             _C.gather_scatter(input.cpu(), edges.cpu(), False, False)
-        self.assertTrue("Not implemented on the CPU" in str(err.exception))
+        self.assertTrue('Not implemented on the CPU' in str(err.exception))
 
         # directed
         output_cpu = gather_scatter_python(input, edges, True)
@@ -165,13 +174,15 @@ class TestGraphConv(TestCaseMixin, unittest.TestCase):
         num_verts,
         num_faces,
         directed: bool,
-        backend: str = "cuda",
+        backend: str = 'cuda',
     ):
-        device = torch.device("cuda") if backend == "cuda" else "cpu"
-        verts_list = torch.tensor(num_verts * [[0.11, 0.22, 0.33]], device=device).view(
+        device = torch.device('cuda') if backend == 'cuda' else 'cpu'
+        verts_list = torch.tensor(
+            num_verts * [[0.11, 0.22, 0.33]], device=device
+        ).view(-1, 3)
+        faces_list = torch.tensor(num_faces * [[1, 2, 3]], device=device).view(
             -1, 3
         )
-        faces_list = torch.tensor(num_faces * [[1, 2, 3]], device=device).view(-1, 3)
         meshes = Meshes(num_meshes * [verts_list], num_meshes * [faces_list])
         gconv = GraphConv(gconv_dim, gconv_dim, directed=directed)
         gconv.to(device)
@@ -179,7 +190,9 @@ class TestGraphConv(TestCaseMixin, unittest.TestCase):
         total_verts = meshes.verts_packed().shape[0]
 
         # Features.
-        x = torch.randn(total_verts, gconv_dim, device=device, requires_grad=True)
+        x = torch.randn(
+            total_verts, gconv_dim, device=device, requires_grad=True
+        )
         torch.cuda.synchronize()
 
         def run_graph_conv():

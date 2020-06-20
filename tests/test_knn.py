@@ -69,13 +69,17 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
                 y_cuda.requires_grad_(True)
 
                 # forward
-                out1 = self._knn_points_naive(x, y, lengths1=None, lengths2=None, K=K)
+                out1 = self._knn_points_naive(
+                    x, y, lengths1=None, lengths2=None, K=K
+                )
                 out2 = knn_points(x_cuda, y_cuda, K=K, version=version)
                 self.assertClose(out1[0], out2[0])
                 self.assertTrue(torch.all(out1[1] == out2[1]))
 
                 # backward
-                grad_dist = torch.ones((N, P1, K), dtype=torch.float32, device=device)
+                grad_dist = torch.ones(
+                    (N, P1, K), dtype=torch.float32, device=device
+                )
                 loss1 = (out1.dists * grad_dist).sum()
                 loss1.backward()
                 loss2 = (out2.dists * grad_dist).sum()
@@ -85,7 +89,7 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
                 self.assertClose(y_cuda.grad, y.grad, atol=5e-6)
 
     def test_knn_vs_python_square_cpu(self):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         self._knn_vs_python_square_helper(device)
 
     def test_knn_vs_python_square_cuda(self):
@@ -114,12 +118,16 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
             out1 = self._knn_points_naive(
                 x, y, lengths1=lengths1, lengths2=lengths2, K=K
             )
-            out2 = knn_points(x_csrc, y_csrc, lengths1=lengths1, lengths2=lengths2, K=K)
+            out2 = knn_points(
+                x_csrc, y_csrc, lengths1=lengths1, lengths2=lengths2, K=K
+            )
             self.assertClose(out1[0], out2[0])
             self.assertTrue(torch.all(out1[1] == out2[1]))
 
             # backward
-            grad_dist = torch.ones((N, P1, K), dtype=torch.float32, device=device)
+            grad_dist = torch.ones(
+                (N, P1, K), dtype=torch.float32, device=device
+            )
             loss1 = (out1.dists * grad_dist).sum()
             loss1.backward()
             loss2 = (out2.dists * grad_dist).sum()
@@ -129,7 +137,7 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
             self.assertClose(y_csrc.grad, y.grad, atol=5e-6)
 
     def test_knn_vs_python_ragged_cpu(self):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         self._knn_vs_python_ragged_helper(device)
 
     def test_knn_vs_python_ragged_cuda(self):
@@ -151,7 +159,9 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
             for p1 in range(P1):
                 for k in range(K):
                     if k < lengths2[n]:
-                        self.assertClose(y_nn[n, p1, k], y[n, out.idx[n, p1, k]])
+                        self.assertClose(
+                            y_nn[n, p1, k], y[n, out.idx[n, p1, k]]
+                        )
                     else:
                         self.assertTrue(torch.all(y_nn[n, p1, k] == 0.0))
 
@@ -202,7 +212,9 @@ class TestKNN(TestCaseMixin, unittest.TestCase):
         torch.cuda.synchronize()
 
         def output():
-            out = knn_points(pts1, pts2, lengths1=lengths1, lengths2=lengths2, K=K)
+            out = knn_points(
+                pts1, pts2, lengths1=lengths1, lengths2=lengths2, K=K
+            )
             loss = (out.dists * grad_dists).sum()
             loss.backward()
             torch.cuda.synchronize()

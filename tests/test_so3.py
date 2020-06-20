@@ -27,8 +27,10 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         Initialize a list of `batch_size` 3-dimensional vectors representing
         randomly generated logarithms of rotation matrices.
         """
-        device = torch.device("cuda:0")
-        log_rot = torch.randn((batch_size, 3), dtype=torch.float32, device=device)
+        device = torch.device('cuda:0')
+        log_rot = torch.randn(
+            (batch_size, 3), dtype=torch.float32, device=device
+        )
         return log_rot
 
     @staticmethod
@@ -36,7 +38,7 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         """
         Randomly generate a batch of `batch_size` 3x3 rotation matrices.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # TODO(dnovotny): replace with random_rotation from random_rotation.py
         rot = []
@@ -66,7 +68,7 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         tests whether a matrix product of `hat(a)` and `b` equals the result
         of a cross product between `a` and `b`.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         a, b = torch.randn((2, 100, 3), dtype=torch.float32, device=device)
         hat_a = hat(a)
         cross = torch.bmm(hat_a, b[:, :, None])[:, :, 0]
@@ -79,16 +81,20 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         a ValueError if called with an argument of incorrect shape or, in case
         of `so3_exponential_map`, unexpected trace.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         log_rot = torch.randn(size=[5, 4], device=device)
         with self.assertRaises(ValueError) as err:
             so3_exponential_map(log_rot)
-        self.assertTrue("Input tensor shape has to be Nx3." in str(err.exception))
+        self.assertTrue(
+            'Input tensor shape has to be Nx3.' in str(err.exception)
+        )
 
         rot = torch.randn(size=[5, 3, 5], device=device)
         with self.assertRaises(ValueError) as err:
             so3_log_map(rot)
-        self.assertTrue("Input has to be a batch of 3x3 Tensors." in str(err.exception))
+        self.assertTrue(
+            'Input has to be a batch of 3x3 Tensors.' in str(err.exception)
+        )
 
         # trace of rot definitely bigger than 3 or smaller than -1
         rot = torch.cat(
@@ -100,7 +106,7 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         with self.assertRaises(ValueError) as err:
             so3_log_map(rot)
         self.assertTrue(
-            "A matrix has trace outside valid range [-1-eps,3+eps]."
+            'A matrix has trace outside valid range [-1-eps,3+eps].'
             in str(err.exception)
         )
 
@@ -125,7 +131,7 @@ class TestSO3(TestCaseMixin, unittest.TestCase):
         (i.e. matrices with low rotation angles).
         """
         # generate random rotations with a tiny angle
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         identity = torch.eye(3, device=device)
         rot180 = identity * torch.tensor([[1.0, -1.0, -1.0]], device=device)
         r = [identity, rot180]

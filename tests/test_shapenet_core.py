@@ -22,7 +22,7 @@ class TestShapenetCore(TestCaseMixin, unittest.TestCase):
         # Download this separately and update the `shapenet_path`
         # with the location of the dataset in order to run this test.
         if SHAPENET_PATH is None or not os.path.exists(SHAPENET_PATH):
-            url = "https://www.shapenet.org/"
+            url = 'https://www.shapenet.org/'
             msg = """ShapeNet data not found, download from %s, save it at the path %s,
                 update SHAPENET_PATH at the top of the file, and rerun""" % (
                 url,
@@ -34,7 +34,9 @@ class TestShapenetCore(TestCaseMixin, unittest.TestCase):
         # Try load ShapeNetCore with an invalid version number and catch error.
         with self.assertRaises(ValueError) as err:
             ShapeNetCore(SHAPENET_PATH, version=3)
-        self.assertTrue("Version number must be either 1 or 2." in str(err.exception))
+        self.assertTrue(
+            'Version number must be either 1 or 2.' in str(err.exception)
+        )
 
         # Load ShapeNetCore without specifying any particular categories.
         shapenet_dataset = ShapeNetCore(SHAPENET_PATH)
@@ -58,7 +60,7 @@ class TestShapenetCore(TestCaseMixin, unittest.TestCase):
         rand_obj = random.choice(shapenet_dataset)
         self.assertEqual(len(rand_obj), 5)
         # Check that data types and shapes of items returned by __getitem__ are correct.
-        verts, faces = rand_obj["verts"], rand_obj["faces"]
+        verts, faces = rand_obj['verts'], rand_obj['faces']
         self.assertTrue(verts.dtype == torch.float32)
         self.assertTrue(faces.dtype == torch.int64)
         self.assertEqual(verts.ndim, 2)
@@ -71,22 +73,22 @@ class TestShapenetCore(TestCaseMixin, unittest.TestCase):
         shapenet_subset = ShapeNetCore(
             SHAPENET_PATH,
             synsets=[
-                "04330267",
-                "guitar",
-                "02801938",
-                "birdhouse",
-                "03991062",
-                "tower",
+                '04330267',
+                'guitar',
+                '02801938',
+                'birdhouse',
+                '03991062',
+                'tower',
             ],
             version=1,
         )
         subset_offsets = [
-            "04330267",
-            "03467517",
-            "02801938",
-            "02843684",
-            "03991062",
-            "04460130",
+            '04330267',
+            '03467517',
+            '02801938',
+            '02843684',
+            '03991062',
+            '04460130',
         ]
         subset_model_nums = [
             (len(next(os.walk(os.path.join(SHAPENET_PATH, offset)))[1]))

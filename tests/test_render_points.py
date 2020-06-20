@@ -32,12 +32,12 @@ from pytorch3d.utils.ico_sphere import ico_sphere
 # If DEBUG=True, save out images generated in the tests for debugging.
 # All saved images have prefix DEBUG_
 DEBUG = False
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent / 'data'
 
 
 class TestRenderPoints(TestCaseMixin, unittest.TestCase):
     def test_simple_sphere(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         sphere_mesh = ico_sphere(1, device)
         verts_padded = sphere_mesh.verts_padded()
         # Shift vertices to check coordinate frames are correct.
@@ -51,13 +51,15 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
         raster_settings = PointsRasterizationSettings(
             image_size=256, radius=5e-2, points_per_pixel=1
         )
-        rasterizer = PointsRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = PointsRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
         compositor = NormWeightedCompositor()
         renderer = PointsRenderer(rasterizer=rasterizer, compositor=compositor)
 
         # Load reference image
-        filename = "simple_pointcloud_sphere.png"
-        image_ref = load_rgb_image("test_%s" % filename, DATA_DIR)
+        filename = 'simple_pointcloud_sphere.png'
+        image_ref = load_rgb_image('test_%s' % filename, DATA_DIR)
 
         for bin_size in [0, None]:
             # Check both naive and coarse to fine produce the same output.
@@ -65,23 +67,25 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
             images = renderer(pointclouds)
             rgb = images[0, ..., :3].squeeze().cpu()
             if DEBUG:
-                filename = "DEBUG_%s" % filename
+                filename = 'DEBUG_%s' % filename
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
                     DATA_DIR / filename
                 )
             self.assertClose(rgb, image_ref)
 
     def test_pointcloud_with_features(self):
-        device = torch.device("cuda:0")
-        file_dir = Path(__file__).resolve().parent.parent / "docs/tutorials/data"
-        pointcloud_filename = file_dir / "PittsburghBridge/pointcloud.npz"
+        device = torch.device('cuda:0')
+        file_dir = (
+            Path(__file__).resolve().parent.parent / 'docs/tutorials/data'
+        )
+        pointcloud_filename = file_dir / 'PittsburghBridge/pointcloud.npz'
 
         # Note, this file is too large to check in to the repo.
         # Download the file to run the test locally.
         if not path.exists(pointcloud_filename):
-            url = "https://dl.fbaipublicfiles.com/pytorch3d/data/PittsburghBridge/pointcloud.npz"
+            url = 'https://dl.fbaipublicfiles.com/pytorch3d/data/PittsburghBridge/pointcloud.npz'
             msg = (
-                "pointcloud.npz not found, download from %s, save it at the path %s, and rerun"
+                'pointcloud.npz not found, download from %s, save it at the path %s, and rerun'
                 % (url, pointcloud_filename)
             )
             warnings.warn(msg)
@@ -89,8 +93,8 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
 
         # Load point cloud
         pointcloud = np.load(pointcloud_filename)
-        verts = torch.Tensor(pointcloud["verts"]).to(device)
-        rgb_feats = torch.Tensor(pointcloud["rgb"]).to(device)
+        verts = torch.Tensor(pointcloud['verts']).to(device)
+        rgb_feats = torch.Tensor(pointcloud['rgb']).to(device)
 
         verts.requires_grad = True
         rgb_feats.requires_grad = True
@@ -117,8 +121,8 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
         images = renderer(point_cloud)
 
         # Load reference image
-        filename = "bridge_pointcloud.png"
-        image_ref = load_rgb_image("test_%s" % filename, DATA_DIR)
+        filename = 'bridge_pointcloud.png'
+        image_ref = load_rgb_image('test_%s' % filename, DATA_DIR)
 
         for bin_size in [0, None]:
             # Check both naive and coarse to fine produce the same output.
@@ -126,10 +130,10 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
             images = renderer(point_cloud)
             rgb = images[0, ..., :3].squeeze().cpu()
             if DEBUG:
-                filename = "DEBUG_%s" % filename
-                Image.fromarray((rgb.detach().numpy() * 255).astype(np.uint8)).save(
-                    DATA_DIR / filename
-                )
+                filename = 'DEBUG_%s' % filename
+                Image.fromarray(
+                    (rgb.detach().numpy() * 255).astype(np.uint8)
+                ).save(DATA_DIR / filename)
             self.assertClose(rgb, image_ref, atol=0.015)
 
         # Check grad exists.
@@ -139,7 +143,7 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
         self.assertIsNotNone(rgb_feats.grad)
 
     def test_simple_sphere_batched(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         sphere_mesh = ico_sphere(1, device)
         verts_padded = sphere_mesh.verts_padded()
         verts_padded[..., 1] += 0.2
@@ -154,19 +158,21 @@ class TestRenderPoints(TestCaseMixin, unittest.TestCase):
         raster_settings = PointsRasterizationSettings(
             image_size=256, radius=5e-2, points_per_pixel=1
         )
-        rasterizer = PointsRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = PointsRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
         compositor = NormWeightedCompositor()
         renderer = PointsRenderer(rasterizer=rasterizer, compositor=compositor)
 
         # Load reference image
-        filename = "simple_pointcloud_sphere.png"
-        image_ref = load_rgb_image("test_%s" % filename, DATA_DIR)
+        filename = 'simple_pointcloud_sphere.png'
+        image_ref = load_rgb_image('test_%s' % filename, DATA_DIR)
 
         images = renderer(pointclouds)
         for i in range(batch_size):
             rgb = images[i, ..., :3].squeeze().cpu()
             if i == 0 and DEBUG:
-                filename = "DEBUG_%s" % filename
+                filename = 'DEBUG_%s' % filename
                 Image.fromarray((rgb.numpy() * 255).astype(np.uint8)).save(
                     DATA_DIR / filename
                 )

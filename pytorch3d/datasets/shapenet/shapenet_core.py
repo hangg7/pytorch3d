@@ -40,15 +40,19 @@ class ShapeNetCore(torch.utils.data.Dataset):
         """
         self.data_dir = data_dir
         if version not in [1, 2]:
-            raise ValueError("Version number must be either 1 or 2.")
-        self.model_dir = "model.obj" if version == 1 else "models/model_normalized.obj"
+            raise ValueError('Version number must be either 1 or 2.')
+        self.model_dir = (
+            'model.obj' if version == 1 else 'models/model_normalized.obj'
+        )
 
         # Synset dictionary mapping synset offsets to corresponding labels.
-        dict_file = "shapenet_synset_dict_v%d.json" % version
-        with open(path.join(SYNSET_DICT_DIR, dict_file), "r") as read_dict:
+        dict_file = 'shapenet_synset_dict_v%d.json' % version
+        with open(path.join(SYNSET_DICT_DIR, dict_file), 'r') as read_dict:
             self.synset_dict = json.load(read_dict)
         # Inverse dicitonary mapping synset labels to corresponding offsets.
-        synset_inv = {label: offset for offset, label in self.synset_dict.items()}
+        synset_inv = {
+            label: offset for offset, label in self.synset_dict.items()
+        }
 
         # If categories are specified, check if each category is in the form of either
         # synset offset or synset label, and if the category exists in the given directory.
@@ -96,7 +100,9 @@ class ShapeNetCore(torch.utils.data.Dataset):
         self.model_ids = []
         for synset in synset_set:
             for model in os.listdir(path.join(data_dir, synset)):
-                if not path.exists(path.join(data_dir, synset, model, self.model_dir)):
+                if not path.exists(
+                    path.join(data_dir, synset, model, self.model_dir)
+                ):
                     msg = """ Object file not found in the model directory %s
                         under synset directory %s.""" % (
                         model,
@@ -125,12 +131,12 @@ class ShapeNetCore(torch.utils.data.Dataset):
             - label (str): synset label.
         """
         model = {}
-        model["synset_id"] = self.synset_ids[idx]
-        model["model_id"] = self.model_ids[idx]
+        model['synset_id'] = self.synset_ids[idx]
+        model['model_id'] = self.model_ids[idx]
         model_path = path.join(
-            self.data_dir, model["synset_id"], model["model_id"], self.model_dir
+            self.data_dir, model['synset_id'], model['model_id'], self.model_dir
         )
-        model["verts"], faces, _ = load_obj(model_path)
-        model["faces"] = faces.verts_idx
-        model["label"] = self.synset_dict[model["synset_id"]]
+        model['verts'], faces, _ = load_obj(model_path)
+        model['faces'] = faces.verts_idx
+        model['label'] = self.synset_dict[model['synset_id']]
         return model

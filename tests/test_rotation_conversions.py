@@ -45,7 +45,9 @@ class TestRandomRotation(unittest.TestCase):
             )
             # The 0.1 significance level for chisquare(8-1) is
             # scipy.stats.chi2(7).ppf(0.9) == 12.017.
-            self.assertLess(chisquare_statistic, 12, (counts, chisquare_statistic, k))
+            self.assertLess(
+                chisquare_statistic, 12, (counts, chisquare_statistic, k)
+            )
 
 
 class TestRotationConversion(unittest.TestCase):
@@ -73,10 +75,10 @@ class TestRotationConversion(unittest.TestCase):
         self.assertTrue(torch.isfinite(g).all())
 
     def _tait_bryan_conventions(self):
-        return map("".join, itertools.permutations("XYZ"))
+        return map(''.join, itertools.permutations('XYZ'))
 
     def _proper_euler_conventions(self):
-        letterpairs = itertools.permutations("XYZ", 2)
+        letterpairs = itertools.permutations('XYZ', 2)
         return (l0 + l1 + l0 for l0, l1 in letterpairs)
 
     def _all_euler_angle_conventions(self):

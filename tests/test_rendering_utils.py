@@ -11,7 +11,7 @@ from pytorch3d.renderer.utils import TensorProperties
 
 # Example class for testing
 class TensorPropertiesTestClass(TensorProperties):
-    def __init__(self, x=None, y=None, device="cpu"):
+    def __init__(self, x=None, y=None, device='cpu'):
         super().__init__(device=device, x=x, y=y)
 
     def clone(self):
@@ -33,7 +33,7 @@ class TestTensorProperties(TestCaseMixin, unittest.TestCase):
     def test_to(self):
         # Check to method
         example = TensorPropertiesTestClass(x=10.0, y=(100.0, 200.0))
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         new_example = example.to(device=device)
         self.assertTrue(new_example.device == device)
 
@@ -80,5 +80,9 @@ class TestTensorProperties(TestCaseMixin, unittest.TestCase):
             if inds.sum() > 0:
                 # Check the gathered points in the output have the same value from
                 # the input.
-                self.assertClose(test_class_gathered.x[inds].mean(dim=0), x[i, ...])
-                self.assertClose(test_class_gathered.y[inds].mean(dim=0), y[i, ...])
+                self.assertClose(
+                    test_class_gathered.x[inds].mean(dim=0), x[i, ...]
+                )
+                self.assertClose(
+                    test_class_gathered.y[inds].mean(dim=0), y[i, ...]
+                )

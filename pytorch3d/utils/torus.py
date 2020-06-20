@@ -16,7 +16,11 @@ def _make_pair_range(N: int) -> Iterator[Tuple[int, int]]:
 
 
 def torus(
-    r: float, R: float, sides: int, rings: int, device: Optional[torch.device] = None
+    r: float,
+    R: float,
+    sides: int,
+    rings: int,
+    device: Optional[torch.device] = None,
 ) -> Meshes:
     """
     Create vertices and faces for a torus.
@@ -32,10 +36,10 @@ def torus(
         Meshes object with the generated vertices and faces.
     """
     if not (sides > 0):
-        raise ValueError("sides must be > 0.")
+        raise ValueError('sides must be > 0.')
     if not (rings > 0):
-        raise ValueError("rings must be > 0.")
-    device = device if device else torch.device("cpu")
+        raise ValueError('rings must be > 0.')
+    device = device if device else torch.device('cpu')
 
     verts = []
     for i in range(rings):

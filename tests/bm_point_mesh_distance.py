@@ -9,7 +9,7 @@ from test_point_mesh_distance import TestPointMeshDistance
 
 def bm_point_mesh_distance() -> None:
 
-    backend = ["cuda:0"]
+    backend = ['cuda:0']
 
     kwargs_list = []
     batch_size = [4, 8, 16]
@@ -19,18 +19,18 @@ def bm_point_mesh_distance() -> None:
     test_cases = product(batch_size, num_verts, num_faces, num_points, backend)
     for case in test_cases:
         n, v, f, p, b = case
-        kwargs_list.append({"N": n, "V": v, "F": f, "P": p, "device": b})
+        kwargs_list.append({'N': n, 'V': v, 'F': f, 'P': p, 'device': b})
 
     benchmark(
         TestPointMeshDistance.point_mesh_edge,
-        "POINT_MESH_EDGE",
+        'POINT_MESH_EDGE',
         kwargs_list,
         warmup_iters=1,
     )
 
     benchmark(
         TestPointMeshDistance.point_mesh_face,
-        "POINT_MESH_FACE",
+        'POINT_MESH_FACE',
         kwargs_list,
         warmup_iters=1,
     )

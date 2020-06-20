@@ -38,7 +38,9 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
                                 continue
 
                             alpha = alphas[b, k, j, i]
-                            output[b, c, j, i] += features[c, n_idx] * alpha * t_alpha
+                            output[b, c, j, i] += (
+                                features[c, n_idx] * alpha * t_alpha
+                            )
                             t_alpha = (1 - alpha) * t_alpha
 
         return output
@@ -104,18 +106,22 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
                                 continue
 
                             alpha = alphas[b, k, j, i]
-                            output[b, c, j, i] += features[c, n_idx] * alpha / t_alpha
+                            output[b, c, j, i] += (
+                                features[c, n_idx] * alpha / t_alpha
+                            )
 
         return output
 
     def test_python(self):
-        device = torch.device("cpu")
-        self._simple_alphacomposite(self.accumulate_alphacomposite_python, device)
+        device = torch.device('cpu')
+        self._simple_alphacomposite(
+            self.accumulate_alphacomposite_python, device
+        )
         self._simple_wsum(self.accumulate_weightedsum_python, device)
         self._simple_wsumnorm(self.accumulate_weightedsumnorm_python, device)
 
     def test_cpu(self):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         self._simple_alphacomposite(alpha_composite, device)
         self._simple_wsum(weighted_sum, device)
         self._simple_wsumnorm(norm_weighted_sum, device)
@@ -133,17 +139,19 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
         self._python_vs_cpu_vs_cuda(
             self.accumulate_weightedsumnorm_python, norm_weighted_sum
         )
-        self._python_vs_cpu_vs_cuda(self.accumulate_weightedsum_python, weighted_sum)
+        self._python_vs_cpu_vs_cuda(
+            self.accumulate_weightedsum_python, weighted_sum
+        )
 
     def _python_vs_cpu_vs_cuda(self, accumulate_func_python, accumulate_func):
         torch.manual_seed(231)
-        device = torch.device("cpu")
+        device = torch.device('cpu')
 
         W = 8
         C = 3
         P = 32
 
-        for d in ["cpu", get_random_cuda_device()]:
+        for d in ['cpu', get_random_cuda_device()]:
             # TODO(gkioxari) add torch.float64 to types after double precision
             # support is added to atomicAdd
             for t in [torch.float32]:
@@ -205,7 +213,9 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
 
     def _simple_wsum(self, accum_func, device):
         # Initialise variables
-        features = torch.Tensor([[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]).to(device)
+        features = torch.Tensor(
+            [[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]
+        ).to(device)
 
         alphas = torch.Tensor(
             [
@@ -278,7 +288,9 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
 
     def _simple_wsumnorm(self, accum_func, device):
         # Initialise variables
-        features = torch.Tensor([[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]).to(device)
+        features = torch.Tensor(
+            [[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]
+        ).to(device)
 
         alphas = torch.Tensor(
             [
@@ -351,7 +363,9 @@ class TestAccumulatePoints(TestCaseMixin, unittest.TestCase):
 
     def _simple_alphacomposite(self, accum_func, device):
         # Initialise variables
-        features = torch.Tensor([[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]).to(device)
+        features = torch.Tensor(
+            [[0.1, 0.4, 0.6, 0.9], [0.1, 0.4, 0.6, 0.9]]
+        ).to(device)
 
         alphas = torch.Tensor(
             [

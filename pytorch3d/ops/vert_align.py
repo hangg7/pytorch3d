@@ -9,8 +9,8 @@ def vert_align(
     feats,
     verts,
     return_packed: bool = False,
-    interp_mode: str = "bilinear",
-    padding_mode: str = "zeros",
+    interp_mode: str = 'bilinear',
+    padding_mode: str = 'zeros',
     align_corners: bool = True,
 ) -> torch.Tensor:
     """
@@ -52,15 +52,15 @@ def vert_align(
     """
     if torch.is_tensor(verts):
         if verts.dim() != 3:
-            raise ValueError("verts tensor should be 3 dimensional")
+            raise ValueError('verts tensor should be 3 dimensional')
         grid = verts
-    elif hasattr(verts, "verts_padded"):
+    elif hasattr(verts, 'verts_padded'):
         grid = verts.verts_padded()
-    elif hasattr(verts, "points_padded"):
+    elif hasattr(verts, 'points_padded'):
         grid = verts.points_padded()
     else:
         raise ValueError(
-            "verts must be a tensor or have a "
+            'verts must be a tensor or have a '
             + "`points_padded' or`verts_padded` attribute."
         )
 
@@ -70,9 +70,9 @@ def vert_align(
         feats = [feats]
     for feat in feats:
         if feat.dim() != 4:
-            raise ValueError("feats must have shape (N, C, H, W)")
+            raise ValueError('feats must have shape (N, C, H, W)')
         if grid.shape[0] != feat.shape[0]:
-            raise ValueError("inconsistent batch dimension")
+            raise ValueError('inconsistent batch dimension')
 
     feats_sampled = []
     for feat in feats:
@@ -90,7 +90,7 @@ def vert_align(
     if return_packed:
         # flatten the first two dimensions: (N*V, C)
         feats_sampled = feats_sampled.view(-1, feats_sampled.shape[-1])
-        if hasattr(verts, "verts_padded_to_packed_idx"):
+        if hasattr(verts, 'verts_padded_to_packed_idx'):
             idx = (
                 verts.verts_padded_to_packed_idx()
                 .view(-1, 1)

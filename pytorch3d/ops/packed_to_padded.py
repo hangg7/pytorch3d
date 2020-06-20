@@ -30,15 +30,15 @@ class _PackedToPadded(Function):
                 with zeros padding out the extra inputs.
         """
         if not (inputs.dim() == 2):
-            raise ValueError("input can only be 2-dimensional.")
+            raise ValueError('input can only be 2-dimensional.')
         if not (first_idxs.dim() == 1):
-            raise ValueError("first_idxs can only be 1-dimensional.")
+            raise ValueError('first_idxs can only be 1-dimensional.')
         if not (inputs.dtype == torch.float32):
-            raise ValueError("input has to be of type torch.float32.")
+            raise ValueError('input has to be of type torch.float32.')
         if not (first_idxs.dtype == torch.int64):
-            raise ValueError("first_idxs has to be of type torch.int64.")
+            raise ValueError('first_idxs has to be of type torch.int64.')
         if not isinstance(max_size, int):
-            raise ValueError("max_size has to be int.")
+            raise ValueError('max_size has to be int.')
 
         ctx.save_for_backward(first_idxs)
         ctx.num_inputs = int(inputs.shape[0])
@@ -112,15 +112,15 @@ class _PaddedToPacked(Function):
                 `inputs_packed[first_idx[i]:] = inputs[i, :]`.
         """
         if not (inputs.dim() == 3):
-            raise ValueError("input can only be 3-dimensional.")
+            raise ValueError('input can only be 3-dimensional.')
         if not (first_idxs.dim() == 1):
-            raise ValueError("first_idxs can only be 1-dimensional.")
+            raise ValueError('first_idxs can only be 1-dimensional.')
         if not (inputs.dtype == torch.float32):
-            raise ValueError("input has to be of type torch.float32.")
+            raise ValueError('input has to be of type torch.float32.')
         if not (first_idxs.dtype == torch.int64):
-            raise ValueError("first_idxs has to be of type torch.int64.")
+            raise ValueError('first_idxs has to be of type torch.int64.')
         if not isinstance(num_inputs, int):
-            raise ValueError("max_size has to be int.")
+            raise ValueError('max_size has to be int.')
 
         ctx.save_for_backward(first_idxs)
         ctx.max_size = inputs.shape[1]

@@ -9,9 +9,9 @@ from test_mesh_laplacian_smoothing import TestLaplacianSmoothing
 
 
 def bm_mesh_laplacian_smoothing() -> None:
-    devices = ["cpu"]
+    devices = ['cpu']
     if torch.cuda.is_available():
-        devices.append("cuda")
+        devices.append('cuda')
 
     kwargs_list = []
     num_meshes = [2, 10, 32]
@@ -21,12 +21,12 @@ def bm_mesh_laplacian_smoothing() -> None:
     for case in test_cases:
         n, v, f, d = case
         kwargs_list.append(
-            {"num_meshes": n, "num_verts": v, "num_faces": f, "device": d}
+            {'num_meshes': n, 'num_verts': v, 'num_faces': f, 'device': d}
         )
 
     benchmark(
         TestLaplacianSmoothing.laplacian_smoothing_with_init,
-        "MESH_LAPLACIAN_SMOOTHING",
+        'MESH_LAPLACIAN_SMOOTHING',
         kwargs_list,
         warmup_iters=1,
     )

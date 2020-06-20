@@ -4,7 +4,7 @@
 import torch
 
 
-def mesh_laplacian_smoothing(meshes, method: str = "uniform"):
+def mesh_laplacian_smoothing(meshes, method: str = 'uniform'):
     r"""
     Computes the laplacian smoothing objective for a batch of meshes.
     This function supports three variants of Laplacian smoothing,
@@ -99,24 +99,24 @@ def mesh_laplacian_smoothing(meshes, method: str = "uniform"):
     # just treat it as a magic constant matrix that is used to transform
     # verts into normals
     with torch.no_grad():
-        if method == "uniform":
+        if method == 'uniform':
             L = meshes.laplacian_packed()
-        elif method in ["cot", "cotcurv"]:
+        elif method in ['cot', 'cotcurv']:
             L, inv_areas = laplacian_cot(meshes)
-            if method == "cot":
+            if method == 'cot':
                 norm_w = torch.sparse.sum(L, dim=1).to_dense().view(-1, 1)
                 idx = norm_w > 0
                 norm_w[idx] = 1.0 / norm_w[idx]
             else:
                 norm_w = 0.25 * inv_areas
         else:
-            raise ValueError("Method should be one of {uniform, cot, cotcurv}")
+            raise ValueError('Method should be one of {uniform, cot, cotcurv}')
 
-    if method == "uniform":
+    if method == 'uniform':
         loss = L.mm(verts_packed)
-    elif method == "cot":
+    elif method == 'cot':
         loss = L.mm(verts_packed) * norm_w - verts_packed
-    elif method == "cotcurv":
+    elif method == 'cotcurv':
         loss = (L.mm(verts_packed) - verts_packed) * norm_w
     loss = loss.norm(dim=1)
 

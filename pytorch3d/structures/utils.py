@@ -39,7 +39,9 @@ def list_to_padded(
         pad_dim1 = max(y.shape[1] for y in x if len(y) > 0)
     else:
         if len(pad_size) != 2:
-            raise ValueError("Pad size must contain target size for 1st and 2nd dim")
+            raise ValueError(
+                'Pad size must contain target size for 1st and 2nd dim'
+            )
         pad_dim0, pad_dim1 = pad_size
 
     N = len(x)
@@ -50,12 +52,14 @@ def list_to_padded(
         if len(y) > 0:
             # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
             if y.ndim != 2:
-                raise ValueError("Supports only 2-dimensional tensor items")
+                raise ValueError('Supports only 2-dimensional tensor items')
             x_padded[i, : y.shape[0], : y.shape[1]] = y
     return x_padded
 
 
-def padded_to_list(x: torch.Tensor, split_size: Union[list, tuple, None] = None):
+def padded_to_list(
+    x: torch.Tensor, split_size: Union[list, tuple, None] = None
+):
     r"""
     Transforms a padded tensor of shape (N, M, K) into a list of N tensors
     of shape (Mi, Ki) where (Mi, Ki) is specified in split_size(i), or of shape
@@ -72,7 +76,7 @@ def padded_to_list(x: torch.Tensor, split_size: Union[list, tuple, None] = None)
     """
     # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
     if x.ndim != 3:
-        raise ValueError("Supports only 3-dimensional input tensors")
+        raise ValueError('Supports only 3-dimensional input tensors')
     x_list = list(x.unbind(0))
 
     if split_size is None:
@@ -80,7 +84,9 @@ def padded_to_list(x: torch.Tensor, split_size: Union[list, tuple, None] = None)
 
     N = len(split_size)
     if x.shape[0] != N:
-        raise ValueError("Split size must be of same length as inputs first dimension")
+        raise ValueError(
+            'Split size must be of same length as inputs first dimension'
+        )
 
     for i in range(N):
         if isinstance(split_size[i], int):
@@ -89,8 +95,8 @@ def padded_to_list(x: torch.Tensor, split_size: Union[list, tuple, None] = None)
             x_list[i] = x_list[i][: split_size[i][0], : split_size[i][1]]
         else:
             raise ValueError(
-                "Support only for 2-dimensional unbinded tensor. \
-                    Split size for more dimensions provided"
+                'Support only for 2-dimensional unbinded tensor. \
+                    Split size for more dimensions provided'
             )
     return x_list
 
@@ -116,7 +122,9 @@ def list_to_packed(x: List[torch.Tensor]):
     """
     N = len(x)
     num_items = torch.zeros(N, dtype=torch.int64, device=x[0].device)
-    item_packed_first_idx = torch.zeros(N, dtype=torch.int64, device=x[0].device)
+    item_packed_first_idx = torch.zeros(
+        N, dtype=torch.int64, device=x[0].device
+    )
     item_packed_to_list_idx = []
     cur = 0
     for i, y in enumerate(x):
@@ -179,12 +187,14 @@ def padded_to_packed(
     """
     # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
     if x.ndim != 3:
-        raise ValueError("Supports only 3-dimensional input tensors")
+        raise ValueError('Supports only 3-dimensional input tensors')
 
     N, M, D = x.shape
 
     if split_size is not None and pad_value is not None:
-        raise ValueError("Only one of split_size or pad_value should be provided.")
+        raise ValueError(
+            'Only one of split_size or pad_value should be provided.'
+        )
 
     x_packed = x.reshape(-1, D)  # flatten padded
 
@@ -203,13 +213,15 @@ def padded_to_packed(
     #  List[typing.Any], typing.Tuple[typing.Any, ...]]`.
     N = len(split_size)
     if x.shape[0] != N:
-        raise ValueError("Split size must be of same length as inputs first dimension")
+        raise ValueError(
+            'Split size must be of same length as inputs first dimension'
+        )
 
     # pyre-fixme[16]: `None` has no attribute `__iter__`.
     if not all(isinstance(i, int) for i in split_size):
         raise ValueError(
-            "Support only 1-dimensional unbinded tensor. \
-                Split size for more dimensions provided"
+            'Support only 1-dimensional unbinded tensor. \
+                Split size for more dimensions provided'
         )
 
     padded_to_packed_idx = torch.cat(

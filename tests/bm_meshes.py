@@ -9,9 +9,9 @@ from test_meshes import TestMeshes
 
 
 def bm_compute_packed_padded_meshes() -> None:
-    devices = ["cpu"]
+    devices = ['cpu']
     if torch.cuda.is_available():
-        devices.append("cuda")
+        devices.append('cuda')
 
     kwargs_list = []
     num_meshes = [32, 128]
@@ -20,16 +20,18 @@ def bm_compute_packed_padded_meshes() -> None:
     test_cases = product(num_meshes, max_v, max_f, devices)
     for case in test_cases:
         n, v, f, d = case
-        kwargs_list.append({"num_meshes": n, "max_v": v, "max_f": f, "device": d})
+        kwargs_list.append(
+            {'num_meshes': n, 'max_v': v, 'max_f': f, 'device': d}
+        )
     benchmark(
         TestMeshes.compute_packed_with_init,
-        "COMPUTE_PACKED",
+        'COMPUTE_PACKED',
         kwargs_list,
         warmup_iters=1,
     )
     benchmark(
         TestMeshes.compute_padded_with_init,
-        "COMPUTE_PADDED",
+        'COMPUTE_PADDED',
         kwargs_list,
         warmup_iters=1,
     )

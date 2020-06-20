@@ -14,7 +14,7 @@ class TestSubdivideMeshes(TestCaseMixin, unittest.TestCase):
     def test_simple_subdivide(self):
         # Create a mesh with one face and check the subdivided mesh has
         # 4 faces with the correct vertex coordinates.
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts = torch.tensor(
             [[0.5, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
             dtype=torch.float32,
@@ -62,7 +62,7 @@ class TestSubdivideMeshes(TestCaseMixin, unittest.TestCase):
         self.assertTrue(new_verts.requires_grad == verts.requires_grad)
 
     def test_heterogeneous_meshes(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts1 = torch.tensor(
             [[0.5, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
             dtype=torch.float32,
@@ -71,14 +71,25 @@ class TestSubdivideMeshes(TestCaseMixin, unittest.TestCase):
         )
         faces1 = torch.tensor([[0, 1, 2]], dtype=torch.int64, device=device)
         verts2 = torch.tensor(
-            [[0.5, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.5, 1.0, 0.0]],
+            [
+                [0.5, 1.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [1.5, 1.0, 0.0],
+            ],
             dtype=torch.float32,
             device=device,
             requires_grad=True,
         )
-        faces2 = torch.tensor([[0, 1, 2], [0, 3, 1]], dtype=torch.int64, device=device)
-        faces3 = torch.tensor([[0, 1, 2], [0, 2, 3]], dtype=torch.int64, device=device)
-        mesh = Meshes(verts=[verts1, verts2, verts2], faces=[faces1, faces2, faces3])
+        faces2 = torch.tensor(
+            [[0, 1, 2], [0, 3, 1]], dtype=torch.int64, device=device
+        )
+        faces3 = torch.tensor(
+            [[0, 1, 2], [0, 2, 3]], dtype=torch.int64, device=device
+        )
+        mesh = Meshes(
+            verts=[verts1, verts2, verts2], faces=[faces1, faces2, faces3]
+        )
         subdivide = SubdivideMeshes()
         new_mesh = subdivide(mesh.clone())
 
@@ -186,7 +197,7 @@ class TestSubdivideMeshes(TestCaseMixin, unittest.TestCase):
         self.assertTrue(new_mesh_verts3.requires_grad == verts2.requires_grad)
 
     def test_subdivide_features(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         mesh = ico_sphere(0, device)
         N = 10
         mesh = mesh.extend(N)
@@ -206,8 +217,10 @@ class TestSubdivideMeshes(TestCaseMixin, unittest.TestCase):
         self.assertTrue(new_feats.requires_grad == gt_feats.requires_grad)
 
     @staticmethod
-    def subdivide_meshes_with_init(num_meshes: int = 10, same_topo: bool = False):
-        device = torch.device("cuda:0")
+    def subdivide_meshes_with_init(
+        num_meshes: int = 10, same_topo: bool = False
+    ):
+        device = torch.device('cuda:0')
         meshes = ico_sphere(0, device=device)
         if num_meshes > 1:
             meshes = meshes.extend(num_meshes)

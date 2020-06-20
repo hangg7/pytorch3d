@@ -27,16 +27,20 @@ def image_grid(
         None
     """
     if (rows is None) != (cols is None):
-        raise ValueError("Specify either both rows and cols or neither.")
+        raise ValueError('Specify either both rows and cols or neither.')
 
     if rows is None:
         rows = len(images)
         cols = 1
 
-    gridspec_kw = {"wspace": 0.0, "hspace": 0.0} if fill else {}
-    fig, axarr = plt.subplots(rows, cols, gridspec_kw=gridspec_kw, figsize=(15, 9))
+    gridspec_kw = {'wspace': 0.0, 'hspace': 0.0} if fill else {}
+    fig, axarr = plt.subplots(
+        rows, cols, gridspec_kw=gridspec_kw, figsize=(15, 9)
+    )
     bleed = 0
-    fig.subplots_adjust(left=bleed, bottom=bleed, right=(1 - bleed), top=(1 - bleed))
+    fig.subplots_adjust(
+        left=bleed, bottom=bleed, right=(1 - bleed), top=(1 - bleed)
+    )
 
     for ax, im in zip(axarr.ravel(), images):
         if rgb:

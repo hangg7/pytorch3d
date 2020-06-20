@@ -18,13 +18,15 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         num_meshes: int = 10,
         num_verts: int = 1000,
         num_faces: int = 3000,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         device = torch.device(device)
         verts_list = []
         faces_list = []
         for _ in range(num_meshes):
-            verts = torch.rand((num_verts, 3), dtype=torch.float32, device=device)
+            verts = torch.rand(
+                (num_verts, 3), dtype=torch.float32, device=device
+            )
             faces = torch.randint(
                 num_verts, size=(num_faces, 3), dtype=torch.int64, device=device
             )
@@ -44,7 +46,9 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         if D == 0:
             inputs_padded = torch.zeros((num_meshes, max_size), device=device)
         else:
-            inputs_padded = torch.zeros((num_meshes, max_size, D), device=device)
+            inputs_padded = torch.zeros(
+                (num_meshes, max_size, D), device=device
+            )
         for m in range(num_meshes):
             s = first_idxs[m]
             if m == num_meshes - 1:
@@ -87,9 +91,13 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         max_faces = meshes.num_faces_per_mesh().max().item()
 
         if D == 0:
-            values = torch.rand((faces.shape[0],), device=device, requires_grad=True)
+            values = torch.rand(
+                (faces.shape[0],), device=device, requires_grad=True
+            )
         else:
-            values = torch.rand((faces.shape[0], D), device=device, requires_grad=True)
+            values = torch.rand(
+                (faces.shape[0], D), device=device, requires_grad=True
+            )
         values_torch = values.detach().clone()
         values_torch.requires_grad = True
         values_padded = packed_to_padded(
@@ -111,19 +119,22 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         values_padded_torch.backward(grad_inputs)
         grad_outputs_torch1 = values_torch.grad
         grad_outputs_torch2 = TestPackedToPadded.padded_to_packed_python(
-            grad_inputs, mesh_to_faces_packed_first_idx, values.size(0), device=device
+            grad_inputs,
+            mesh_to_faces_packed_first_idx,
+            values.size(0),
+            device=device,
         )
         self.assertClose(grad_outputs, grad_outputs_torch1)
         self.assertClose(grad_outputs, grad_outputs_torch2)
 
     def test_packed_to_padded_flat_cpu(self):
-        self._test_packed_to_padded_helper(0, "cpu")
+        self._test_packed_to_padded_helper(0, 'cpu')
 
     def test_packed_to_padded_D1_cpu(self):
-        self._test_packed_to_padded_helper(1, "cpu")
+        self._test_packed_to_padded_helper(1, 'cpu')
 
     def test_packed_to_padded_D16_cpu(self):
-        self._test_packed_to_padded_helper(16, "cpu")
+        self._test_packed_to_padded_helper(16, 'cpu')
 
     def test_packed_to_padded_flat_cuda(self):
         device = get_random_cuda_device()
@@ -156,7 +167,9 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         values_torch = values.detach().clone()
         values_torch.requires_grad = True
         values_packed = padded_to_packed(
-            values, mesh_to_faces_packed_first_idx, num_faces_per_mesh.sum().item()
+            values,
+            mesh_to_faces_packed_first_idx,
+            num_faces_per_mesh.sum().item(),
         )
         values_packed_torch = TestPackedToPadded.padded_to_packed_python(
             values_torch,
@@ -169,7 +182,9 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
 
         # check backward
         if D == 0:
-            grad_inputs = torch.rand((num_faces_per_mesh.sum().item()), device=device)
+            grad_inputs = torch.rand(
+                (num_faces_per_mesh.sum().item()), device=device
+            )
         else:
             grad_inputs = torch.rand(
                 (num_faces_per_mesh.sum().item(), D), device=device
@@ -179,19 +194,22 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         values_packed_torch.backward(grad_inputs)
         grad_outputs_torch1 = values_torch.grad
         grad_outputs_torch2 = TestPackedToPadded.packed_to_padded_python(
-            grad_inputs, mesh_to_faces_packed_first_idx, values.size(1), device=device
+            grad_inputs,
+            mesh_to_faces_packed_first_idx,
+            values.size(1),
+            device=device,
         )
         self.assertClose(grad_outputs, grad_outputs_torch1)
         self.assertClose(grad_outputs, grad_outputs_torch2)
 
     def test_padded_to_packed_flat_cpu(self):
-        self._test_padded_to_packed_helper(0, "cpu")
+        self._test_padded_to_packed_helper(0, 'cpu')
 
     def test_padded_to_packed_D1_cpu(self):
-        self._test_padded_to_packed_helper(1, "cpu")
+        self._test_padded_to_packed_helper(1, 'cpu')
 
     def test_padded_to_packed_D16_cpu(self):
-        self._test_padded_to_packed_helper(16, "cpu")
+        self._test_padded_to_packed_helper(16, 'cpu')
 
     def test_padded_to_packed_flat_cuda(self):
         device = get_random_cuda_device()
@@ -205,25 +223,35 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
         device = get_random_cuda_device()
         self._test_padded_to_packed_helper(16, device)
 
-    def test_invalid_inputs_shapes(self, device="cuda:0"):
-        with self.assertRaisesRegex(ValueError, "input can only be 2-dimensional."):
+    def test_invalid_inputs_shapes(self, device='cuda:0'):
+        with self.assertRaisesRegex(
+            ValueError, 'input can only be 2-dimensional.'
+        ):
             values = torch.rand((100, 50, 2), device=device)
             first_idxs = torch.tensor([0, 80], dtype=torch.int64, device=device)
             packed_to_padded(values, first_idxs, 100)
 
-        with self.assertRaisesRegex(ValueError, "input can only be 3-dimensional."):
+        with self.assertRaisesRegex(
+            ValueError, 'input can only be 3-dimensional.'
+        ):
             values = torch.rand((100,), device=device)
             first_idxs = torch.tensor([0, 80], dtype=torch.int64, device=device)
             padded_to_packed(values, first_idxs, 20)
 
-        with self.assertRaisesRegex(ValueError, "input can only be 3-dimensional."):
+        with self.assertRaisesRegex(
+            ValueError, 'input can only be 3-dimensional.'
+        ):
             values = torch.rand((100, 50, 2, 2), device=device)
             first_idxs = torch.tensor([0, 80], dtype=torch.int64, device=device)
             padded_to_packed(values, first_idxs, 20)
 
     @staticmethod
     def packed_to_padded_with_init(
-        num_meshes: int, num_verts: int, num_faces: int, num_d: int, device: str = "cpu"
+        num_meshes: int,
+        num_verts: int,
+        num_faces: int,
+        num_d: int,
+        device: str = 'cpu',
     ):
         meshes = TestPackedToPadded.init_meshes(
             num_meshes, num_verts, num_faces, device
@@ -245,7 +273,11 @@ class TestPackedToPadded(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def packed_to_padded_with_init_torch(
-        num_meshes: int, num_verts: int, num_faces: int, num_d: int, device: str = "cpu"
+        num_meshes: int,
+        num_verts: int,
+        num_faces: int,
+        num_d: int,
+        device: str = 'cpu',
     ):
         meshes = TestPackedToPadded.init_meshes(
             num_meshes, num_verts, num_faces, device

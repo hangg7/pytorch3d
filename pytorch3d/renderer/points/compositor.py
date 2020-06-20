@@ -20,11 +20,15 @@ class AlphaCompositor(nn.Module):
         super().__init__()
 
         self.composite_params = (
-            composite_params if composite_params is not None else CompositeParams()
+            composite_params
+            if composite_params is not None
+            else CompositeParams()
         )
 
     def forward(self, fragments, alphas, ptclds, **kwargs) -> torch.Tensor:
-        images = alpha_composite(fragments, alphas, ptclds, self.composite_params)
+        images = alpha_composite(
+            fragments, alphas, ptclds, self.composite_params
+        )
         return images
 
 
@@ -36,9 +40,13 @@ class NormWeightedCompositor(nn.Module):
     def __init__(self, composite_params=None):
         super().__init__()
         self.composite_params = (
-            composite_params if composite_params is not None else CompositeParams()
+            composite_params
+            if composite_params is not None
+            else CompositeParams()
         )
 
     def forward(self, fragments, alphas, ptclds, **kwargs) -> torch.Tensor:
-        images = norm_weighted_sum(fragments, alphas, ptclds, self.composite_params)
+        images = norm_weighted_sum(
+            fragments, alphas, ptclds, self.composite_params
+        )
         return images

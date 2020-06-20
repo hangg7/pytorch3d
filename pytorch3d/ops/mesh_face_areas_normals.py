@@ -25,15 +25,15 @@ class _MeshFaceAreasNormals(Function):
             normals: FloatTensor of shape (F,3) with the normals of each face
         """
         if not (verts.dim() == 2):
-            raise ValueError("verts need to be of shape Vx3.")
+            raise ValueError('verts need to be of shape Vx3.')
         if not (verts.shape[1] == 3):
-            raise ValueError("verts need to be of shape Vx3.")
+            raise ValueError('verts need to be of shape Vx3.')
         if not (faces.dim() == 2):
-            raise ValueError("faces need to be of shape Fx3.")
+            raise ValueError('faces need to be of shape Fx3.')
         if not (faces.shape[1] == 3):
-            raise ValueError("faces need to be of shape Fx3.")
+            raise ValueError('faces need to be of shape Fx3.')
         if not (faces.dtype == torch.int64):
-            raise ValueError("faces need to be of type torch.int64.")
+            raise ValueError('faces need to be of type torch.int64.')
         # TODO(gkioxari) Change cast to floats once we add support for doubles.
         if not (verts.dtype == torch.float32):
             verts = verts.float()

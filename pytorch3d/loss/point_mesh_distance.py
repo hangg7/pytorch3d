@@ -23,7 +23,9 @@ class _PointFaceDistance(Function):
     """
 
     @staticmethod
-    def forward(ctx, points, points_first_idx, tris, tris_first_idx, max_points):
+    def forward(
+        ctx, points, points_first_idx, tris, tris_first_idx, max_points
+    ):
         """
         Args:
             ctx: Context object used to calculate gradients.
@@ -127,7 +129,9 @@ class _PointEdgeDistance(Function):
     """
 
     @staticmethod
-    def forward(ctx, points, points_first_idx, segms, segms_first_idx, max_points):
+    def forward(
+        ctx, points, points_first_idx, segms, segms_first_idx, max_points
+    ):
         """
         Args:
             ctx: Context object used to calculate gradients.
@@ -178,7 +182,9 @@ class _EdgePointDistance(Function):
     """
 
     @staticmethod
-    def forward(ctx, points, points_first_idx, segms, segms_first_idx, max_segms):
+    def forward(
+        ctx, points, points_first_idx, segms, segms_first_idx, max_segms
+    ):
         """
         Args:
             ctx: Context object used to calculate gradients.
@@ -245,7 +251,7 @@ def point_mesh_edge_distance(meshes: Meshes, pcls: Pointclouds):
             between all `(mesh, pcl)` in a batch averaged across the batch.
     """
     if len(meshes) != len(pcls):
-        raise ValueError("meshes and pointclouds must be equal sized batches")
+        raise ValueError('meshes and pointclouds must be equal sized batches')
     N = len(meshes)
 
     # packed representation for pointclouds
@@ -313,7 +319,7 @@ def point_mesh_face_distance(meshes: Meshes, pcls: Pointclouds):
     """
 
     if len(meshes) != len(pcls):
-        raise ValueError("meshes and pointclouds must be equal sized batches")
+        raise ValueError('meshes and pointclouds must be equal sized batches')
     N = len(meshes)
 
     # packed representation for pointclouds

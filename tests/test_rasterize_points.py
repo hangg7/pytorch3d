@@ -17,11 +17,11 @@ from pytorch3d.structures.pointclouds import Pointclouds
 class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
     def test_python_simple_cpu(self):
         self._simple_test_case(
-            rasterize_points_python, torch.device("cpu"), bin_size=-1
+            rasterize_points_python, torch.device('cpu'), bin_size=-1
         )
 
     def test_naive_simple_cpu(self):
-        device = torch.device("cpu")
+        device = torch.device('cpu')
         self._simple_test_case(rasterize_points, device)
 
     def test_naive_simple_cuda(self):
@@ -30,11 +30,11 @@ class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
 
     def test_python_behind_camera(self):
         self._test_behind_camera(
-            rasterize_points_python, torch.device("cpu"), bin_size=-1
+            rasterize_points_python, torch.device('cpu'), bin_size=-1
         )
 
     def test_cpu_behind_camera(self):
-        self._test_behind_camera(rasterize_points, torch.device("cpu"))
+        self._test_behind_camera(rasterize_points, torch.device('cpu'))
 
     def test_cuda_behind_camera(self):
         device = get_random_cuda_device()
@@ -165,8 +165,20 @@ class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
         points_cuda = points_cpu.cuda().detach().requires_grad_(True)
         pointclouds_cpu = Pointclouds(points=points_cpu)
         pointclouds_cuda = Pointclouds(points=points_cuda)
-        args_cpu = (pointclouds_cpu, image_size, radius, points_per_pixel, bin_size)
-        args_cuda = (pointclouds_cuda, image_size, radius, points_per_pixel, bin_size)
+        args_cpu = (
+            pointclouds_cpu,
+            image_size,
+            radius,
+            points_per_pixel,
+            bin_size,
+        )
+        args_cuda = (
+            pointclouds_cuda,
+            image_size,
+            radius,
+            points_per_pixel,
+            bin_size,
+        )
         self._compare_impls(
             rasterize_points,
             rasterize_points,
@@ -216,7 +228,7 @@ class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
         points = Pointclouds(points=torch.rand(5, 100, 3))
         image_size = 1024
         bin_size = 16
-        with self.assertRaisesRegex(ValueError, "bin_size too small"):
+        with self.assertRaisesRegex(ValueError, 'bin_size too small'):
             rasterize_points(points, image_size, 0.0, 2, bin_size=bin_size)
 
     def _test_behind_camera(self, rasterize_points_fn, device, bin_size=None):
@@ -325,7 +337,9 @@ class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
         ], device=device)
         # fmt: on
 
-        dists1_expected = torch.zeros((5, 5, 2), dtype=torch.float32, device=device)
+        dists1_expected = torch.zeros(
+            (5, 5, 2), dtype=torch.float32, device=device
+        )
         # fmt: off
         dists1_expected[:, :, 0] = torch.tensor([
             [-1.00, -1.00,  0.16, -1.00, -1.00],  # noqa: E241
@@ -378,7 +392,7 @@ class TestRasterizePoints(TestCaseMixin, unittest.TestCase):
         self.assertClose(dists[1, ...], dists1_expected)
 
     def test_coarse_cpu(self):
-        return self._test_coarse_rasterize(torch.device("cpu"))
+        return self._test_coarse_rasterize(torch.device('cpu'))
 
     def test_coarse_cuda(self):
         device = get_random_cuda_device()

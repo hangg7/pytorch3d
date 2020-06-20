@@ -8,9 +8,9 @@ from test_perspective_n_points import TestPerspectiveNPoints
 
 def bm_perspective_n_points() -> None:
     case_grid = {
-        "batch_size": [1, 10, 100],
-        "num_pts": [100, 100000],
-        "skip_q": [False, True],
+        'batch_size': [1, 10, 100],
+        'num_pts': [100, 100000],
+        'skip_q': [False, True],
     }
 
     test_cases = itertools.product(*case_grid.values())
@@ -19,7 +19,7 @@ def bm_perspective_n_points() -> None:
     test = TestPerspectiveNPoints()
     benchmark(
         test.case_with_gaussian_points,
-        "PerspectiveNPoints",
+        'PerspectiveNPoints',
         kwargs_list,
         warmup_iters=1,
     )

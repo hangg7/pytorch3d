@@ -15,16 +15,16 @@ def bm_compute_packed_padded_pointclouds() -> None:
     test_cases = product(num_clouds, max_p, feats)
     for case in test_cases:
         n, p, f = case
-        kwargs_list.append({"num_clouds": n, "max_p": p, "features": f})
+        kwargs_list.append({'num_clouds': n, 'max_p': p, 'features': f})
     benchmark(
         TestPointclouds.compute_packed_with_init,
-        "COMPUTE_PACKED",
+        'COMPUTE_PACKED',
         kwargs_list,
         warmup_iters=1,
     )
     benchmark(
         TestPointclouds.compute_padded_with_init,
-        "COMPUTE_PADDED",
+        'COMPUTE_PADDED',
         kwargs_list,
         warmup_iters=1,
     )

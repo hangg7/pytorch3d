@@ -34,9 +34,9 @@ def _define_control_points(x, weight, storage_opts=None):
     """
     storage_opts = storage_opts or {}
     x_mean = oputil.wmean(x, weight)
-    c_world = F.pad(torch.eye(3, **storage_opts), (0, 0, 0, 1), value=0.0).expand_as(
-        x[:, :4, :]
-    )
+    c_world = F.pad(
+        torch.eye(3, **storage_opts), (0, 0, 0, 1), value=0.0
+    ).expand_as(x[:, :4, :])
     return c_world + x_mean
 
 
@@ -133,7 +133,9 @@ def _algebraic_error(x_w_rotated, x_cam, weight):
     return oputil.wmean(dist, weight)[:, 0, 0]
 
 
-def _compute_norm_sign_scaling_factor(c_cam, alphas, x_world, y, weight, eps=1e-9):
+def _compute_norm_sign_scaling_factor(
+    c_cam, alphas, x_world, y, weight, eps=1e-9
+):
     """ Given a solution, adjusts the scale and flip
     Args:
         c_cam: control points in camera coordinates
@@ -147,10 +149,14 @@ def _compute_norm_sign_scaling_factor(c_cam, alphas, x_world, y, weight, eps=1e-
     # position of reference points in camera coordinates
     x_cam = torch.matmul(alphas, c_cam)
 
-    x_cam = x_cam * (1.0 - 2.0 * (oputil.wmean(x_cam[..., 2:], weight) < 0).float())
+    x_cam = x_cam * (
+        1.0 - 2.0 * (oputil.wmean(x_cam[..., 2:], weight) < 0).float()
+    )
     if torch.any(x_cam[..., 2:] < -eps):
-        neg_rate = oputil.wmean((x_cam[..., 2:] < 0).float(), weight, dim=(0, 1)).item()
-        warnings.warn("\nEPnP: %2.2f%% points have z<0." % (neg_rate * 100.0))
+        neg_rate = oputil.wmean(
+            (x_cam[..., 2:] < 0).float(), weight, dim=(0, 1)
+        ).item()
+        warnings.warn('\nEPnP: %2.2f%% points have z<0.' % (neg_rate * 100.0))
 
     R, T, s = points_alignment.corresponding_points_alignment(
         x_world, x_cam, weight, estimate_scale=True
@@ -196,7 +202,9 @@ def _kernel_vec_distances(v):
     dv = _gen_pairs(v, dim=-3, reducer=lambda l, r: l - r)  # B x 6 x 3 x D
 
     # we should take dot-product of all (i,j), i < j, with coeff 2
-    rows_2ij = 2.0 * _gen_pairs(dv, dim=-1, reducer=lambda l, r: (l * r).sum(dim=-2))
+    rows_2ij = 2.0 * _gen_pairs(
+        dv, dim=-1, reducer=lambda l, r: (l * r).sum(dim=-2)
+    )
     # this should produce B x 6 x (D choose 2) tensor
 
     # we should take dot-product of all (i,i)
@@ -216,7 +224,9 @@ def _solve_lstsq_subcols(rhs, lhs, lhs_col_idx):
     Returns:
         a least-squares solution for lhs * X = rhs
     """
-    lhs = lhs.index_select(-1, torch.tensor(lhs_col_idx, device=lhs.device).long())
+    lhs = lhs.index_select(
+        -1, torch.tensor(lhs_col_idx, device=lhs.device).long()
+    )
     return torch.matmul(torch.pinverse(lhs), rhs[:, :, None])
 
 
@@ -265,7 +275,9 @@ def _find_null_space_coords_2(kernel_dsts, cw_dst):
         (beta[:, :1, :] >= 0) == (beta[:, 2:3, :] >= 0)
     ).float()
 
-    return torch.cat((coord_0, coord_1, torch.zeros_like(beta[:, :2, :])), dim=1)
+    return torch.cat(
+        (coord_0, coord_1, torch.zeros_like(beta[:, :2, :])), dim=1
+    )
 
 
 def _find_null_space_coords_3(kernel_dsts, cw_dst, eps=1e-9):
@@ -355,7 +367,7 @@ def efficient_pnp(
     # points centroid); 4 x 3
     # TODO: more stable when initialised with the center and eigenvectors!
     c_world = _define_control_points(
-        x.detach(), weights, storage_opts={"dtype": x.dtype, "device": x.device}
+        x.detach(), weights, storage_opts={'dtype': x.dtype, 'device': x.device}
     )
 
     # find the linear combination of the control points to represent the 3d points
@@ -391,7 +403,9 @@ def efficient_pnp(
         for c_cam in c_cam_variants
     ]
 
-    sol_zipped = EpnpSolution(*(torch.stack(list(col)) for col in zip(*solutions)))
+    sol_zipped = EpnpSolution(
+        *(torch.stack(list(col)) for col in zip(*solutions))
+    )
     best = torch.argmin(sol_zipped.err_2d, dim=0)
 
     def gather1d(source, idx):
@@ -399,7 +413,9 @@ def efficient_pnp(
         # in other words, it is batched index_select.
         return source.gather(
             0,
-            idx.reshape(1, -1, *([1] * (len(source.shape) - 2))).expand_as(source[:1]),
+            idx.reshape(1, -1, *([1] * (len(source.shape) - 2))).expand_as(
+                source[:1]
+            ),
         )[0]
 
     return EpnpSolution(*[gather1d(sol_col, best) for sol_col in sol_zipped])

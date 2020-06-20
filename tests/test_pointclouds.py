@@ -43,7 +43,7 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         Returns:
             Pointclouds object.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         p = torch.randint(low=min_points, high=max_points, size=(num_clouds,))
         if lists_to_tensors:
             p.fill_(p[0])
@@ -54,11 +54,13 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         normals_list, features_list = None, None
         if with_normals:
             normals_list = [
-                torch.rand((i, 3), device=device, dtype=torch.float32) for i in p
+                torch.rand((i, 3), device=device, dtype=torch.float32)
+                for i in p
             ]
         if with_features:
             features_list = [
-                torch.rand((i, channels), device=device, dtype=torch.float32) for i in p
+                torch.rand((i, channels), device=device, dtype=torch.float32)
+                for i in p
             ]
 
         if lists_to_tensors:
@@ -68,10 +70,12 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             if with_features:
                 features_list = torch.stack(features_list)
 
-        return Pointclouds(points_list, normals=normals_list, features=features_list)
+        return Pointclouds(
+            points_list, normals=normals_list, features=features_list
+        )
 
     def test_simple(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         points = [
             torch.tensor(
                 [[0.1, 0.3, 0.5], [0.5, 0.2, 0.1], [0.6, 0.8, 0.7]],
@@ -79,7 +83,12 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 device=device,
             ),
             torch.tensor(
-                [[0.1, 0.3, 0.3], [0.6, 0.7, 0.8], [0.2, 0.3, 0.4], [0.1, 0.5, 0.3]],
+                [
+                    [0.1, 0.3, 0.3],
+                    [0.6, 0.7, 0.8],
+                    [0.2, 0.3, 0.4],
+                    [0.1, 0.5, 0.3],
+                ],
                 dtype=torch.float32,
                 device=device,
             ),
@@ -104,7 +113,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         self.assertClose(
             clouds.cloud_to_packed_first_idx().cpu(), torch.tensor([0, 3, 7])
         )
-        self.assertClose(clouds.num_points_per_cloud().cpu(), torch.tensor([3, 4, 5]))
+        self.assertClose(
+            clouds.num_points_per_cloud().cpu(), torch.tensor([3, 4, 5])
+        )
         self.assertClose(
             clouds.padded_to_packed_idx().cpu(),
             torch.tensor([0, 1, 2, 5, 6, 7, 8, 10, 11, 12, 13, 14]),
@@ -112,19 +123,23 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
     def test_all_constructions(self):
         public_getters = [
-            "points_list",
-            "points_packed",
-            "packed_to_cloud_idx",
-            "cloud_to_packed_first_idx",
-            "num_points_per_cloud",
-            "points_padded",
-            "padded_to_packed_idx",
+            'points_list',
+            'points_packed',
+            'packed_to_cloud_idx',
+            'cloud_to_packed_first_idx',
+            'num_points_per_cloud',
+            'points_padded',
+            'padded_to_packed_idx',
         ]
-        public_normals_getters = ["normals_list", "normals_packed", "normals_padded"]
+        public_normals_getters = [
+            'normals_list',
+            'normals_packed',
+            'normals_padded',
+        ]
         public_features_getters = [
-            "features_list",
-            "features_packed",
-            "features_padded",
+            'features_list',
+            'features_packed',
+            'features_padded',
         ]
 
         lengths = [3, 4, 2]
@@ -134,30 +149,40 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         points_data = [torch.zeros((max_len, 3)).uniform_() for i in lengths]
         normals_data = [torch.zeros((max_len, 3)).uniform_() for i in lengths]
         features_data = [torch.zeros((max_len, C)).uniform_() for i in lengths]
-        for length, p, n, f in zip(lengths, points_data, normals_data, features_data):
+        for length, p, n, f in zip(
+            lengths, points_data, normals_data, features_data
+        ):
             p[length:] = 0.0
             n[length:] = 0.0
             f[length:] = 0.0
         points_list = [d[:length] for length, d in zip(lengths, points_data)]
         normals_list = [d[:length] for length, d in zip(lengths, normals_data)]
-        features_list = [d[:length] for length, d in zip(lengths, features_data)]
+        features_list = [
+            d[:length] for length, d in zip(lengths, features_data)
+        ]
         points_packed = torch.cat(points_data)
         normals_packed = torch.cat(normals_data)
         features_packed = torch.cat(features_data)
         test_cases_inputs = [
-            ("list_0_0", points_list, None, None),
-            ("list_1_0", points_list, normals_list, None),
-            ("list_0_1", points_list, None, features_list),
-            ("list_1_1", points_list, normals_list, features_list),
-            ("padded_0_0", points_data, None, None),
-            ("padded_1_0", points_data, normals_data, None),
-            ("padded_0_1", points_data, None, features_data),
-            ("padded_1_1", points_data, normals_data, features_data),
-            ("emptylist_emptylist_emptylist", [], [], []),
+            ('list_0_0', points_list, None, None),
+            ('list_1_0', points_list, normals_list, None),
+            ('list_0_1', points_list, None, features_list),
+            ('list_1_1', points_list, normals_list, features_list),
+            ('padded_0_0', points_data, None, None),
+            ('padded_1_0', points_data, normals_data, None),
+            ('padded_0_1', points_data, None, features_data),
+            ('padded_1_1', points_data, normals_data, features_data),
+            ('emptylist_emptylist_emptylist', [], [], []),
         ]
         false_cases_inputs = [
-            ("list_packed", points_list, normals_packed, features_packed, ValueError),
-            ("packed_0", points_packed, None, None, ValueError),
+            (
+                'list_packed',
+                points_list,
+                normals_packed,
+                features_packed,
+                ValueError,
+            ),
+            ('packed_0', points_packed, None, None, ValueError),
         ]
 
         for name, points, normals, features in test_cases_inputs:
@@ -207,11 +232,15 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         self.assertIsNone(features_padded)
                     for n in range(N):
                         p = points_list[n].shape[0]
-                        self.assertClose(points_padded[n, :p, :], points_list[n])
+                        self.assertClose(
+                            points_padded[n, :p, :], points_list[n]
+                        )
                         if with_normals:
                             norms = normals_list[n].shape[0]
                             self.assertEqual(p, norms)
-                            self.assertClose(normals_padded[n, :p, :], normals_list[n])
+                            self.assertClose(
+                                normals_padded[n, :p, :], normals_list[n]
+                            )
                         if with_features:
                             f = features_list[n].shape[0]
                             self.assertEqual(p, f)
@@ -221,7 +250,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         if points_padded.shape[1] > p:
                             self.assertTrue(points_padded[n, p:, :].eq(0).all())
                             if with_features:
-                                self.assertTrue(features_padded[n, p:, :].eq(0).all())
+                                self.assertTrue(
+                                    features_padded[n, p:, :].eq(0).all()
+                                )
                         self.assertEqual(points_per_cloud[n], p)
 
                     # Check compute packed.
@@ -243,13 +274,17 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         )
                         if with_normals:
                             self.assertClose(
-                                normals_packed[cur : cur + p, :], normals_list[n]
+                                normals_packed[cur : cur + p, :],
+                                normals_list[n],
                             )
                         if with_features:
                             self.assertClose(
-                                features_packed[cur : cur + p, :], features_list[n]
+                                features_packed[cur : cur + p, :],
+                                features_list[n],
                             )
-                        self.assertTrue(packed_to_cloud[cur : cur + p].eq(n).all())
+                        self.assertTrue(
+                            packed_to_cloud[cur : cur + p].eq(n).all()
+                        )
                         self.assertTrue(cloud_to_packed[n] == cur)
                         cur += p
 
@@ -267,7 +302,7 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
     def test_empty(self):
         N, P, C = 10, 100, 2
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         points_list = []
         normals_list = []
         features_list = []
@@ -279,7 +314,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 )[0]
                 points = torch.rand((p, 3), dtype=torch.float32, device=device)
                 normals = torch.rand((p, 3), dtype=torch.float32, device=device)
-                features = torch.rand((p, C), dtype=torch.float32, device=device)
+                features = torch.rand(
+                    (p, C), dtype=torch.float32, device=device
+                )
             else:
                 points = torch.tensor([], dtype=torch.float32, device=device)
                 normals = torch.tensor([], dtype=torch.float32, device=device)
@@ -296,7 +333,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 if with_features:
                     this_features = features_list
                 clouds = Pointclouds(
-                    points=points_list, normals=this_normals, features=this_features
+                    points=points_list,
+                    normals=this_normals,
+                    features=this_features,
                 )
                 points_padded = clouds.points_padded()
                 normals_padded = clouds.normals_padded()
@@ -309,9 +348,13 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 for n in range(N):
                     p = len(points_list[n])
                     if p > 0:
-                        self.assertClose(points_padded[n, :p, :], points_list[n])
+                        self.assertClose(
+                            points_padded[n, :p, :], points_list[n]
+                        )
                         if with_normals:
-                            self.assertClose(normals_padded[n, :p, :], normals_list[n])
+                            self.assertClose(
+                                normals_padded[n, :p, :], normals_list[n]
+                            )
                         if with_features:
                             self.assertClose(
                                 features_padded[n, :p, :], features_list[n]
@@ -319,9 +362,13 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         if points_padded.shape[1] > p:
                             self.assertTrue(points_padded[n, p:, :].eq(0).all())
                             if with_normals:
-                                self.assertTrue(normals_padded[n, p:, :].eq(0).all())
+                                self.assertTrue(
+                                    normals_padded[n, p:, :].eq(0).all()
+                                )
                             if with_features:
-                                self.assertTrue(features_padded[n, p:, :].eq(0).all())
+                                self.assertTrue(
+                                    features_padded[n, p:, :].eq(0).all()
+                                )
                     self.assertTrue(points_per_cloud[n] == p)
 
     def test_clone_list(self):
@@ -334,18 +381,22 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             new_clouds = clouds.clone()
 
             # Check cloned and original objects do not share tensors.
-            self.assertSeparate(new_clouds.points_list()[0], clouds.points_list()[0])
-            self.assertSeparate(new_clouds.normals_list()[0], clouds.normals_list()[0])
+            self.assertSeparate(
+                new_clouds.points_list()[0], clouds.points_list()[0]
+            )
+            self.assertSeparate(
+                new_clouds.normals_list()[0], clouds.normals_list()[0]
+            )
             self.assertSeparate(
                 new_clouds.features_list()[0], clouds.features_list()[0]
             )
             for attrib in [
-                "points_packed",
-                "normals_packed",
-                "features_packed",
-                "points_padded",
-                "normals_padded",
-                "features_padded",
+                'points_packed',
+                'normals_packed',
+                'features_packed',
+                'points_padded',
+                'normals_padded',
+                'features_padded',
             ]:
                 self.assertSeparate(
                     getattr(new_clouds, attrib)(), getattr(clouds, attrib)()
@@ -363,18 +414,22 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             new_clouds = clouds.clone()
 
             # Check cloned and original objects do not share tensors.
-            self.assertSeparate(new_clouds.points_list()[0], clouds.points_list()[0])
-            self.assertSeparate(new_clouds.normals_list()[0], clouds.normals_list()[0])
+            self.assertSeparate(
+                new_clouds.points_list()[0], clouds.points_list()[0]
+            )
+            self.assertSeparate(
+                new_clouds.normals_list()[0], clouds.normals_list()[0]
+            )
             self.assertSeparate(
                 new_clouds.features_list()[0], clouds.features_list()[0]
             )
             for attrib in [
-                "points_packed",
-                "normals_packed",
-                "features_packed",
-                "points_padded",
-                "normals_padded",
-                "features_padded",
+                'points_packed',
+                'normals_packed',
+                'features_packed',
+                'points_padded',
+                'normals_padded',
+                'features_padded',
             ]:
                 self.assertSeparate(
                     getattr(new_clouds, attrib)(), getattr(clouds, attrib)()
@@ -389,7 +444,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         for i in range(N):
             self.assertClose(cloud1.points_list()[i], cloud2.points_list()[i])
             self.assertClose(cloud1.normals_list()[i], cloud2.normals_list()[i])
-            self.assertClose(cloud1.features_list()[i], cloud2.features_list()[i])
+            self.assertClose(
+                cloud1.features_list()[i], cloud2.features_list()[i]
+            )
         has_normals = cloud1.normals_list() is not None
         self.assertTrue(has_normals == (cloud2.normals_list() is not None))
         has_features = cloud1.features_list() is not None
@@ -404,13 +461,22 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         if has_features:
             self.assertClose(cloud1.features_padded(), cloud2.features_padded())
             self.assertClose(cloud1.features_packed(), cloud2.features_packed())
-        self.assertClose(cloud1.packed_to_cloud_idx(), cloud2.packed_to_cloud_idx())
         self.assertClose(
-            cloud1.cloud_to_packed_first_idx(), cloud2.cloud_to_packed_first_idx()
+            cloud1.packed_to_cloud_idx(), cloud2.packed_to_cloud_idx()
         )
-        self.assertClose(cloud1.num_points_per_cloud(), cloud2.num_points_per_cloud())
-        self.assertClose(cloud1.packed_to_cloud_idx(), cloud2.packed_to_cloud_idx())
-        self.assertClose(cloud1.padded_to_packed_idx(), cloud2.padded_to_packed_idx())
+        self.assertClose(
+            cloud1.cloud_to_packed_first_idx(),
+            cloud2.cloud_to_packed_first_idx(),
+        )
+        self.assertClose(
+            cloud1.num_points_per_cloud(), cloud2.num_points_per_cloud()
+        )
+        self.assertClose(
+            cloud1.packed_to_cloud_idx(), cloud2.packed_to_cloud_idx()
+        )
+        self.assertClose(
+            cloud1.padded_to_packed_idx(), cloud2.padded_to_packed_idx()
+        )
         self.assertTrue(all(cloud1.valid == cloud2.valid))
         self.assertTrue(cloud1.equisized == cloud2.equisized)
 
@@ -418,7 +484,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         def naive_offset(clouds, offsets_packed):
             new_points_packed = clouds.points_packed() + offsets_packed
             new_points_list = list(
-                new_points_packed.split(clouds.num_points_per_cloud().tolist(), 0)
+                new_points_packed.split(
+                    clouds.num_points_per_cloud().tolist(), 0
+                )
             )
             return Pointclouds(
                 points=new_points_list,
@@ -436,7 +504,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 clouds._compute_padded()
                 clouds.padded_to_packed_idx()
 
-            deform = torch.rand((all_p, 3), dtype=torch.float32, device=clouds.device)
+            deform = torch.rand(
+                (all_p, 3), dtype=torch.float32, device=clouds.device
+            )
             new_clouds_naive = naive_offset(clouds, deform)
 
             new_clouds = clouds.offset(deform)
@@ -453,7 +523,8 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                     clouds.normals_list()[i], new_clouds_naive.normals_list()[i]
                 )
                 self.assertClose(
-                    clouds.features_list()[i], new_clouds_naive.features_list()[i]
+                    clouds.features_list()[i],
+                    new_clouds_naive.features_list()[i],
                 )
             self.assertCloudsEqual(new_clouds, new_clouds_naive)
 
@@ -481,13 +552,15 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             new_clouds = clouds.scale(scales)
             for i in range(N):
                 self.assertClose(
-                    scales[i] * clouds.points_list()[i], new_clouds.points_list()[i]
+                    scales[i] * clouds.points_list()[i],
+                    new_clouds.points_list()[i],
                 )
                 self.assertClose(
                     clouds.normals_list()[i], new_clouds_naive.normals_list()[i]
                 )
                 self.assertClose(
-                    clouds.features_list()[i], new_clouds_naive.features_list()[i]
+                    clouds.features_list()[i],
+                    new_clouds_naive.features_list()[i],
                 )
             self.assertCloudsEqual(new_clouds, new_clouds_naive)
 
@@ -505,15 +578,20 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             for i in range(len(clouds)):
                 for n in range(N):
                     self.assertClose(
-                        clouds.points_list()[i], new_clouds.points_list()[i * N + n]
+                        clouds.points_list()[i],
+                        new_clouds.points_list()[i * N + n],
                     )
                     self.assertClose(
-                        clouds.normals_list()[i], new_clouds.normals_list()[i * N + n]
+                        clouds.normals_list()[i],
+                        new_clouds.normals_list()[i * N + n],
                     )
                     self.assertClose(
-                        clouds.features_list()[i], new_clouds.features_list()[i * N + n]
+                        clouds.features_list()[i],
+                        new_clouds.features_list()[i * N + n],
                     )
-                    self.assertTrue(clouds.valid[i] == new_clouds.valid[i * N + n])
+                    self.assertTrue(
+                        clouds.valid[i] == new_clouds.valid[i * N + n]
+                    )
             self.assertAllSeparate(
                 clouds.points_list()
                 + new_clouds.points_list()
@@ -534,24 +612,25 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
     def test_to_list(self):
         cloud = self.init_cloud(5, 100, 10)
-        device = torch.device("cuda:1")
+        device = torch.device('cuda:1')
 
         new_cloud = cloud.to(device)
         self.assertTrue(new_cloud.device == device)
-        self.assertTrue(cloud.device == torch.device("cuda:0"))
+        self.assertTrue(cloud.device == torch.device('cuda:0'))
         for attrib in [
-            "points_padded",
-            "points_packed",
-            "normals_padded",
-            "normals_packed",
-            "features_padded",
-            "features_packed",
-            "num_points_per_cloud",
-            "cloud_to_packed_first_idx",
-            "padded_to_packed_idx",
+            'points_padded',
+            'points_packed',
+            'normals_padded',
+            'normals_packed',
+            'features_padded',
+            'features_packed',
+            'num_points_per_cloud',
+            'cloud_to_packed_first_idx',
+            'padded_to_packed_idx',
         ]:
             self.assertClose(
-                getattr(new_cloud, attrib)().cpu(), getattr(cloud, attrib)().cpu()
+                getattr(new_cloud, attrib)().cpu(),
+                getattr(cloud, attrib)().cpu(),
             )
         for i in range(len(cloud)):
             self.assertClose(
@@ -561,7 +640,8 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 cloud.normals_list()[i].cpu(), new_cloud.normals_list()[i].cpu()
             )
             self.assertClose(
-                cloud.features_list()[i].cpu(), new_cloud.features_list()[i].cpu()
+                cloud.features_list()[i].cpu(),
+                new_cloud.features_list()[i].cpu(),
             )
         self.assertTrue(all(cloud.valid.cpu() == new_cloud.valid.cpu()))
         self.assertTrue(cloud.equisized == new_cloud.equisized)
@@ -571,24 +651,25 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
     def test_to_tensor(self):
         cloud = self.init_cloud(5, 100, 10, lists_to_tensors=True)
-        device = torch.device("cuda:1")
+        device = torch.device('cuda:1')
 
         new_cloud = cloud.to(device)
         self.assertTrue(new_cloud.device == device)
-        self.assertTrue(cloud.device == torch.device("cuda:0"))
+        self.assertTrue(cloud.device == torch.device('cuda:0'))
         for attrib in [
-            "points_padded",
-            "points_packed",
-            "normals_padded",
-            "normals_packed",
-            "features_padded",
-            "features_packed",
-            "num_points_per_cloud",
-            "cloud_to_packed_first_idx",
-            "padded_to_packed_idx",
+            'points_padded',
+            'points_packed',
+            'normals_padded',
+            'normals_packed',
+            'features_padded',
+            'features_packed',
+            'num_points_per_cloud',
+            'cloud_to_packed_first_idx',
+            'padded_to_packed_idx',
         ]:
             self.assertClose(
-                getattr(new_cloud, attrib)().cpu(), getattr(cloud, attrib)().cpu()
+                getattr(new_cloud, attrib)().cpu(),
+                getattr(cloud, attrib)().cpu(),
             )
         for i in range(len(cloud)):
             self.assertClose(
@@ -598,7 +679,8 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 cloud.normals_list()[i].cpu(), new_cloud.normals_list()[i].cpu()
             )
             self.assertClose(
-                cloud.features_list()[i].cpu(), new_cloud.features_list()[i].cpu()
+                cloud.features_list()[i].cpu(),
+                new_cloud.features_list()[i].cpu(),
             )
         self.assertTrue(all(cloud.valid.cpu() == new_cloud.valid.cpu()))
         self.assertTrue(cloud.equisized == new_cloud.equisized)
@@ -618,7 +700,11 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         self.assertEqual(len(split_clouds[1]), 3)
         self.assertTrue(
             split_clouds[1].points_list()
-            == [clouds.get_cloud(2)[0], clouds.get_cloud(3)[0], clouds.get_cloud(4)[0]]
+            == [
+                clouds.get_cloud(2)[0],
+                clouds.get_cloud(3)[0],
+                clouds.get_cloud(4)[0],
+            ]
         )
 
         split_sizes = [2, 0.3]
@@ -639,7 +725,7 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
             clouds.get_cloud(0.2)
 
     def test_get_bounding_boxes(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         points_list = []
         for size in [10]:
             points = torch.rand((size, 3), dtype=torch.float32, device=device)
@@ -653,7 +739,7 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         self.assertClose(bboxes_gt, bboxes)
 
     def test_padded_to_packed_idx(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         points_list = []
         npoints = [10, 20, 30]
         for p in npoints:
@@ -667,25 +753,30 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         points_padded = clouds.points_padded()
         points_padded_flat = points_padded.view(-1, 3)
 
-        self.assertClose(points_padded_flat[padded_to_packed_idx], points_packed)
+        self.assertClose(
+            points_padded_flat[padded_to_packed_idx], points_packed
+        )
 
         idx = padded_to_packed_idx.view(-1, 1).expand(-1, 3)
         self.assertClose(points_padded_flat.gather(0, idx), points_packed)
 
     def test_getitem(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         clouds = self.init_cloud(3, 10, 100)
 
         def check_equal(selected, indices):
             for selectedIdx, index in indices:
                 self.assertClose(
-                    selected.points_list()[selectedIdx], clouds.points_list()[index]
+                    selected.points_list()[selectedIdx],
+                    clouds.points_list()[index],
                 )
                 self.assertClose(
-                    selected.normals_list()[selectedIdx], clouds.normals_list()[index]
+                    selected.normals_list()[selectedIdx],
+                    clouds.normals_list()[index],
                 )
                 self.assertClose(
-                    selected.features_list()[selectedIdx], clouds.features_list()[index]
+                    selected.features_list()[selectedIdx],
+                    clouds.features_list()[index],
                 )
 
         # int index
@@ -731,7 +822,11 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         for with_normfeat in (True, False):
             for with_new_normfeat in (True, False):
                 clouds = self.init_cloud(
-                    N, P, C, with_normals=with_normfeat, with_features=with_normfeat
+                    N,
+                    P,
+                    C,
+                    with_normals=with_normfeat,
+                    with_features=with_normfeat,
                 )
 
                 num_points_per_cloud = clouds.num_points_per_cloud()
@@ -750,7 +845,8 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         clouds.points_padded().shape, device=clouds.device
                     )
                     new_normals_list = [
-                        new_normals[i, : num_points_per_cloud[i]] for i in range(N)
+                        new_normals[i, : num_points_per_cloud[i]]
+                        for i in range(N)
                     ]
                     feat_shape = [
                         clouds.points_padded().shape[0],
@@ -759,11 +855,14 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                     ]
                     new_features = torch.rand(feat_shape, device=clouds.device)
                     new_features_list = [
-                        new_features[i, : num_points_per_cloud[i]] for i in range(N)
+                        new_features[i, : num_points_per_cloud[i]]
+                        for i in range(N)
                     ]
 
                 # update
-                new_clouds = clouds.update_padded(new_points, new_normals, new_features)
+                new_clouds = clouds.update_padded(
+                    new_points, new_normals, new_features
+                )
                 self.assertIsNone(new_clouds._points_list)
                 self.assertIsNone(new_clouds._points_packed)
 
@@ -771,9 +870,13 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                 self.assertTrue(all(new_clouds.valid == clouds.valid))
 
                 self.assertClose(new_clouds.points_padded(), new_points)
-                self.assertClose(new_clouds.points_packed(), torch.cat(new_points_list))
+                self.assertClose(
+                    new_clouds.points_packed(), torch.cat(new_points_list)
+                )
                 for i in range(N):
-                    self.assertClose(new_clouds.points_list()[i], new_points_list[i])
+                    self.assertClose(
+                        new_clouds.points_list()[i], new_points_list[i]
+                    )
 
                 if with_new_normfeat:
                     for i in range(N):
@@ -789,22 +892,27 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                     )
                     self.assertClose(new_clouds.features_padded(), new_features)
                     self.assertClose(
-                        new_clouds.features_packed(), torch.cat(new_features_list)
+                        new_clouds.features_packed(),
+                        torch.cat(new_features_list),
                     )
                 else:
                     if with_normfeat:
                         for i in range(N):
                             self.assertClose(
-                                new_clouds.normals_list()[i], clouds.normals_list()[i]
+                                new_clouds.normals_list()[i],
+                                clouds.normals_list()[i],
                             )
                             self.assertClose(
-                                new_clouds.features_list()[i], clouds.features_list()[i]
+                                new_clouds.features_list()[i],
+                                clouds.features_list()[i],
                             )
                             self.assertNotSeparate(
-                                new_clouds.normals_list()[i], clouds.normals_list()[i]
+                                new_clouds.normals_list()[i],
+                                clouds.normals_list()[i],
                             )
                             self.assertNotSeparate(
-                                new_clouds.features_list()[i], clouds.features_list()[i]
+                                new_clouds.features_list()[i],
+                                clouds.features_list()[i],
                             )
 
                         self.assertClose(
@@ -814,16 +922,19 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                             new_clouds.normals_packed(), clouds.normals_packed()
                         )
                         self.assertClose(
-                            new_clouds.features_padded(), clouds.features_padded()
+                            new_clouds.features_padded(),
+                            clouds.features_padded(),
                         )
                         self.assertClose(
-                            new_clouds.features_packed(), clouds.features_packed()
+                            new_clouds.features_packed(),
+                            clouds.features_packed(),
                         )
                         self.assertNotSeparate(
                             new_clouds.normals_padded(), clouds.normals_padded()
                         )
                         self.assertNotSeparate(
-                            new_clouds.features_padded(), clouds.features_padded()
+                            new_clouds.features_padded(),
+                            clouds.features_padded(),
                         )
                     else:
                         self.assertIsNone(new_clouds.normals_list())
@@ -834,9 +945,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                         self.assertIsNone(new_clouds.features_packed())
 
                 for attrib in [
-                    "num_points_per_cloud",
-                    "cloud_to_packed_first_idx",
-                    "padded_to_packed_idx",
+                    'num_points_per_cloud',
+                    'cloud_to_packed_first_idx',
+                    'padded_to_packed_idx',
                 ]:
                     self.assertClose(
                         getattr(new_clouds, attrib)(), getattr(clouds, attrib)()
@@ -848,7 +959,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
         N, P, C = 5, 100, 4
 
-        clouds = self.init_cloud(N, P, C, with_normals=False, with_features=False)
+        clouds = self.init_cloud(
+            N, P, C, with_normals=False, with_features=False
+        )
         device = clouds.device
 
         # box of shape Nx2x3
@@ -860,7 +973,9 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
 
         within_box_naive = []
         for i, cloud in enumerate(clouds.points_list()):
-            within_box_naive.append(inside_box_naive(cloud, box[i, 0], box[i, 1]))
+            within_box_naive.append(
+                inside_box_naive(cloud, box[i, 0], box[i, 1])
+            )
         within_box_naive = torch.cat(within_box_naive, 0)
         self.assertTrue(within_box.eq(within_box_naive).all())
 
@@ -885,15 +1000,15 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
         invalid_box = torch.cat(
             [box_min, box_min - torch.rand((N, 1, 3), device=device)], dim=1
         )
-        with self.assertRaisesRegex(ValueError, "Input box is invalid"):
+        with self.assertRaisesRegex(ValueError, 'Input box is invalid'):
             clouds.inside_box(invalid_box)
 
         # invalid box shapes
         invalid_box = box[0].expand(2, 2, 3)
-        with self.assertRaisesRegex(ValueError, "Input box dimension is"):
+        with self.assertRaisesRegex(ValueError, 'Input box dimension is'):
             clouds.inside_box(invalid_box)
         invalid_box = torch.rand((5, 8, 9, 3), device=device)
-        with self.assertRaisesRegex(ValueError, "Input box must be of shape"):
+        with self.assertRaisesRegex(ValueError, 'Input box must be of shape'):
             clouds.inside_box(invalid_box)
 
     def test_estimate_normals(self):
@@ -914,15 +1029,22 @@ class TestPointclouds(TestCaseMixin, unittest.TestCase):
                     if run_packed:
                         clouds.points_packed()
 
-                    normals_est_padded = clouds.estimate_normals(assign_to_self=True)
+                    normals_est_padded = clouds.estimate_normals(
+                        assign_to_self=True
+                    )
                     normals_est_list = struct_utils.padded_to_list(
                         normals_est_padded, nums.tolist()
                     )
-                    self.assertClose(clouds.normals_padded(), normals_est_padded)
-                    for i in range(len(clouds)):
-                        self.assertClose(clouds.normals_list()[i], normals_est_list[i])
                     self.assertClose(
-                        clouds.normals_packed(), torch.cat(normals_est_list, dim=0)
+                        clouds.normals_padded(), normals_est_padded
+                    )
+                    for i in range(len(clouds)):
+                        self.assertClose(
+                            clouds.normals_list()[i], normals_est_list[i]
+                        )
+                    self.assertClose(
+                        clouds.normals_packed(),
+                        torch.cat(normals_est_list, dim=0),
                     )
 
     @staticmethod

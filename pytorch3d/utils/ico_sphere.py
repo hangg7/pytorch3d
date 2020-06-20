@@ -63,9 +63,9 @@ def ico_sphere(level: int = 0, device=None):
         Meshes object with verts and faces.
     """
     if device is None:
-        device = torch.device("cpu")
+        device = torch.device('cpu')
     if level < 0:
-        raise ValueError("level must be >= 0.")
+        raise ValueError('level must be >= 0.')
     if level == 0:
         verts = torch.tensor(_ico_verts0, dtype=torch.float32, device=device)
         faces = torch.tensor(_ico_faces0, dtype=torch.int64, device=device)

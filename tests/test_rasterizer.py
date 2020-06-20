@@ -7,8 +7,14 @@ from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
-from pytorch3d.renderer.cameras import OpenGLPerspectiveCameras, look_at_view_transform
-from pytorch3d.renderer.mesh.rasterizer import MeshRasterizer, RasterizationSettings
+from pytorch3d.renderer.cameras import (
+    OpenGLPerspectiveCameras,
+    look_at_view_transform,
+)
+from pytorch3d.renderer.mesh.rasterizer import (
+    MeshRasterizer,
+    RasterizationSettings,
+)
 from pytorch3d.renderer.points.rasterizer import (
     PointsRasterizationSettings,
     PointsRasterizer,
@@ -17,7 +23,7 @@ from pytorch3d.structures import Pointclouds
 from pytorch3d.utils.ico_sphere import ico_sphere
 
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parent / 'data'
 DEBUG = False  # Set DEBUG to true to save outputs from the tests.
 
 
@@ -31,8 +37,8 @@ def convert_image_to_binary_mask(filename):
 
 class TestMeshRasterizer(unittest.TestCase):
     def test_simple_sphere(self):
-        device = torch.device("cuda:0")
-        ref_filename = "test_rasterized_sphere.png"
+        device = torch.device('cuda:0')
+        ref_filename = 'test_rasterized_sphere.png'
         image_ref_filename = DATA_DIR / ref_filename
 
         # Rescale image_ref to the 0 - 1 range and convert to a binary mask.
@@ -49,7 +55,9 @@ class TestMeshRasterizer(unittest.TestCase):
         )
 
         # Init rasterizer
-        rasterizer = MeshRasterizer(cameras=cameras, raster_settings=raster_settings)
+        rasterizer = MeshRasterizer(
+            cameras=cameras, raster_settings=raster_settings
+        )
 
         ####################################
         # 1. Test rasterizing a single mesh
@@ -63,7 +71,7 @@ class TestMeshRasterizer(unittest.TestCase):
 
         if DEBUG:
             Image.fromarray((image.numpy() * 255).astype(np.uint8)).save(
-                DATA_DIR / "DEBUG_test_rasterized_sphere.png"
+                DATA_DIR / 'DEBUG_test_rasterized_sphere.png'
             )
 
         self.assertTrue(torch.allclose(image, image_ref))
@@ -92,13 +100,13 @@ class TestMeshRasterizer(unittest.TestCase):
         image[image >= 0] = 1.0
         image[image < 0] = 0.0
 
-        ref_filename = "test_rasterized_sphere_zoom.png"
+        ref_filename = 'test_rasterized_sphere_zoom.png'
         image_ref_filename = DATA_DIR / ref_filename
         image_ref = convert_image_to_binary_mask(image_ref_filename)
 
         if DEBUG:
             Image.fromarray((image.numpy() * 255).astype(np.uint8)).save(
-                DATA_DIR / "DEBUG_test_rasterized_sphere_zoom.png"
+                DATA_DIR / 'DEBUG_test_rasterized_sphere_zoom.png'
             )
         self.assertTrue(torch.allclose(image, image_ref))
 
@@ -111,7 +119,7 @@ class TestMeshRasterizer(unittest.TestCase):
 
         # Check that omitting the cameras in both initialization
         # and the forward pass throws an error:
-        with self.assertRaisesRegex(ValueError, "Cameras must be specified"):
+        with self.assertRaisesRegex(ValueError, 'Cameras must be specified'):
             rasterizer(sphere_mesh)
 
         # Now pass in the cameras as a kwarg
@@ -125,7 +133,7 @@ class TestMeshRasterizer(unittest.TestCase):
 
         if DEBUG:
             Image.fromarray((image.numpy() * 255).astype(np.uint8)).save(
-                DATA_DIR / "DEBUG_test_rasterized_sphere.png"
+                DATA_DIR / 'DEBUG_test_rasterized_sphere.png'
             )
 
         self.assertTrue(torch.allclose(image, image_ref))
@@ -133,14 +141,16 @@ class TestMeshRasterizer(unittest.TestCase):
 
 class TestPointRasterizer(unittest.TestCase):
     def test_simple_sphere(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # Load reference image
-        ref_filename = "test_simple_pointcloud_sphere.png"
+        ref_filename = 'test_simple_pointcloud_sphere.png'
         image_ref_filename = DATA_DIR / ref_filename
 
         # Rescale image_ref to the 0 - 1 range and convert to a binary mask.
-        image_ref = convert_image_to_binary_mask(image_ref_filename).to(torch.int32)
+        image_ref = convert_image_to_binary_mask(image_ref_filename).to(
+            torch.int32
+        )
 
         sphere_mesh = ico_sphere(1, device)
         verts_padded = sphere_mesh.verts_padded()
@@ -162,7 +172,7 @@ class TestPointRasterizer(unittest.TestCase):
 
         # Check that omitting the cameras in both initialization
         # and the forward pass throws an error:
-        with self.assertRaisesRegex(ValueError, "Cameras must be specified"):
+        with self.assertRaisesRegex(ValueError, 'Cameras must be specified'):
             rasterizer(pointclouds)
 
         ##########################################
@@ -180,7 +190,7 @@ class TestPointRasterizer(unittest.TestCase):
 
         if DEBUG:
             Image.fromarray((image.numpy() * 255).astype(np.uint8)).save(
-                DATA_DIR / "DEBUG_test_rasterized_sphere_points.png"
+                DATA_DIR / 'DEBUG_test_rasterized_sphere_points.png'
             )
 
         self.assertTrue(torch.allclose(image, image_ref[..., 0]))

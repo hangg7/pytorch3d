@@ -10,9 +10,9 @@ from test_face_areas_normals import TestFaceAreasNormals
 
 def bm_face_areas_normals() -> None:
     kwargs_list = []
-    backend = ["cpu"]
+    backend = ['cpu']
     if torch.cuda.is_available():
-        backend.append("cuda:0")
+        backend.append('cuda:0')
 
     num_meshes = [2, 10, 32]
     num_verts = [100, 1000]
@@ -22,18 +22,18 @@ def bm_face_areas_normals() -> None:
     for case in test_cases:
         n, v, f, d = case
         kwargs_list.append(
-            {"num_meshes": n, "num_verts": v, "num_faces": f, "device": d}
+            {'num_meshes': n, 'num_verts': v, 'num_faces': f, 'device': d}
         )
     benchmark(
         TestFaceAreasNormals.face_areas_normals_with_init,
-        "FACE_AREAS_NORMALS",
+        'FACE_AREAS_NORMALS',
         kwargs_list,
         warmup_iters=1,
     )
 
     benchmark(
         TestFaceAreasNormals.face_areas_normals_with_init_torch,
-        "FACE_AREAS_NORMALS_TORCH",
+        'FACE_AREAS_NORMALS_TORCH',
         kwargs_list,
         warmup_iters=1,
     )

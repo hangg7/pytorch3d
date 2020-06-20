@@ -21,13 +21,15 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
         num_meshes: int = 10,
         num_verts: int = 1000,
         num_faces: int = 3000,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         device = torch.device(device)
         verts_list = []
         faces_list = []
         for _ in range(num_meshes):
-            verts = torch.rand((num_verts, 3), dtype=torch.float32, device=device)
+            verts = torch.rand(
+                (num_verts, 3), dtype=torch.float32, device=device
+            )
             faces = torch.randint(
                 num_verts, size=(num_faces, 3), dtype=torch.int64, device=device
             )
@@ -45,10 +47,14 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
         device = get_random_cuda_device()
         verts1 = torch.tensor([], dtype=torch.float32, device=device)
         faces1 = torch.tensor([], dtype=torch.int64, device=device)
-        meshes = Meshes(verts=[verts1, verts1, verts1], faces=[faces1, faces1, faces1])
+        meshes = Meshes(
+            verts=[verts1, verts1, verts1], faces=[faces1, faces1, faces1]
+        )
         with self.assertRaises(ValueError) as err:
-            sample_points_from_meshes(meshes, num_samples=100, return_normals=True)
-        self.assertTrue("Meshes are empty." in str(err.exception))
+            sample_points_from_meshes(
+                meshes, num_samples=100, return_normals=True
+            )
+        self.assertTrue('Meshes are empty.' in str(err.exception))
 
     def test_sampling_output(self):
         """
@@ -60,7 +66,12 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
 
         # Unit simplex.
         verts_pyramid = torch.tensor(
-            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ],
             dtype=torch.float32,
             device=device,
         )
@@ -101,8 +112,12 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
         pyramid_verts = samples[2, :]
         pyramid_normals = normals[2, :]
 
-        self.assertClose(pyramid_verts.lt(1).float(), torch.ones_like(pyramid_verts))
-        self.assertClose((pyramid_verts >= 0).float(), torch.ones_like(pyramid_verts))
+        self.assertClose(
+            pyramid_verts.lt(1).float(), torch.ones_like(pyramid_verts)
+        )
+        self.assertClose(
+            (pyramid_verts >= 0).float(), torch.ones_like(pyramid_verts)
+        )
 
         # Face 1: z = 0,  x + y <= 1, normals = (0, 0, 1).
         face_1_idxs = pyramid_verts[:, 2] == 0
@@ -110,10 +125,14 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
             pyramid_verts[face_1_idxs, :],
             pyramid_normals[face_1_idxs, :],
         )
-        self.assertTrue(torch.all((face_1_verts[:, 0] + face_1_verts[:, 1]) <= 1))
+        self.assertTrue(
+            torch.all((face_1_verts[:, 0] + face_1_verts[:, 1]) <= 1)
+        )
         self.assertClose(
             face_1_normals,
-            torch.tensor([0, 0, 1], dtype=torch.float32).expand(face_1_normals.size()),
+            torch.tensor([0, 0, 1], dtype=torch.float32).expand(
+                face_1_normals.size()
+            ),
         )
 
         # Face 2: x = 0,  z + y <= 1, normals = (1, 0, 0).
@@ -122,10 +141,14 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
             pyramid_verts[face_2_idxs, :],
             pyramid_normals[face_2_idxs, :],
         )
-        self.assertTrue(torch.all((face_2_verts[:, 1] + face_2_verts[:, 2]) <= 1))
+        self.assertTrue(
+            torch.all((face_2_verts[:, 1] + face_2_verts[:, 2]) <= 1)
+        )
         self.assertClose(
             face_2_normals,
-            torch.tensor([1, 0, 0], dtype=torch.float32).expand(face_2_normals.size()),
+            torch.tensor([1, 0, 0], dtype=torch.float32).expand(
+                face_2_normals.size()
+            ),
         )
 
         # Face 3: y = 0, x + z <= 1, normals = (0, -1, 0).
@@ -134,10 +157,14 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
             pyramid_verts[face_3_idxs, :],
             pyramid_normals[face_3_idxs, :],
         )
-        self.assertTrue(torch.all((face_3_verts[:, 0] + face_3_verts[:, 2]) <= 1))
+        self.assertTrue(
+            torch.all((face_3_verts[:, 0] + face_3_verts[:, 2]) <= 1)
+        )
         self.assertClose(
             face_3_normals,
-            torch.tensor([0, -1, 0], dtype=torch.float32).expand(face_3_normals.size()),
+            torch.tensor([0, -1, 0], dtype=torch.float32).expand(
+                face_3_normals.size()
+            ),
         )
 
         # Face 4: x + y + z = 1, normals = (1, 1, 1)/sqrt(3).
@@ -223,7 +250,7 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
                 sample_idx = (freqs[sample] == 0).nonzero()[0][0]
                 sampled = sample[sample_idx]
                 print(
-                    "%s th element of last sample was %s, which has probability %s"
+                    '%s th element of last sample was %s, which has probability %s'
                     % (sample_idx, sampled, freqs[sampled])
                 )
                 return False
@@ -234,7 +261,7 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
         Confirm that torch.multinomial does not sample elements which have
         zero probability using a real example of input from a training run.
         """
-        weights = torch.load(Path(__file__).resolve().parent / "weights.pt")
+        weights = torch.load(Path(__file__).resolve().parent / 'weights.pt')
         S = 4096
         num_trials = 100
         for _ in range(0, num_trials):
@@ -249,17 +276,24 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
     def test_verts_nan(self):
         num_verts = 30
         num_faces = 50
-        for device in ["cpu", "cuda:0"]:
-            for invalid in ["nan", "inf"]:
-                verts = torch.rand((num_verts, 3), dtype=torch.float32, device=device)
+        for device in ['cpu', 'cuda:0']:
+            for invalid in ['nan', 'inf']:
+                verts = torch.rand(
+                    (num_verts, 3), dtype=torch.float32, device=device
+                )
                 # randomly assign an invalid type
                 verts[torch.randperm(num_verts)[:10]] = float(invalid)
                 faces = torch.randint(
-                    num_verts, size=(num_faces, 3), dtype=torch.int64, device=device
+                    num_verts,
+                    size=(num_faces, 3),
+                    dtype=torch.int64,
+                    device=device,
                 )
                 meshes = Meshes(verts=[verts], faces=[faces])
 
-                with self.assertRaisesRegex(ValueError, "Meshes contain nan or inf."):
+                with self.assertRaisesRegex(
+                    ValueError, 'Meshes contain nan or inf.'
+                ):
                     sample_points_from_meshes(
                         meshes, num_samples=100, return_normals=True
                     )
@@ -270,12 +304,14 @@ class TestSamplePoints(TestCaseMixin, unittest.TestCase):
         num_verts: int,
         num_faces: int,
         num_samples: int,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         verts_list = []
         faces_list = []
         for _ in range(num_meshes):
-            verts = torch.rand((num_verts, 3), dtype=torch.float32, device=device)
+            verts = torch.rand(
+                (num_verts, 3), dtype=torch.float32, device=device
+            )
             faces = torch.randint(
                 num_verts, size=(num_faces, 3), dtype=torch.int64, device=device
             )

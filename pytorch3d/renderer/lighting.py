@@ -110,12 +110,17 @@ def specular(
     # TODO: attentuate based on inverse squared distance to the light source
 
     if points.shape != normals.shape:
-        msg = "Expected points and normals to have the same shape: got %r, %r"
+        msg = 'Expected points and normals to have the same shape: got %r, %r'
         raise ValueError(msg % (points.shape, normals.shape))
 
     # Ensure all inputs have same batch dimension as points
     matched_tensors = convert_to_tensors_and_broadcast(
-        points, color, direction, camera_position, shininess, device=points.device
+        points,
+        color,
+        direction,
+        camera_position,
+        shininess,
+        device=points.device,
     )
     _, color, direction, camera_position, shininess = matched_tensors
 
@@ -158,7 +163,7 @@ class DirectionalLights(TensorProperties):
         diffuse_color=((0.3, 0.3, 0.3),),
         specular_color=((0.2, 0.2, 0.2),),
         direction=((0, 1, 0),),
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         """
         Args:
@@ -185,7 +190,7 @@ class DirectionalLights(TensorProperties):
         _validate_light_properties(self)
         # pyre-fixme[16]: `DirectionalLights` has no attribute `direction`.
         if self.direction.shape[-1] != 3:
-            msg = "Expected direction to have shape (N, 3); got %r"
+            msg = 'Expected direction to have shape (N, 3); got %r'
             raise ValueError(msg % repr(self.direction.shape))
 
     def clone(self):
@@ -204,7 +209,9 @@ class DirectionalLights(TensorProperties):
             direction=self.direction,
         )
 
-    def specular(self, normals, points, camera_position, shininess) -> torch.Tensor:
+    def specular(
+        self, normals, points, camera_position, shininess
+    ) -> torch.Tensor:
         return specular(
             points=points,
             normals=normals,
@@ -224,7 +231,7 @@ class PointLights(TensorProperties):
         diffuse_color=((0.3, 0.3, 0.3),),
         specular_color=((0.2, 0.2, 0.2),),
         location=((0, 1, 0),),
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         """
         Args:
@@ -251,7 +258,7 @@ class PointLights(TensorProperties):
         _validate_light_properties(self)
         # pyre-fixme[16]: `PointLights` has no attribute `location`.
         if self.location.shape[-1] != 3:
-            msg = "Expected location to have shape (N, 3); got %r"
+            msg = 'Expected location to have shape (N, 3); got %r'
             raise ValueError(msg % repr(self.location.shape))
 
     def clone(self):
@@ -262,9 +269,13 @@ class PointLights(TensorProperties):
         # pyre-fixme[16]: `PointLights` has no attribute `location`.
         direction = self.location - points
         # pyre-fixme[16]: `PointLights` has no attribute `diffuse_color`.
-        return diffuse(normals=normals, color=self.diffuse_color, direction=direction)
+        return diffuse(
+            normals=normals, color=self.diffuse_color, direction=direction
+        )
 
-    def specular(self, normals, points, camera_position, shininess) -> torch.Tensor:
+    def specular(
+        self, normals, points, camera_position, shininess
+    ) -> torch.Tensor:
         # pyre-fixme[16]: `PointLights` has no attribute `location`.
         direction = self.location - points
         return specular(
@@ -279,9 +290,9 @@ class PointLights(TensorProperties):
 
 
 def _validate_light_properties(obj):
-    props = ("ambient_color", "diffuse_color", "specular_color")
+    props = ('ambient_color', 'diffuse_color', 'specular_color')
     for n in props:
         t = getattr(obj, n)
         if t.shape[-1] != 3:
-            msg = "Expected %s to have shape (N, 3); got %r"
+            msg = 'Expected %s to have shape (N, 3); got %r'
             raise ValueError(msg % (n, t.shape))

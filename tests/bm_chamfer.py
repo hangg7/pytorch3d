@@ -8,9 +8,9 @@ from test_chamfer import TestChamfer
 
 
 def bm_chamfer() -> None:
-    devices = ["cpu"]
+    devices = ['cpu']
     if torch.cuda.is_available():
-        devices.append("cuda:0")
+        devices.append('cuda:0')
 
     kwargs_list_naive = []
     batch_size = [1, 32]
@@ -20,18 +20,24 @@ def bm_chamfer() -> None:
     for case in test_cases:
         b, n, d = case
         kwargs_list_naive.append(
-            {"batch_size": b, "P1": 32, "P2": 64, "return_normals": n, "device": d}
+            {
+                'batch_size': b,
+                'P1': 32,
+                'P2': 64,
+                'return_normals': n,
+                'device': d,
+            }
         )
 
     benchmark(
         TestChamfer.chamfer_naive_with_init,
-        "CHAMFER_NAIVE",
+        'CHAMFER_NAIVE',
         kwargs_list_naive,
         warmup_iters=1,
     )
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = 'cuda:0'
         kwargs_list = []
         batch_size = [1, 32]
         P1 = [32, 1000, 10000]
@@ -44,12 +50,17 @@ def bm_chamfer() -> None:
             b, p1, p2, n, h = case
             kwargs_list.append(
                 {
-                    "batch_size": b,
-                    "P1": p1,
-                    "P2": p2,
-                    "return_normals": n,
-                    "homogeneous": h,
-                    "device": device,
+                    'batch_size': b,
+                    'P1': p1,
+                    'P2': p2,
+                    'return_normals': n,
+                    'homogeneous': h,
+                    'device': device,
                 }
             )
-        benchmark(TestChamfer.chamfer_with_init, "CHAMFER", kwargs_list, warmup_iters=1)
+        benchmark(
+            TestChamfer.chamfer_with_init,
+            'CHAMFER',
+            kwargs_list,
+            warmup_iters=1,
+        )

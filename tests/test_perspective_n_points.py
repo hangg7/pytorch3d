@@ -14,9 +14,9 @@ def reproj_error(x_world, y, R, T, weight=None):
     y_hat = y_hat / y_hat[..., 2:]
     if weight is None:
         weight = y.new_ones((1, 1))
-    return (((weight[:, :, None] * (y - y_hat[..., :2])) ** 2).sum(dim=-1) ** 0.5).mean(
-        dim=-1
-    )
+    return (
+        ((weight[:, :, None] * (y - y_hat[..., :2])) ** 2).sum(dim=-1) ** 0.5
+    ).mean(dim=-1)
 
 
 class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
@@ -24,7 +24,9 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
         super().setUp()
         torch.manual_seed(42)
 
-    def _run_and_print(self, x_world, y, R, T, print_stats, skip_q, check_output=False):
+    def _run_and_print(
+        self, x_world, y, R, T, print_stats, skip_q, check_output=False
+    ):
         sol = perspective_n_points.efficient_pnp(
             x_world, y.expand_as(x_world[:, :, :2]), skip_quadratic_eq=skip_q
         )
@@ -38,10 +40,10 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
         num_pts_thresh = 5 if skip_q else 4
         if check_output and num_pts > num_pts_thresh:
             assert_msg = (
-                f"test_perspective_n_points assertion failure for "
-                f"n_points={num_pts}, "
-                f"skip_quadratic={skip_q}, "
-                f"no noise."
+                f'test_perspective_n_points assertion failure for '
+                f'n_points={num_pts}, '
+                f'skip_quadratic={skip_q}, '
+                f'no noise.'
             )
 
             self.assertClose(err_2d, sol.err_2d, msg=assert_msg)
@@ -65,10 +67,10 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
                 torch.cat((sol.R, R), dim=-1),
                 torch.stack((sol.T, T[:, 0, :]), dim=-1),
             ):
-                print("2D Error: %1.4f" % err_2d.item())
-                print("3D Error: %1.4f" % err_3d.item())
-                print("R_hat | R_gt\n", R_gt)
-                print("T_hat | T_gt\n", T_gt)
+                print('2D Error: %1.4f' % err_2d.item())
+                print('3D Error: %1.4f' % err_3d.item())
+                print('R_hat | R_gt\n', R_gt)
+                print('T_hat | T_gt\n', T_gt)
 
     def _testcase_from_2d(self, y, print_stats, benchmark, skip_q=False):
         x_cam = torch.cat((y, torch.rand_like(y[:, :1]) * 2.0 + 3.5), dim=1)
@@ -79,7 +81,7 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
         x_world = torch.matmul(x_cam - T, R.transpose(1, 2))
 
         if print_stats:
-            print("Run without noise")
+            print('Run without noise')
 
         if benchmark:  # return curried call
             torch.cuda.synchronize()
@@ -90,16 +92,23 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
 
             return result
 
-        self._run_and_print(x_world, y, R, T, print_stats, skip_q, check_output=True)
+        self._run_and_print(
+            x_world, y, R, T, print_stats, skip_q, check_output=True
+        )
 
         # in the noisy case, there are no guarantees, so we check it doesn't crash
         if print_stats:
-            print("Run with noise")
+            print('Run with noise')
         x_world += torch.randn_like(x_world) * 0.1
         self._run_and_print(x_world, y, R, T, print_stats, skip_q)
 
     def case_with_gaussian_points(
-        self, batch_size=10, num_pts=20, print_stats=False, benchmark=True, skip_q=False
+        self,
+        batch_size=10,
+        num_pts=20,
+        print_stats=False,
+        benchmark=True,
+        skip_q=False,
     ):
         return self._testcase_from_2d(
             torch.randn((num_pts, 2)).cuda() / 3.0,
@@ -110,7 +119,7 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
 
     def test_perspective_n_points(self, print_stats=False):
         if print_stats:
-            print("RUN ON A DENSE GRID")
+            print('RUN ON A DENSE GRID')
         u = torch.linspace(-1.0, 1.0, 20)
         v = torch.linspace(-1.0, 1.0, 15)
         for skip_q in [False, True]:
@@ -121,7 +130,7 @@ class TestPerspectiveNPoints(TestCaseMixin, unittest.TestCase):
         for num_pts in range(6, 3, -1):
             for skip_q in [False, True]:
                 if print_stats:
-                    print(f"RUN ON {num_pts} points; skip_quadratic: {skip_q}")
+                    print(f'RUN ON {num_pts} points; skip_quadratic: {skip_q}')
 
                 self.case_with_gaussian_points(
                     num_pts=num_pts,

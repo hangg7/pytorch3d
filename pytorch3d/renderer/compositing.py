@@ -50,7 +50,9 @@ class _CompositeAlphaPoints(torch.autograd.Function):
     def forward(ctx, features, alphas, points_idx):
         pt_cld = _C.accum_alphacomposite(features, alphas, points_idx)
 
-        ctx.save_for_backward(features.clone(), alphas.clone(), points_idx.clone())
+        ctx.save_for_backward(
+            features.clone(), alphas.clone(), points_idx.clone()
+        )
         return pt_cld
 
     @staticmethod
@@ -67,7 +69,9 @@ class _CompositeAlphaPoints(torch.autograd.Function):
         return grad_features, grad_alphas, grad_points_idx, None
 
 
-def alpha_composite(pointsidx, alphas, pt_clds, blend_params=None) -> torch.Tensor:
+def alpha_composite(
+    pointsidx, alphas, pt_clds, blend_params=None
+) -> torch.Tensor:
     """
     Composite features within a z-buffer using alpha compositing. Given a z-buffer
     with corresponding features and weights, these values are accumulated according
@@ -130,7 +134,9 @@ class _CompositeNormWeightedSumPoints(torch.autograd.Function):
     def forward(ctx, features, alphas, points_idx):
         pt_cld = _C.accum_weightedsumnorm(features, alphas, points_idx)
 
-        ctx.save_for_backward(features.clone(), alphas.clone(), points_idx.clone())
+        ctx.save_for_backward(
+            features.clone(), alphas.clone(), points_idx.clone()
+        )
         return pt_cld
 
     @staticmethod
@@ -147,7 +153,9 @@ class _CompositeNormWeightedSumPoints(torch.autograd.Function):
         return grad_features, grad_alphas, grad_points_idx, None
 
 
-def norm_weighted_sum(pointsidx, alphas, pt_clds, blend_params=None) -> torch.Tensor:
+def norm_weighted_sum(
+    pointsidx, alphas, pt_clds, blend_params=None
+) -> torch.Tensor:
     """
     Composite features within a z-buffer using normalized weighted sum. Given a z-buffer
     with corresponding features and weights, these values are accumulated
@@ -209,7 +217,9 @@ class _CompositeWeightedSumPoints(torch.autograd.Function):
     def forward(ctx, features, alphas, points_idx):
         pt_cld = _C.accum_weightedsum(features, alphas, points_idx)
 
-        ctx.save_for_backward(features.clone(), alphas.clone(), points_idx.clone())
+        ctx.save_for_backward(
+            features.clone(), alphas.clone(), points_idx.clone()
+        )
         return pt_cld
 
     @staticmethod

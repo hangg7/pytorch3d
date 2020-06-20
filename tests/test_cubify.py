@@ -10,14 +10,14 @@ from pytorch3d.ops import cubify
 class TestCubify(TestCaseMixin, unittest.TestCase):
     def test_allempty(self):
         N, V = 32, 14
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         voxels = torch.zeros((N, V, V, V), dtype=torch.float32, device=device)
         meshes = cubify(voxels, 0.5)
         self.assertTrue(meshes.isempty())
 
     def test_cubify(self):
         N, V = 4, 2
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         voxels = torch.zeros((N, V, V, V), dtype=torch.float32, device=device)
 
         # 1st example: (top left corner, znear) is on
@@ -259,7 +259,7 @@ class TestCubify(TestCaseMixin, unittest.TestCase):
 
     def test_align(self):
         N, V = 1, 2
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         voxels = torch.ones((N, V, V, V), dtype=torch.float32, device=device)
 
         # topleft align
@@ -269,38 +269,40 @@ class TestCubify(TestCaseMixin, unittest.TestCase):
         self.assertClose(verts.max(), torch.tensor(3.0, device=device))
 
         # corner align
-        mesh = cubify(voxels, 0.5, align="corner")
+        mesh = cubify(voxels, 0.5, align='corner')
         verts, faces = mesh.get_mesh_verts_faces(0)
         self.assertClose(verts.min(), torch.tensor(-1.0, device=device))
         self.assertClose(verts.max(), torch.tensor(1.0, device=device))
 
         # center align
-        mesh = cubify(voxels, 0.5, align="center")
+        mesh = cubify(voxels, 0.5, align='center')
         verts, faces = mesh.get_mesh_verts_faces(0)
         self.assertClose(verts.min(), torch.tensor(-2.0, device=device))
         self.assertClose(verts.max(), torch.tensor(2.0, device=device))
 
         # invalid align
-        with self.assertRaisesRegex(ValueError, "Align mode must be one of"):
-            cubify(voxels, 0.5, align="")
+        with self.assertRaisesRegex(ValueError, 'Align mode must be one of'):
+            cubify(voxels, 0.5, align='')
 
         # invalid align
-        with self.assertRaisesRegex(ValueError, "Align mode must be one of"):
-            cubify(voxels, 0.5, align="topright")
+        with self.assertRaisesRegex(ValueError, 'Align mode must be one of'):
+            cubify(voxels, 0.5, align='topright')
 
         # inside occupancy, similar to GH#185 use case
         N, V = 1, 4
         voxels = torch.zeros((N, V, V, V), dtype=torch.float32, device=device)
         voxels[0, : V // 2, : V // 2, : V // 2] = 1.0
-        mesh = cubify(voxels, 0.5, align="corner")
+        mesh = cubify(voxels, 0.5, align='corner')
         verts, faces = mesh.get_mesh_verts_faces(0)
         self.assertClose(verts.min(), torch.tensor(-1.0, device=device))
         self.assertClose(verts.max(), torch.tensor(0.0, device=device))
 
     @staticmethod
     def cubify_with_init(batch_size: int, V: int):
-        device = torch.device("cuda:0")
-        voxels = torch.rand((batch_size, V, V, V), dtype=torch.float32, device=device)
+        device = torch.device('cuda:0')
+        voxels = torch.rand(
+            (batch_size, V, V, V), dtype=torch.float32, device=device
+        )
         torch.cuda.synchronize()
 
         def convert():

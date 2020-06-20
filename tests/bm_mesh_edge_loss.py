@@ -15,7 +15,10 @@ def bm_mesh_edge_loss() -> None:
     test_cases = product(num_meshes, max_v, max_f)
     for case in test_cases:
         n, v, f = case
-        kwargs_list.append({"num_meshes": n, "max_v": v, "max_f": f})
+        kwargs_list.append({'num_meshes': n, 'max_v': v, 'max_f': f})
     benchmark(
-        TestMeshEdgeLoss.mesh_edge_loss, "MESH_EDGE_LOSS", kwargs_list, warmup_iters=1
+        TestMeshEdgeLoss.mesh_edge_loss,
+        'MESH_EDGE_LOSS',
+        kwargs_list,
+        warmup_iters=1,
     )

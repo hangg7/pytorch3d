@@ -12,7 +12,7 @@ class TestMaterials(TestCaseMixin, unittest.TestCase):
         """
         Initialize Materials class with the default values.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         mat = Materials(device=device)
         self.assertTrue(torch.is_tensor(mat.ambient_color))
         self.assertTrue(torch.is_tensor(mat.diffuse_color))
@@ -28,8 +28,8 @@ class TestMaterials(TestCaseMixin, unittest.TestCase):
         self.assertTrue(mat.shininess.shape == (1,))
 
     def test_materials_clone_to(self):
-        device = torch.device("cuda:0")
-        cpu = torch.device("cpu")
+        device = torch.device('cuda:0')
+        cpu = torch.device('cpu')
         mat = Materials()
         new_mat = mat.clone().to(device)
         self.assertTrue(mat.ambient_color.device == cpu)
@@ -63,7 +63,8 @@ class TestMaterials(TestCaseMixin, unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             Materials(
-                ambient_color=torch.randn(10, 3), diffuse_color=torch.randn(15, 3)
+                ambient_color=torch.randn(10, 3),
+                diffuse_color=torch.randn(15, 3),
             )
 
     def test_initialize_materials_dimensions_fail(self):
@@ -78,12 +79,16 @@ class TestMaterials(TestCaseMixin, unittest.TestCase):
             Materials(shininess=torch.randn(10, 2))
 
     def test_initialize_materials_mixed_inputs(self):
-        mat = Materials(ambient_color=torch.randn(1, 3), diffuse_color=((1, 1, 1),))
+        mat = Materials(
+            ambient_color=torch.randn(1, 3), diffuse_color=((1, 1, 1),)
+        )
         self.assertTrue(mat.ambient_color.shape == (1, 3))
         self.assertTrue(mat.diffuse_color.shape == (1, 3))
 
     def test_initialize_materials_mixed_inputs_broadcast(self):
-        mat = Materials(ambient_color=torch.randn(10, 3), diffuse_color=((1, 1, 1),))
+        mat = Materials(
+            ambient_color=torch.randn(10, 3), diffuse_color=((1, 1, 1),)
+        )
         self.assertTrue(mat.ambient_color.shape == (10, 3))
         self.assertTrue(mat.diffuse_color.shape == (10, 3))
         self.assertTrue(mat.specular_color.shape == (10, 3))

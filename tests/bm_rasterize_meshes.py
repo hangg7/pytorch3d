@@ -18,15 +18,15 @@ from test_rasterize_meshes import TestRasterizeMeshes
 def bm_rasterize_meshes() -> None:
     kwargs_list = [
         {
-            "num_meshes": 1,
-            "ico_level": 0,
-            "image_size": 10,  # very slow with large image size
-            "blur_radius": 0.0,
+            'num_meshes': 1,
+            'ico_level': 0,
+            'image_size': 10,  # very slow with large image size
+            'blur_radius': 0.0,
         }
     ]
     benchmark(
         TestRasterizeMeshes.rasterize_meshes_python_with_init,
-        "RASTERIZE_MESHES",
+        'RASTERIZE_MESHES',
         kwargs_list,
         warmup_iters=1,
     )
@@ -40,11 +40,16 @@ def bm_rasterize_meshes() -> None:
     for case in test_cases:
         n, ic, im, b = case
         kwargs_list.append(
-            {"num_meshes": n, "ico_level": ic, "image_size": im, "blur_radius": b}
+            {
+                'num_meshes': n,
+                'ico_level': ic,
+                'image_size': im,
+                'blur_radius': b,
+            }
         )
     benchmark(
         TestRasterizeMeshes.rasterize_meshes_cpu_with_init,
-        "RASTERIZE_MESHES",
+        'RASTERIZE_MESHES',
         kwargs_list,
         warmup_iters=1,
     )
@@ -59,23 +64,25 @@ def bm_rasterize_meshes() -> None:
         test_cases = product(num_meshes, ico_level, image_size, blur, bin_size)
         # only keep cases where bin_size == 0 or image_size / bin_size < 16
         test_cases = [
-            elem for elem in test_cases if (elem[-1] == 0 or elem[-3] / elem[-1] < 16)
+            elem
+            for elem in test_cases
+            if (elem[-1] == 0 or elem[-3] / elem[-1] < 16)
         ]
         for case in test_cases:
             n, ic, im, b, bn = case
             kwargs_list.append(
                 {
-                    "num_meshes": n,
-                    "ico_level": ic,
-                    "image_size": im,
-                    "blur_radius": b,
-                    "bin_size": bn,
-                    "max_faces_per_bin": 200,
+                    'num_meshes': n,
+                    'ico_level': ic,
+                    'image_size': im,
+                    'blur_radius': b,
+                    'bin_size': bn,
+                    'max_faces_per_bin': 200,
                 }
             )
         benchmark(
             TestRasterizeMeshes.rasterize_meshes_cuda_with_init,
-            "RASTERIZE_MESHES_CUDA",
+            'RASTERIZE_MESHES_CUDA',
             kwargs_list,
             warmup_iters=1,
         )

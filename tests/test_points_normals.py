@@ -49,12 +49,14 @@ class TestPCLNormals(TestCaseMixin, unittest.TestCase):
 
         return pcl, normals
 
-    def test_pcl_normals(self, batch_size=3, num_points=300, neighborhood_size=50):
+    def test_pcl_normals(
+        self, batch_size=3, num_points=300, neighborhood_size=50
+    ):
         """
         Tests the normal estimation on a spherical point cloud, where
         we know the ground truth normals.
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         # run several times for different random point clouds
         for run_idx in range(3):
             # either use tensors or Pointclouds as input
@@ -100,10 +102,15 @@ class TestPCLNormals(TestCaseMixin, unittest.TestCase):
                         )
                         normals_from_pcl = pcl.normals_padded()
                         for nrm, nrm_from_pcl, nrm_pcl, np in zip(
-                            normals, normals_from_pcl, normals_pcl, num_pcl_points
+                            normals,
+                            normals_from_pcl,
+                            normals_pcl,
+                            num_pcl_points,
                         ):
                             self.assertClose(nrm[:np], nrm_pcl[:np], atol=1e-5)
-                            self.assertClose(nrm[:np], nrm_from_pcl[:np], atol=1e-5)
+                            self.assertClose(
+                                nrm[:np], nrm_from_pcl[:np], atol=1e-5
+                            )
 
                     # check that local coord frames give the same normal
                     # as normals
@@ -122,10 +129,14 @@ class TestPCLNormals(TestCaseMixin, unittest.TestCase):
                         avg_parallel = abs_parallel.mean()
                         std_parallel = abs_parallel.std()
                         self.assertClose(
-                            avg_parallel, torch.ones_like(avg_parallel), atol=1e-2
+                            avg_parallel,
+                            torch.ones_like(avg_parallel),
+                            atol=1e-2,
                         )
                         self.assertClose(
-                            std_parallel, torch.zeros_like(std_parallel), atol=1e-2
+                            std_parallel,
+                            torch.zeros_like(std_parallel),
+                            atol=1e-2,
                         )
 
                     if disambiguate_directions:
@@ -133,19 +144,21 @@ class TestPCLNormals(TestCaseMixin, unittest.TestCase):
                         # have the same sign
                         for normp, np in zip(normal_parallel, num_pcl_points):
                             n_pos = (normp[:np] > 0).sum()
-                            self.assertTrue((n_pos > np * 0.95) or (n_pos < np * 0.05))
+                            self.assertTrue(
+                                (n_pos > np * 0.95) or (n_pos < np * 0.05)
+                            )
 
                     if DEBUG and run_idx == 0 and not use_pointclouds:
                         import os
                         from pytorch3d.io.ply_io import save_ply
 
                         # export to .ply
-                        outdir = "/tmp/pt3d_pcl_normals_test/"
+                        outdir = '/tmp/pt3d_pcl_normals_test/'
                         os.makedirs(outdir, exist_ok=True)
                         plyfile = os.path.join(
-                            outdir, f"pcl_disamb={disambiguate_directions}.ply"
+                            outdir, f'pcl_disamb={disambiguate_directions}.ply'
                         )
-                        print(f"Storing point cloud with normals to {plyfile}.")
+                        print(f'Storing point cloud with normals to {plyfile}.')
                         pcl_idx = 0
                         save_ply(
                             plyfile,

@@ -144,9 +144,11 @@ class CamerasBase(TensorProperties):
             T: a Transform3d object which represents a batch of transforms
             of shape (N, 3, 3)
         """
-        self.R = kwargs.get("R", self.R)  # pyre-ignore[16]
-        self.T = kwargs.get("T", self.T)  # pyre-ignore[16]
-        world_to_view_transform = get_world_to_view_transform(R=self.R, T=self.T)
+        self.R = kwargs.get('R', self.R)  # pyre-ignore[16]
+        self.T = kwargs.get('T', self.T)  # pyre-ignore[16]
+        world_to_view_transform = get_world_to_view_transform(
+            R=self.R, T=self.T
+        )
         return world_to_view_transform
 
     def get_full_projection_transform(self, **kwargs) -> Transform3d:
@@ -167,9 +169,11 @@ class CamerasBase(TensorProperties):
             T: a Transform3d object which represents a batch of transforms
             of shape (N, 3, 3)
         """
-        self.R = kwargs.get("R", self.R)  # pyre-ignore[16]
-        self.T = kwargs.get("T", self.T)  # pyre-ignore[16]
-        world_to_view_transform = self.get_world_to_view_transform(R=self.R, T=self.T)
+        self.R = kwargs.get('R', self.R)  # pyre-ignore[16]
+        self.T = kwargs.get('T', self.T)  # pyre-ignore[16]
+        world_to_view_transform = self.get_world_to_view_transform(
+            R=self.R, T=self.T
+        )
         view_to_screen_transform = self.get_projection_transform(**kwargs)
         return world_to_view_transform.compose(view_to_screen_transform)
 
@@ -235,7 +239,7 @@ class OpenGLPerspectiveCameras(CamerasBase):
         degrees: bool = True,
         R=r,
         T=t,
-        device="cpu",
+        device='cpu',
     ):
         """
         __init__(self, znear, zfar, aspect_ratio, fov, degrees, R, T, device) -> None  # noqa
@@ -295,14 +299,16 @@ class OpenGLPerspectiveCameras(CamerasBase):
                     [0,    0,    1,   0],
             ]
         """
-        znear = kwargs.get("znear", self.znear)  # pyre-ignore[16]
-        zfar = kwargs.get("zfar", self.zfar)  # pyre-ignore[16]
-        fov = kwargs.get("fov", self.fov)  # pyre-ignore[16]
+        znear = kwargs.get('znear', self.znear)  # pyre-ignore[16]
+        zfar = kwargs.get('zfar', self.zfar)  # pyre-ignore[16]
+        fov = kwargs.get('fov', self.fov)  # pyre-ignore[16]
         # pyre-ignore[16]
-        aspect_ratio = kwargs.get("aspect_ratio", self.aspect_ratio)
-        degrees = kwargs.get("degrees", self.degrees)
+        aspect_ratio = kwargs.get('aspect_ratio', self.aspect_ratio)
+        degrees = kwargs.get('degrees', self.degrees)
 
-        P = torch.zeros((self._N, 4, 4), device=self.device, dtype=torch.float32)
+        P = torch.zeros(
+            (self._N, 4, 4), device=self.device, dtype=torch.float32
+        )
         ones = torch.ones((self._N), dtype=torch.float32, device=self.device)
         if degrees:
             fov = (np.pi / 180) * fov
@@ -378,7 +384,9 @@ class OpenGLPerspectiveCameras(CamerasBase):
             xy_sdepth = xy_depth
         else:
             # parse out important values from the projection matrix
-            P_matrix = self.get_projection_transform(**kwargs.copy()).get_matrix()
+            P_matrix = self.get_projection_transform(
+                **kwargs.copy()
+            ).get_matrix()
             # parse out f1, f2 from P_matrix
             unsqueeze_shape = [1] * xy_depth.dim()
             unsqueeze_shape[0] = P_matrix.shape[0]
@@ -411,7 +419,7 @@ class OpenGLOrthographicCameras(CamerasBase):
         scale_xyz=((1.0, 1.0, 1.0),),  # (1, 3)
         R=r,
         T=t,
-        device="cpu",
+        device='cpu',
     ):
         """
         __init__(self, znear, zfar, top, bottom, left, right, scale_xyz, R, T, device) -> None  # noqa
@@ -474,15 +482,17 @@ class OpenGLOrthographicCameras(CamerasBase):
                     [0,              0,         0,       1],
             ]
         """
-        znear = kwargs.get("znear", self.znear)  # pyre-ignore[16]
-        zfar = kwargs.get("zfar", self.zfar)  # pyre-ignore[16]
-        left = kwargs.get("left", self.left)  # pyre-ignore[16]
-        right = kwargs.get("right", self.right)  # pyre-ignore[16]
-        top = kwargs.get("top", self.top)  # pyre-ignore[16]
-        bottom = kwargs.get("bottom", self.bottom)  # pyre-ignore[16]
-        scale_xyz = kwargs.get("scale_xyz", self.scale_xyz)  # pyre-ignore[16]
+        znear = kwargs.get('znear', self.znear)  # pyre-ignore[16]
+        zfar = kwargs.get('zfar', self.zfar)  # pyre-ignore[16]
+        left = kwargs.get('left', self.left)  # pyre-ignore[16]
+        right = kwargs.get('right', self.right)  # pyre-ignore[16]
+        top = kwargs.get('top', self.top)  # pyre-ignore[16]
+        bottom = kwargs.get('bottom', self.bottom)  # pyre-ignore[16]
+        scale_xyz = kwargs.get('scale_xyz', self.scale_xyz)  # pyre-ignore[16]
 
-        P = torch.zeros((self._N, 4, 4), dtype=torch.float32, device=self.device)
+        P = torch.zeros(
+            (self._N, 4, 4), dtype=torch.float32, device=self.device
+        )
         ones = torch.ones((self._N), dtype=torch.float32, device=self.device)
         # NOTE: OpenGL flips handedness of coordinate system between camera
         # space and NDC space so z sign is -ve. In PyTorch3D we maintain a
@@ -529,7 +539,9 @@ class OpenGLOrthographicCameras(CamerasBase):
         """
 
         if world_coordinates:
-            to_screen_transform = self.get_full_projection_transform(**kwargs.copy())
+            to_screen_transform = self.get_full_projection_transform(
+                **kwargs.copy()
+            )
         else:
             to_screen_transform = self.get_projection_transform(**kwargs.copy())
 
@@ -559,7 +571,12 @@ class SfMPerspectiveCameras(CamerasBase):
     """
 
     def __init__(
-        self, focal_length=1.0, principal_point=((0.0, 0.0),), R=r, T=t, device="cpu"
+        self,
+        focal_length=1.0,
+        principal_point=((0.0, 0.0),),
+        R=r,
+        T=t,
+        device='cpu',
     ):
         """
         __init__(self, focal_length, principal_point, R, T, device) -> None
@@ -612,9 +629,9 @@ class SfMPerspectiveCameras(CamerasBase):
             ]
         """
         # pyre-ignore[16]
-        principal_point = kwargs.get("principal_point", self.principal_point)
+        principal_point = kwargs.get('principal_point', self.principal_point)
         # pyre-ignore[16]
-        focal_length = kwargs.get("focal_length", self.focal_length)
+        focal_length = kwargs.get('focal_length', self.focal_length)
 
         P = _get_sfm_calibration_matrix(
             self._N, self.device, focal_length, principal_point, False
@@ -634,7 +651,8 @@ class SfMPerspectiveCameras(CamerasBase):
 
         unprojection_transform = to_screen_transform.inverse()
         xy_inv_depth = torch.cat(
-            (xy_depth[..., :2], 1.0 / xy_depth[..., 2:3]), dim=-1  # type: ignore
+            (xy_depth[..., :2], 1.0 / xy_depth[..., 2:3]),
+            dim=-1,  # type: ignore
         )
         return unprojection_transform.transform_points(xy_inv_depth)
 
@@ -647,7 +665,12 @@ class SfMOrthographicCameras(CamerasBase):
     """
 
     def __init__(
-        self, focal_length=1.0, principal_point=((0.0, 0.0),), R=r, T=t, device="cpu"
+        self,
+        focal_length=1.0,
+        principal_point=((0.0, 0.0),),
+        R=r,
+        T=t,
+        device='cpu',
     ):
         """
         __init__(self, focal_length, principal_point, R, T, device) -> None
@@ -700,9 +723,9 @@ class SfMOrthographicCameras(CamerasBase):
             ]
         """
         # pyre-ignore[16]
-        principal_point = kwargs.get("principal_point", self.principal_point)
+        principal_point = kwargs.get('principal_point', self.principal_point)
         # pyre-ignore[16]
-        focal_length = kwargs.get("focal_length", self.focal_length)
+        focal_length = kwargs.get('focal_length', self.focal_length)
 
         P = _get_sfm_calibration_matrix(
             self._N, self.device, focal_length, principal_point, True
@@ -825,13 +848,13 @@ def get_world_to_view_transform(R=r, T=t) -> Transform3d:
     # of shape (N, 4, 4).
 
     if T.shape[0] != R.shape[0]:
-        msg = "Expected R, T to have the same batch dimension; got %r, %r"
+        msg = 'Expected R, T to have the same batch dimension; got %r, %r'
         raise ValueError(msg % (R.shape[0], T.shape[0]))
     if T.dim() != 2 or T.shape[1:] != (3,):
-        msg = "Expected T to have shape (N, 3); got %r"
+        msg = 'Expected T to have shape (N, 3); got %r'
         raise ValueError(msg % repr(T.shape))
     if R.dim() != 3 or R.shape[1:] != (3, 3):
-        msg = "Expected R to have shape (N, 3, 3); got %r"
+        msg = 'Expected R to have shape (N, 3, 3); got %r'
         raise ValueError(msg % repr(R.shape))
 
     # Create a Transform3d object
@@ -841,7 +864,7 @@ def get_world_to_view_transform(R=r, T=t) -> Transform3d:
 
 
 def camera_position_from_spherical_angles(
-    distance, elevation, azimuth, degrees: bool = True, device: str = "cpu"
+    distance, elevation, azimuth, degrees: bool = True, device: str = 'cpu'
 ) -> torch.Tensor:
     """
     Calculate the location of the camera based on the distance away from
@@ -879,7 +902,7 @@ def camera_position_from_spherical_angles(
 
 
 def look_at_rotation(
-    camera_position, at=((0, 0, 0),), up=((0, 1, 0),), device: str = "cpu"
+    camera_position, at=((0, 0, 0),), up=((0, 1, 0),), device: str = 'cpu'
 ) -> torch.Tensor:
     """
     This function takes a vector 'camera_position' which specifies the location
@@ -911,14 +934,16 @@ def look_at_rotation(
         camera_position, at, up, device=device
     )
     camera_position, at, up = broadcasted_args
-    for t, n in zip([camera_position, at, up], ["camera_position", "at", "up"]):
+    for t, n in zip([camera_position, at, up], ['camera_position', 'at', 'up']):
         if t.shape[-1] != 3:
-            msg = "Expected arg %s to have shape (N, 3); got %r"
+            msg = 'Expected arg %s to have shape (N, 3); got %r'
             raise ValueError(msg % (n, t.shape))
     z_axis = F.normalize(at - camera_position, eps=1e-5)
     x_axis = F.normalize(torch.cross(up, z_axis, dim=1), eps=1e-5)
     y_axis = F.normalize(torch.cross(z_axis, x_axis, dim=1), eps=1e-5)
-    R = torch.cat((x_axis[:, None, :], y_axis[:, None, :], z_axis[:, None, :]), dim=1)
+    R = torch.cat(
+        (x_axis[:, None, :], y_axis[:, None, :], z_axis[:, None, :]), dim=1
+    )
     return R.transpose(1, 2)
 
 
@@ -930,7 +955,7 @@ def look_at_view_transform(
     eye: Optional[Sequence] = None,
     at=((0, 0, 0),),  # (1, 3)
     up=((0, 1, 0),),  # (1, 3)
-    device="cpu",
+    device='cpu',
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     This function returns a rotation and translation matrix
@@ -964,7 +989,9 @@ def look_at_view_transform(
     """
 
     if eye is not None:
-        broadcasted_args = convert_to_tensors_and_broadcast(eye, at, up, device=device)
+        broadcasted_args = convert_to_tensors_and_broadcast(
+            eye, at, up, device=device
+        )
         eye, at, up = broadcasted_args
         C = eye
     else:

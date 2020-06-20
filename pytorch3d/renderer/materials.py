@@ -18,7 +18,7 @@ class Materials(TensorProperties):
         diffuse_color=((1, 1, 1),),
         specular_color=((1, 1, 1),),
         shininess=64,
-        device="cpu",
+        device='cpu',
     ):
         """
         Args:
@@ -44,13 +44,13 @@ class Materials(TensorProperties):
             specular_color=specular_color,
             shininess=shininess,
         )
-        for n in ["ambient_color", "diffuse_color", "specular_color"]:
+        for n in ['ambient_color', 'diffuse_color', 'specular_color']:
             t = getattr(self, n)
             if t.shape[-1] != 3:
-                msg = "Expected %s to have shape (N, 3); got %r"
+                msg = 'Expected %s to have shape (N, 3); got %r'
                 raise ValueError(msg % (n, t.shape))
         if self.shininess.shape != torch.Size([self._N]):
-            msg = "shininess should have shape (N); got %r"
+            msg = 'shininess should have shape (N); got %r'
             raise ValueError(msg % repr(self.shininess.shape))
 
     def clone(self):

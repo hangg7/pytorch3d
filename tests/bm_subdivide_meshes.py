@@ -14,10 +14,10 @@ def bm_subdivide() -> None:
     test_cases = product(num_meshes, same_topo)
     for case in test_cases:
         n, s = case
-        kwargs_list.append({"num_meshes": n, "same_topo": s})
+        kwargs_list.append({'num_meshes': n, 'same_topo': s})
     benchmark(
         TestSubdivideMeshes.subdivide_meshes_with_init,
-        "SUBDIVIDE",
+        'SUBDIVIDE',
         kwargs_list,
         warmup_iters=1,
     )

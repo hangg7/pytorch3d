@@ -14,16 +14,16 @@ import yaml
 # The CUDA versions which have pytorch conda packages available for linux for each
 # version of pytorch.
 CONDA_CUDA_VERSIONS = {
-    "1.4": ["cu92", "cu100", "cu101"],
-    "1.5": ["cu92", "cu101", "cu102"],
+    '1.4': ['cu92', 'cu100', 'cu101'],
+    '1.5': ['cu92', 'cu101', 'cu102'],
 }
 
 
-def workflows(prefix="", filter_branch=None, upload=False, indentation=6):
+def workflows(prefix='', filter_branch=None, upload=False, indentation=6):
     w = []
-    for btype in ["conda"]:
-        for python_version in ["3.6", "3.7", "3.8"]:
-            for pytorch_version in ["1.4", "1.5"]:
+    for btype in ['conda']:
+        for python_version in ['3.6', '3.7', '3.8']:
+            for pytorch_version in ['1.4', '1.5']:
                 for cu_version in CONDA_CUDA_VERSIONS[pytorch_version]:
                     w += workflow_pair(
                         btype=btype,
@@ -34,13 +34,13 @@ def workflows(prefix="", filter_branch=None, upload=False, indentation=6):
                         upload=upload,
                         filter_branch=filter_branch,
                     )
-    for btype in ["wheel"]:
-        for python_version in ["3.6", "3.7", "3.8"]:
-            for cu_version in ["cpu"]:
+    for btype in ['wheel']:
+        for python_version in ['3.6', '3.7', '3.8']:
+            for cu_version in ['cpu']:
                 w += workflow_pair(
                     btype=btype,
                     python_version=python_version,
-                    pytorch_version="1.5",
+                    pytorch_version='1.5',
                     cu_version=cu_version,
                     prefix=prefix,
                     upload=upload,
@@ -56,15 +56,15 @@ def workflow_pair(
     python_version,
     pytorch_version,
     cu_version,
-    prefix="",
+    prefix='',
     upload=False,
     filter_branch,
 ):
 
     w = []
-    py = python_version.replace(".", "")
-    pyt = pytorch_version.replace(".", "")
-    base_workflow_name = f"{prefix}linux_{btype}_py{py}_{cu_version}_pyt{pyt}"
+    py = python_version.replace('.', '')
+    pyt = pytorch_version.replace('.', '')
+    base_workflow_name = f'{prefix}linux_{btype}_py{py}_{cu_version}_pyt{pyt}'
 
     w.append(
         generate_base_workflow(
@@ -101,41 +101,43 @@ def generate_base_workflow(
 ):
 
     d = {
-        "name": base_workflow_name,
-        "python_version": python_version,
-        "cu_version": cu_version,
-        "pytorch_version": pytorch_version,
+        'name': base_workflow_name,
+        'python_version': python_version,
+        'cu_version': cu_version,
+        'pytorch_version': pytorch_version,
     }
 
     if filter_branch is not None:
-        d["filters"] = {"branches": {"only": filter_branch}}
+        d['filters'] = {'branches': {'only': filter_branch}}
 
-    return {f"binary_linux_{btype}": d}
+    return {f'binary_linux_{btype}': d}
 
 
-def generate_upload_workflow(*, base_workflow_name, btype, cu_version, filter_branch):
+def generate_upload_workflow(
+    *, base_workflow_name, btype, cu_version, filter_branch
+):
     d = {
-        "name": f"{base_workflow_name}_upload",
-        "context": "org-member",
-        "requires": [base_workflow_name],
+        'name': f'{base_workflow_name}_upload',
+        'context': 'org-member',
+        'requires': [base_workflow_name],
     }
 
-    if btype == "wheel":
-        d["subfolder"] = cu_version + "/"
+    if btype == 'wheel':
+        d['subfolder'] = cu_version + '/'
 
     if filter_branch is not None:
-        d["filters"] = {"branches": {"only": filter_branch}}
+        d['filters'] = {'branches': {'only': filter_branch}}
 
-    return {f"binary_{btype}_upload": d}
+    return {f'binary_{btype}_upload': d}
 
 
 def indent(indentation, data_list):
-    return ("\n" + " " * indentation).join(
+    return ('\n' + ' ' * indentation).join(
         yaml.dump(data_list, default_flow_style=False).splitlines()
     )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     d = os.path.dirname(__file__)
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(d),
@@ -144,5 +146,5 @@ if __name__ == "__main__":
         keep_trailing_newline=True,
     )
 
-    with open(os.path.join(d, "config.yml"), "w") as f:
-        f.write(env.get_template("config.in.yml").render(workflows=workflows))
+    with open(os.path.join(d, 'config.yml'), 'w') as f:
+        f.write(env.get_template('config.in.yml').render(workflows=workflows))

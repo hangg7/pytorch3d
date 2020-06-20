@@ -43,71 +43,76 @@ def gen_tutorials(repo_dir: str) -> None:
     Also create ipynb and py versions of tutorial in Docusaurus site for
     download.
     """
-    with open(os.path.join(repo_dir, "website", "tutorials.json"), "r") as infile:
+    with open(
+        os.path.join(repo_dir, 'website', 'tutorials.json'), 'r'
+    ) as infile:
         tutorial_config = json.loads(infile.read())
 
-    tutorial_ids = {x["id"] for v in tutorial_config.values() for x in v}
+    tutorial_ids = {x['id'] for v in tutorial_config.values() for x in v}
 
     for tid in tutorial_ids:
-        print("Generating {} tutorial".format(tid))
+        print('Generating {} tutorial'.format(tid))
 
         # convert notebook to HTML
         ipynb_in_path = os.path.join(
-            repo_dir, "docs", "tutorials", "{}.ipynb".format(tid)
+            repo_dir, 'docs', 'tutorials', '{}.ipynb'.format(tid)
         )
-        with open(ipynb_in_path, "r") as infile:
+        with open(ipynb_in_path, 'r') as infile:
             nb_str = infile.read()
             nb = nbformat.reads(nb_str, nbformat.NO_CONVERT)
 
         # displayname is absent from notebook metadata
-        nb["metadata"]["kernelspec"]["display_name"] = "python3"
+        nb['metadata']['kernelspec']['display_name'] = 'python3'
 
         exporter = HTMLExporter()
         html, meta = exporter.from_notebook_node(nb)
 
         # pull out html div for notebook
-        soup = BeautifulSoup(html, "html.parser")
-        nb_meat = soup.find("div", {"id": "notebook-container"})
-        del nb_meat.attrs["id"]
-        nb_meat.attrs["class"] = ["notebook"]
+        soup = BeautifulSoup(html, 'html.parser')
+        nb_meat = soup.find('div', {'id': 'notebook-container'})
+        del nb_meat.attrs['id']
+        nb_meat.attrs['class'] = ['notebook']
         html_out = JS_SCRIPTS + str(nb_meat)
 
         # generate html file
         html_out_path = os.path.join(
-            repo_dir, "website", "_tutorials", "{}.html".format(tid)
+            repo_dir, 'website', '_tutorials', '{}.html'.format(tid)
         )
-        with open(html_out_path, "w") as html_outfile:
+        with open(html_out_path, 'w') as html_outfile:
             html_outfile.write(html_out)
 
         # generate JS file
         script = TEMPLATE.format(tid)
         js_out_path = os.path.join(
-            repo_dir, "website", "pages", "tutorials", "{}.js".format(tid)
+            repo_dir, 'website', 'pages', 'tutorials', '{}.js'.format(tid)
         )
-        with open(js_out_path, "w") as js_outfile:
+        with open(js_out_path, 'w') as js_outfile:
             js_outfile.write(script)
 
         # output tutorial in both ipynb & py form
         ipynb_out_path = os.path.join(
-            repo_dir, "website", "static", "files", "{}.ipynb".format(tid)
+            repo_dir, 'website', 'static', 'files', '{}.ipynb'.format(tid)
         )
-        with open(ipynb_out_path, "w") as ipynb_outfile:
+        with open(ipynb_out_path, 'w') as ipynb_outfile:
             ipynb_outfile.write(nb_str)
         exporter = ScriptExporter()
         script, meta = exporter.from_notebook_node(nb)
         py_out_path = os.path.join(
-            repo_dir, "website", "static", "files", "{}.py".format(tid)
+            repo_dir, 'website', 'static', 'files', '{}.py'.format(tid)
         )
-        with open(py_out_path, "w") as py_outfile:
+        with open(py_out_path, 'w') as py_outfile:
             py_outfile.write(script)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Generate JS, HTML, ipynb, and py files for tutorials."
+        description='Generate JS, HTML, ipynb, and py files for tutorials.'
     )
     parser.add_argument(
-        "--repo_dir", metavar="path", required=True, help="PyTorch3D repo directory."
+        '--repo_dir',
+        metavar='path',
+        required=True,
+        help='PyTorch3D repo directory.',
     )
     args = parser.parse_args()
     gen_tutorials(args.repo_dir)

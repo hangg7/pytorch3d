@@ -40,7 +40,7 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         super().setUp()
         torch.manual_seed(42)
         np.random.seed(42)
-        trimesh_results_path = Path(__file__).resolve().parent / "icp_data.pth"
+        trimesh_results_path = Path(__file__).resolve().parent / 'icp_data.pth'
         self.trimesh_results = torch.load(trimesh_results_path)
 
     @staticmethod
@@ -53,7 +53,7 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         estimate_scale=False,
     ):
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # initialize a ground truth point cloud
         X, Y = [
@@ -93,7 +93,7 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         both runs ended with the same solution.
         """
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         for dim in (2, 3, 11):
             for n_points_X in (30, 100):
@@ -162,7 +162,7 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         a set of randomly-sized Pointclouds and on their padded versions.
         """
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         for estimate_scale in (True, False):
             for max_n_points in (10, 30, 100):
@@ -220,7 +220,8 @@ class TestICP(TestCaseMixin, unittest.TestCase):
 
                 # parse out the transformation results
                 R, T, s = [
-                    torch.cat([x.RTs[i] for x in icp_results], dim=0) for i in range(3)
+                    torch.cat([x.RTs[i] for x in icp_results], dim=0)
+                    for i in range(3)
                 ]
 
                 # check that both sets of transforms are the same
@@ -249,7 +250,9 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         """
         for n_points_X in (10, 20, 50, 100):
             for n_points_Y in (10, 20, 50, 100):
-                self._compare_with_trimesh(n_points_X=n_points_X, n_points_Y=n_points_Y)
+                self._compare_with_trimesh(
+                    n_points_X=n_points_X, n_points_Y=n_points_Y
+                )
 
     def _compare_with_trimesh(
         self, n_points_X=100, n_points_Y=100, estimate_scale=False
@@ -260,7 +263,7 @@ class TestICP(TestCaseMixin, unittest.TestCase):
         the result of the trimesh package on the same input data.
         """
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # load the trimesh results and the initial point clouds for icp
         key = (int(n_points_X), int(n_points_Y), int(estimate_scale))
@@ -310,14 +313,18 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
             # generate random rotation matrices with orthogonalization of
             # random normal square matrices, followed by a transformation
             # that ensures determinant(R)==1
-            H = torch.randn(batch_size, dim, dim, dtype=torch.float32, device=device)
+            H = torch.randn(
+                batch_size, dim, dim, dtype=torch.float32, device=device
+            )
             U, _, V = torch.svd(H)
             E = torch.eye(dim, dtype=torch.float32, device=device)[None].repeat(
                 batch_size, 1, 1
             )
             E[:, -1, -1] = torch.det(torch.bmm(U, V.transpose(2, 1)))
             R = torch.bmm(torch.bmm(U, E), V.transpose(2, 1))
-            assert torch.allclose(torch.det(R), R.new_ones(batch_size), atol=1e-4)
+            assert torch.allclose(
+                torch.det(R), R.new_ones(batch_size), atol=1e-4
+            )
 
         return R
 
@@ -341,7 +348,7 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
             torch.manual_seed(fix_seed)
 
         if use_pointclouds:
-            assert dim == 3, "Pointclouds support only 3-dim points."
+            assert dim == 3, 'Pointclouds support only 3-dim points.'
             # generate a `batch_size` point clouds with number of points
             # between 4 and `n_points`
             if random_pcl_size:
@@ -353,13 +360,19 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
                     dtype=torch.int64,
                 )
                 X_list = [
-                    torch.randn(int(n_pt), dim, device=device, dtype=torch.float32)
+                    torch.randn(
+                        int(n_pt), dim, device=device, dtype=torch.float32
+                    )
                     for n_pt in n_points_per_batch
                 ]
                 X = Pointclouds(X_list)
             else:
                 X = torch.randn(
-                    batch_size, n_points, dim, device=device, dtype=torch.float32
+                    batch_size,
+                    n_points,
+                    dim,
+                    device=device,
+                    dtype=torch.float32,
                 )
                 X = Pointclouds(list(X))
         else:
@@ -400,7 +413,11 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         # randomly select one of the dimensions to reflect for each
         # element in the batch
         dim_to_reflect = torch.randint(
-            low=0, high=dim, size=(batch_size,), device=device, dtype=torch.int64
+            low=0,
+            high=dim,
+            size=(batch_size,),
+            device=device,
+            dtype=torch.int64,
         )
 
         # convert dim_to_reflect to a batch of reflection matrices M
@@ -429,7 +446,7 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         random_weights=False,
     ):
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # initialize a ground truth point cloud
         X = TestCorrespondingPointsAlignment.init_point_cloud(
@@ -464,7 +481,8 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
             weights *= (weights * template.size()[1] > 0.3).to(weights)
             if use_pointclouds:  # convert to List[Tensor]
                 weights = [
-                    w[:npts] for w, npts in zip(weights, X.num_points_per_cloud())
+                    w[:npts]
+                    for w, npts in zip(weights, X.num_points_per_cloud())
                 ]
 
         torch.cuda.synchronize()
@@ -538,7 +556,7 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         specific setting of the inputs / outputs.
         """
 
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
 
         # initialize the a ground truth point cloud
         X = TestCorrespondingPointsAlignment.init_point_cloud(
@@ -576,7 +594,8 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
             weights *= (weights * template.size()[1] > 0.3).to(weights)
             if use_pointclouds:  # convert to List[Tensor]
                 weights = [
-                    w[:npts] for w, npts in zip(weights, X.num_points_per_cloud())
+                    w[:npts]
+                    for w, npts in zip(weights, X.num_points_per_cloud())
                 ]
 
         # apply the generated transformation to the generated
@@ -593,14 +612,14 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         )
 
         assert_error_message = (
-            f"Corresponding_points_alignment assertion failure for "
-            f"n_points={n_points}, "
-            f"dim={dim}, "
-            f"use_pointclouds={use_pointclouds}, "
-            f"estimate_scale={estimate_scale}, "
-            f"reflect={reflect}, "
-            f"allow_reflection={allow_reflection},"
-            f"random_weights={random_weights}."
+            f'Corresponding_points_alignment assertion failure for '
+            f'n_points={n_points}, '
+            f'dim={dim}, '
+            f'use_pointclouds={use_pointclouds}, '
+            f'estimate_scale={estimate_scale}, '
+            f'reflect={reflect}, '
+            f'allow_reflection={allow_reflection},'
+            f'random_weights={random_weights}.'
         )
 
         # if we test the weighted case, check that weights help with noise
@@ -636,7 +655,9 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         if reflect and not allow_reflection:
             # check that all rotations have det=1
             self._assert_all_close(
-                torch.det(R_est), R_est.new_ones(batch_size), assert_error_message
+                torch.det(R_est),
+                R_est.new_ones(batch_size),
+                assert_error_message,
             )
 
         else:
@@ -652,7 +673,9 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
                 # the checks on transforms apply only when
                 # the problem setup is unambiguous
                 msg = assert_error_message
-                self._assert_all_close(R_est, R, msg, w[:, None, None], atol=1e-5)
+                self._assert_all_close(
+                    R_est, R, msg, w[:, None, None], atol=1e-5
+                )
                 self._assert_all_close(T_est, T, msg, w[:, None])
                 self._assert_all_close(s_est, s, msg, w)
 
@@ -678,4 +701,6 @@ class TestCorrespondingPointsAlignment(TestCaseMixin, unittest.TestCase):
         if weights is None:
             self.assertClose(a_, b_, atol=atol, msg=err_message)
         else:
-            self.assertClose(a_ * weights, b_ * weights, atol=atol, msg=err_message)
+            self.assertClose(
+                a_ * weights, b_ * weights, atol=atol, msg=err_message
+            )

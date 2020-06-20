@@ -93,7 +93,7 @@ def rasterize_points(
         points_per_bin = 1 + (image_size - 1) // bin_size
         if points_per_bin >= kMaxPointsPerBin:
             raise ValueError(
-                "bin_size too small, number of points per bin must be less than %d; got %d"
+                'bin_size too small, number of points per bin must be less than %d; got %d'
                 % (kMaxPointsPerBin, points_per_bin)
             )
 
@@ -173,7 +173,10 @@ class _RasterizePoints(torch.autograd.Function):
 
 
 def rasterize_points_python(
-    pointclouds, image_size: int = 256, radius: float = 0.01, points_per_pixel: int = 8
+    pointclouds,
+    image_size: int = 256,
+    radius: float = 0.01,
+    points_per_pixel: int = 8,
 ):
     """
     Naive pure PyTorch implementation of pointcloud rasterization.
@@ -192,7 +195,9 @@ def rasterize_points_python(
     point_idxs = torch.full(
         (N, S, S, K), fill_value=-1, dtype=torch.int32, device=device
     )
-    zbuf = torch.full((N, S, S, K), fill_value=-1, dtype=torch.float32, device=device)
+    zbuf = torch.full(
+        (N, S, S, K), fill_value=-1, dtype=torch.float32, device=device
+    )
     pix_dists = torch.full(
         (N, S, S, K), fill_value=-1, dtype=torch.float32, device=device
     )

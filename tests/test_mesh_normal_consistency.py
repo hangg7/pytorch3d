@@ -33,14 +33,17 @@ class TestMeshNormalConsistency(unittest.TestCase):
         return faces
 
     @staticmethod
-    def init_meshes(num_meshes: int = 10, num_verts: int = 1000, num_faces: int = 3000):
-        device = torch.device("cuda:0")
+    def init_meshes(
+        num_meshes: int = 10, num_verts: int = 1000, num_faces: int = 3000
+    ):
+        device = torch.device('cuda:0')
         valid_faces = TestMeshNormalConsistency.init_faces(num_verts).to(device)
         verts_list = []
         faces_list = []
         for _ in range(num_meshes):
             verts = (
-                torch.rand((num_verts, 3), dtype=torch.float32, device=device) * 2.0
+                torch.rand((num_verts, 3), dtype=torch.float32, device=device)
+                * 2.0
                 - 1.0
             )  # verts in the space of [-1, 1]
             """
@@ -102,7 +105,8 @@ class TestMeshNormalConsistency(unittest.TestCase):
                             (
                                 1
                                 - torch.cosine_similarity(
-                                    normals[i].view(1, 3), -normals[j].view(1, 3)
+                                    normals[i].view(1, 3),
+                                    -normals[j].view(1, 3),
                                 )
                             )
                         )
@@ -130,10 +134,12 @@ class TestMeshNormalConsistency(unittest.TestCase):
                         \/
                         v0
         """
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         # mesh1 shown above
         verts1 = torch.rand((4, 3), dtype=torch.float32, device=device)
-        faces1 = torch.tensor([[0, 1, 2], [2, 1, 3]], dtype=torch.int64, device=device)
+        faces1 = torch.tensor(
+            [[0, 1, 2], [2, 1, 3]], dtype=torch.int64, device=device
+        )
 
         # mesh2 is a cuboid with 8 verts, 12 faces and 18 edges
         verts2 = torch.tensor(
@@ -175,7 +181,9 @@ class TestMeshNormalConsistency(unittest.TestCase):
             [[0, 1, 2], [2, 1, 3], [2, 1, 4]], dtype=torch.int64, device=device
         )
 
-        meshes = Meshes(verts=[verts1, verts2, verts3], faces=[faces1, faces2, faces3])
+        meshes = Meshes(
+            verts=[verts1, verts2, verts3], faces=[faces1, faces2, faces3]
+        )
 
         # mesh1: normal consistency computation
         n0 = (verts1[1] - verts1[2]).cross(verts1[3] - verts1[2])
@@ -218,7 +226,7 @@ class TestMeshNormalConsistency(unittest.TestCase):
 
     @staticmethod
     def mesh_normal_consistency_with_ico(
-        num_meshes: int, level: int = 3, device: str = "cpu"
+        num_meshes: int, level: int = 3, device: str = 'cpu'
     ):
         device = torch.device(device)
         mesh = ico_sphere(level, device)

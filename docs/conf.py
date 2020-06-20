@@ -28,8 +28,8 @@ orig_run_role = DummyStateMachine.run_role
 
 
 def run_role(self, name, options=None, content=None):
-    if name == "doc":
-        name = "any"
+    if name == 'doc':
+        name = 'any'
     return orig_run_role(self, name, options, content)
 
 
@@ -37,52 +37,52 @@ DummyStateMachine.run_role = run_role
 
 
 StandaloneHTMLBuilder.supported_image_types = [
-    "image/svg+xml",
-    "image/gif",
-    "image/png",
-    "image/jpeg",
+    'image/svg+xml',
+    'image/gif',
+    'image/png',
+    'image/jpeg',
 ]
 
 # -- Path setup --------------------------------------------------------------
 
 
-sys.path.insert(0, os.path.abspath("../"))
-sys.path.insert(0, os.path.abspath("../pytorch3d"))
-sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../pytorch3d'))
+sys.path.insert(0, os.path.abspath('../../'))
 
-DEPLOY = os.environ.get("READTHEDOCS") == "True"
-needs_sphinx = "1.7"
+DEPLOY = os.environ.get('READTHEDOCS') == 'True'
+needs_sphinx = '1.7'
 
 
 try:
     import torch  # noqa
 except ImportError:
     for m in [
-        "torch",
-        "torchvision",
-        "torch.nn",
-        "torch.autograd",
-        "torch.autograd.function",
-        "torch.nn.modules",
-        "torch.nn.modules.utils",
-        "torch.utils",
-        "torch.utils.data",
-        "torchvision",
-        "torchvision.ops",
+        'torch',
+        'torchvision',
+        'torch.nn',
+        'torch.autograd',
+        'torch.autograd.function',
+        'torch.nn.modules',
+        'torch.nn.modules.utils',
+        'torch.utils',
+        'torch.utils.data',
+        'torchvision',
+        'torchvision.ops',
     ]:
         sys.modules[m] = mock.Mock(name=m)
 
-for m in ["cv2", "scipy", "numpy", "pytorch3d._C", "np.eye", "np.zeros"]:
+for m in ['cv2', 'scipy', 'numpy', 'pytorch3d._C', 'np.eye', 'np.zeros']:
     sys.modules[m] = mock.Mock(name=m)
 
 # -- Project information -----------------------------------------------------
 
-project = "PyTorch3D"
-copyright = "2019, facebookresearch"
-author = "facebookresearch"
+project = 'PyTorch3D'
+copyright = '2019, facebookresearch'
+author = 'facebookresearch'
 
 # The short X.Y version
-version = "0.2.0"
+version = '0.2.0'
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -94,15 +94,15 @@ release = version
 # ones.
 
 extensions = [
-    "sphinx_markdown_tables",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.todo",
-    "sphinx.ext.coverage",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.githubpages",
+    'sphinx_markdown_tables',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
 ]
 
 # -- Configurations for plugins ------------
@@ -113,54 +113,56 @@ napoleon_numpy_docstring = False
 # napoleon_use_param = False
 napoleon_use_rtype = False
 autodoc_inherit_docstrings = False
-autodoc_member_order = "bysource"
+autodoc_member_order = 'bysource'
 
-source_parsers = {".md": CommonMarkParser}
+source_parsers = {'.md': CommonMarkParser}
 
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = [".rst", ".md"]
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
-master_doc = "index"
+master_doc = 'index'
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "build", "README.md"]
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'build', 'README.md']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ['_static']
 
-html_theme_options = {"collapse_navigation": True}
+html_theme_options = {'collapse_navigation': True}
 
 
 def url_resolver(url):
-    if ".html" not in url:
-        url = url.replace("../", "")
-        return "https://github.com/facebookresearch/pytorch3d/blob/master/" + url
+    if '.html' not in url:
+        url = url.replace('../', '')
+        return (
+            'https://github.com/facebookresearch/pytorch3d/blob/master/' + url
+        )
     else:
         if DEPLOY:
-            return "http://pytorch3d.readthedocs.io/" + url
+            return 'http://pytorch3d.readthedocs.io/' + url
         else:
-            return "/" + url
+            return '/' + url
 
 
 def setup(app):
@@ -168,26 +170,28 @@ def setup(app):
     if DEPLOY:
         import subprocess
 
-        subprocess.call(["ln", "-s", "../README.md", "overview.md"])
+        subprocess.call(['ln', '-s', '../README.md', 'overview.md'])
 
     from recommonmark.transform import AutoStructify
 
     app.add_config_value(
-        "recommonmark_config",
+        'recommonmark_config',
         {
-            "url_resolver": url_resolver,
-            "auto_toc_tree_section": "Contents",
-            "enable_math": True,
-            "enable_inline_math": True,
-            "enable_eval_rst": True,
-            "enable_auto_toc_tree": True,
+            'url_resolver': url_resolver,
+            'auto_toc_tree_section': 'Contents',
+            'enable_math': True,
+            'enable_inline_math': True,
+            'enable_eval_rst': True,
+            'enable_auto_toc_tree': True,
         },
         True,
     )
 
     # Register a sphinx.ext.autodoc.between listener to ignore everything
     # between lines that contain the word IGNORE
-    app.connect("autodoc-process-docstring", between("^.*IGNORE.*$", exclude=True))
+    app.connect(
+        'autodoc-process-docstring', between('^.*IGNORE.*$', exclude=True)
+    )
     app.add_transform(AutoStructify)
 
     return app

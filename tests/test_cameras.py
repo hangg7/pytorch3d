@@ -58,7 +58,9 @@ def perspective_project_naive(points, fov=60.0):
         coordinate (no z renormalization)
     """
     device = points.device
-    halfFov = torch.tensor((fov / 2) / 180 * np.pi, dtype=torch.float32, device=device)
+    halfFov = torch.tensor(
+        (fov / 2) / 180 * np.pi, dtype=torch.float32, device=device
+    )
     scale = torch.tan(halfFov[None])
     scale = scale[:, None]
     z = points[:, :, 2]
@@ -148,9 +150,9 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         dist = 2.7
         elev = 90.0
         azim = 0.0
-        expected_position = torch.tensor([0.0, 2.7, 0.0], dtype=torch.float32).view(
-            1, 3
-        )
+        expected_position = torch.tensor(
+            [0.0, 2.7, 0.0], dtype=torch.float32
+        ).view(1, 3)
         position = camera_position_from_spherical_angles(dist, elev, azim)
         self.assertClose(position, expected_position, atol=2e-7)
 
@@ -169,9 +171,9 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         dist = torch.tensor(2.7)
         elev = torch.tensor(0.0)
         azim = torch.tensor(90.0)
-        expected_position = torch.tensor([2.7, 0.0, 0.0], dtype=torch.float32).view(
-            1, 3
-        )
+        expected_position = torch.tensor(
+            [2.7, 0.0, 0.0], dtype=torch.float32
+        ).view(1, 3)
         position = camera_position_from_spherical_angles(dist, elev, azim)
         self.assertClose(position, expected_position, atol=2e-7)
 
@@ -179,9 +181,9 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         dist = 2.7
         elev = torch.tensor(0.0)
         azim = 90.0
-        expected_position = torch.tensor([2.7, 0.0, 0.0], dtype=torch.float32).view(
-            1, 3
-        )
+        expected_position = torch.tensor(
+            [2.7, 0.0, 0.0], dtype=torch.float32
+        ).view(1, 3)
         position = camera_position_from_spherical_angles(dist, elev, azim)
         self.assertClose(position, expected_position, atol=2e-7)
 
@@ -191,8 +193,8 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         azim = torch.tensor(45.0)
         position = camera_position_from_spherical_angles(dist, elev, azim)
         position.sum().backward()
-        self.assertTrue(hasattr(elev, "grad"))
-        self.assertTrue(hasattr(dist, "grad"))
+        self.assertTrue(hasattr(elev, 'grad'))
+        self.assertTrue(hasattr(dist, 'grad'))
         elev_grad = elev.grad.clone()
         dist_grad = dist.grad.clone()
         elev = math.pi / 180.0 * elev.detach()
@@ -226,7 +228,8 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         elev = torch.tensor([0.0])
         azim = torch.tensor([90.0])
         expected_position = torch.tensor(
-            [[2.0, 0.0, 0.0], [3.0, 0.0, 0.0], [5.0, 0.0, 0.0]], dtype=torch.float32
+            [[2.0, 0.0, 0.0], [3.0, 0.0, 0.0], [5.0, 0.0, 0.0]],
+            dtype=torch.float32,
         )
         position = camera_position_from_spherical_angles(dist, elev, azim)
         self.assertClose(position, expected_position, atol=3e-7)
@@ -236,7 +239,8 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         elev = 0.0
         azim = torch.tensor(90.0)
         expected_position = torch.tensor(
-            [[2.0, 0.0, 0.0], [3.0, 0.0, 0.0], [5.0, 0.0, 0.0]], dtype=torch.float32
+            [[2.0, 0.0, 0.0], [3.0, 0.0, 0.0], [5.0, 0.0, 0.0]],
+            dtype=torch.float32,
         )
         position = camera_position_from_spherical_angles(dist, elev, azim)
         self.assertClose(position, expected_position, atol=3e-7)
@@ -247,8 +251,8 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         azim = 45.0
         position = camera_position_from_spherical_angles(dist, elev, azim)
         position.sum().backward()
-        self.assertTrue(hasattr(elev, "grad"))
-        self.assertTrue(hasattr(dist, "grad"))
+        self.assertTrue(hasattr(elev, 'grad'))
+        self.assertTrue(hasattr(dist, 'grad'))
         elev_grad = elev.grad.clone()
         dist_grad = dist.grad.clone()
         azim = torch.tensor(azim)
@@ -337,7 +341,7 @@ class TestCameraHelpers(TestCaseMixin, unittest.TestCase):
         camera_position = torch.tensor([[0.0, 0.0, -1.0]], requires_grad=True)
         rot_mat = look_at_rotation(camera_position)
         rot_mat.sum().backward()
-        self.assertTrue(hasattr(camera_position, "grad"))
+        self.assertTrue(hasattr(camera_position, 'grad'))
         self.assertClose(
             camera_position.grad, torch.zeros_like(camera_position), atol=2e-7
         )
@@ -362,7 +366,9 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
         ):
             cam = cam_type(R=R, T=T)
             RT_class = cam.get_world_to_view_transform()
-            self.assertTrue(torch.allclose(RT.get_matrix(), RT_class.get_matrix()))
+            self.assertTrue(
+                torch.allclose(RT.get_matrix(), RT_class.get_matrix())
+            )
 
         self.assertTrue(isinstance(RT, Transform3d))
 
@@ -386,21 +392,23 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
         T = torch.randn(batch_size, 3) * 0.03
         T[:, 2] = 4
         R = so3_exponential_map(torch.randn(batch_size, 3) * 3.0)
-        cam_params = {"R": R, "T": T}
+        cam_params = {'R': R, 'T': T}
         if cam_type in (OpenGLPerspectiveCameras, OpenGLOrthographicCameras):
-            cam_params["znear"] = torch.rand(batch_size) * 10 + 0.1
-            cam_params["zfar"] = torch.rand(batch_size) * 4 + 1 + cam_params["znear"]
+            cam_params['znear'] = torch.rand(batch_size) * 10 + 0.1
+            cam_params['zfar'] = (
+                torch.rand(batch_size) * 4 + 1 + cam_params['znear']
+            )
             if cam_type == OpenGLPerspectiveCameras:
-                cam_params["fov"] = torch.rand(batch_size) * 60 + 30
-                cam_params["aspect_ratio"] = torch.rand(batch_size) * 0.5 + 0.5
+                cam_params['fov'] = torch.rand(batch_size) * 60 + 30
+                cam_params['aspect_ratio'] = torch.rand(batch_size) * 0.5 + 0.5
             else:
-                cam_params["top"] = torch.rand(batch_size) * 0.2 + 0.9
-                cam_params["bottom"] = -(torch.rand(batch_size)) * 0.2 - 0.9
-                cam_params["left"] = -(torch.rand(batch_size)) * 0.2 - 0.9
-                cam_params["right"] = torch.rand(batch_size) * 0.2 + 0.9
+                cam_params['top'] = torch.rand(batch_size) * 0.2 + 0.9
+                cam_params['bottom'] = -(torch.rand(batch_size)) * 0.2 - 0.9
+                cam_params['left'] = -(torch.rand(batch_size)) * 0.2 - 0.9
+                cam_params['right'] = torch.rand(batch_size) * 0.2 + 0.9
         elif cam_type in (SfMOrthographicCameras, SfMPerspectiveCameras):
-            cam_params["focal_length"] = torch.rand(batch_size) * 10 + 0.1
-            cam_params["principal_point"] = torch.randn((batch_size, 2))
+            cam_params['focal_length'] = torch.rand(batch_size) * 10 + 0.1
+            cam_params['principal_point'] = torch.randn((batch_size, 2))
         else:
             raise ValueError(str(cam_type))
         return cam_type(**cam_params)
@@ -418,11 +426,15 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
             SfMPerspectiveCameras,
         ):
             # init the cameras
-            cameras = TestCamerasCommon.init_random_cameras(cam_type, batch_size)
+            cameras = TestCamerasCommon.init_random_cameras(
+                cam_type, batch_size
+            )
             # xyz - the ground truth point cloud
             xyz = torch.randn(batch_size, num_points, 3) * 0.3
             # xyz in camera coordinates
-            xyz_cam = cameras.get_world_to_view_transform().transform_points(xyz)
+            xyz_cam = cameras.get_world_to_view_transform().transform_points(
+                xyz
+            )
             # depth = z-component of xyz_cam
             depth = xyz_cam[:, :, 2:]
             # project xyz
@@ -439,7 +451,10 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
 
                 # if we have OpenGL cameras
                 # test for scaled_depth_input=True/False
-                if cam_type in (OpenGLPerspectiveCameras, OpenGLOrthographicCameras):
+                if cam_type in (
+                    OpenGLPerspectiveCameras,
+                    OpenGLOrthographicCameras,
+                ):
                     for scaled_depth_input in (True, False):
                         if scaled_depth_input:
                             xy_depth_ = xyz_proj
@@ -457,7 +472,9 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
                     xyz_unproj = cameras.unproject_points(
                         xy_depth, world_coordinates=to_world
                     )
-                    self.assertTrue(torch.allclose(xyz_unproj, matching_xyz, atol=1e-4))
+                    self.assertTrue(
+                        torch.allclose(xyz_unproj, matching_xyz, atol=1e-4)
+                    )
 
     def test_clone(self, batch_size: int = 10):
         """
@@ -469,8 +486,10 @@ class TestCamerasCommon(TestCaseMixin, unittest.TestCase):
             OpenGLOrthographicCameras,
             SfMPerspectiveCameras,
         ):
-            cameras = TestCamerasCommon.init_random_cameras(cam_type, batch_size)
-            cameras = cameras.to(torch.device("cpu"))
+            cameras = TestCamerasCommon.init_random_cameras(
+                cam_type, batch_size
+            )
+            cameras = cameras.to(torch.device('cpu'))
             cameras_clone = cameras.clone()
 
             for var in cameras.__dict__.keys():
@@ -556,7 +575,7 @@ class TestPerspectiveProjection(TestCaseMixin, unittest.TestCase):
         vertices_batch = vertices[None, None, :]
         v1 = P.transform_points(vertices_batch).squeeze()
         v1.sum().backward()
-        self.assertTrue(hasattr(fov, "grad"))
+        self.assertTrue(hasattr(fov, 'grad'))
         fov_grad = fov.grad.clone()
         half_fov_rad = (math.pi / 180.0) * fov.detach() / 2.0
         grad_cotan = -(1.0 / (torch.sin(half_fov_rad) ** 2.0) * 1 / 2.0)
@@ -565,7 +584,7 @@ class TestPerspectiveProjection(TestCaseMixin, unittest.TestCase):
         self.assertClose(fov_grad, grad_fov)
 
     def test_camera_class_init(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         cam = OpenGLPerspectiveCameras(znear=10.0, zfar=(100.0, 200.0))
 
         # Check broadcasting
@@ -637,7 +656,9 @@ class TestOpenGLOrthographicProjection(TestCaseMixin, unittest.TestCase):
         # applying the scale puts the z coordinate at the far clipping plane
         # so the z is mapped to 1.0
         projected_verts = torch.tensor([2, 1, 1], dtype=torch.float32)
-        cameras = OpenGLOrthographicCameras(znear=1.0, zfar=10.0, scale_xyz=scale)
+        cameras = OpenGLOrthographicCameras(
+            znear=1.0, zfar=10.0, scale_xyz=scale
+        )
         P = cameras.get_projection_transform()
         v1 = P.transform_points(vertices)
         v2 = orthographic_project_naive(vertices, scale)
@@ -674,13 +695,15 @@ class TestOpenGLOrthographicProjection(TestCaseMixin, unittest.TestCase):
         far = torch.tensor([10.0])
         near = 1.0
         scale = torch.tensor([[1.0, 1.0, 1.0]], requires_grad=True)
-        cameras = OpenGLOrthographicCameras(znear=near, zfar=far, scale_xyz=scale)
+        cameras = OpenGLOrthographicCameras(
+            znear=near, zfar=far, scale_xyz=scale
+        )
         P = cameras.get_projection_transform()
         vertices = torch.tensor([1.0, 2.0, 10.0], dtype=torch.float32)
         vertices_batch = vertices[None, None, :]
         v1 = P.transform_points(vertices_batch)
         v1.sum().backward()
-        self.assertTrue(hasattr(scale, "grad"))
+        self.assertTrue(hasattr(scale, 'grad'))
         scale_grad = scale.grad.clone()
         grad_scale = torch.tensor(
             [
@@ -777,11 +800,15 @@ class TestSfMPerspectiveProjection(TestCaseMixin, unittest.TestCase):
         self.assertClose(v3[..., :2], v2[..., :2])
 
     def test_perspective_kwargs(self):
-        cameras = SfMPerspectiveCameras(focal_length=5.0, principal_point=((2.5, 2.5),))
+        cameras = SfMPerspectiveCameras(
+            focal_length=5.0, principal_point=((2.5, 2.5),)
+        )
         P = cameras.get_projection_transform(
             focal_length=2.0, principal_point=((2.5, 3.5),)
         )
         vertices = torch.randn([3, 4, 3], dtype=torch.float32)
         v1 = P.transform_points(vertices)
-        v2 = sfm_perspective_project_naive(vertices, fx=2.0, fy=2.0, p0x=2.5, p0y=3.5)
+        v2 = sfm_perspective_project_naive(
+            vertices, fx=2.0, fy=2.0, p0x=2.5, p0y=3.5
+        )
         self.assertClose(v1, v2, atol=1e-6)

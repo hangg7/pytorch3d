@@ -184,28 +184,28 @@ class Meshes(object):
     """
 
     _INTERNAL_TENSORS = [
-        "_verts_packed",
-        "_verts_packed_to_mesh_idx",
-        "_mesh_to_verts_packed_first_idx",
-        "_verts_padded",
-        "_num_verts_per_mesh",
-        "_faces_packed",
-        "_faces_packed_to_mesh_idx",
-        "_mesh_to_faces_packed_first_idx",
-        "_faces_padded",
-        "_faces_areas_packed",
-        "_verts_normals_packed",
-        "_faces_normals_packed",
-        "_num_faces_per_mesh",
-        "_edges_packed",
-        "_edges_packed_to_mesh_idx",
-        "_mesh_to_edges_packed_first_idx",
-        "_faces_packed_to_edges_packed",
-        "_num_edges_per_mesh",
-        "_verts_padded_to_packed_idx",
-        "_laplacian_packed",
-        "valid",
-        "equisized",
+        '_verts_packed',
+        '_verts_packed_to_mesh_idx',
+        '_mesh_to_verts_packed_first_idx',
+        '_verts_padded',
+        '_num_verts_per_mesh',
+        '_faces_packed',
+        '_faces_packed_to_mesh_idx',
+        '_mesh_to_faces_packed_first_idx',
+        '_faces_padded',
+        '_faces_areas_packed',
+        '_verts_normals_packed',
+        '_faces_normals_packed',
+        '_num_faces_per_mesh',
+        '_edges_packed',
+        '_edges_packed_to_mesh_idx',
+        '_mesh_to_edges_packed_first_idx',
+        '_faces_packed_to_edges_packed',
+        '_num_edges_per_mesh',
+        '_verts_padded_to_packed_idx',
+        '_laplacian_packed',
+        'valid',
+        'equisized',
     ]
 
     def __init__(self, verts=None, faces=None, textures=None):
@@ -235,7 +235,7 @@ class Meshes(object):
         """
         self.device = None
         if textures is not None and not isinstance(textures, Textures):
-            msg = "Expected textures to be of type Textures; got %r"
+            msg = 'Expected textures to be of type Textures; got %r'
             raise ValueError(msg % type(textures))
         self.textures = textures
 
@@ -319,11 +319,14 @@ class Meshes(object):
         if isinstance(verts, list) and isinstance(faces, list):
             self._verts_list = verts
             self._faces_list = [
-                f[f.gt(-1).all(1)].to(torch.int64) if len(f) > 0 else f for f in faces
+                f[f.gt(-1).all(1)].to(torch.int64) if len(f) > 0 else f
+                for f in faces
             ]
             self._N = len(self._verts_list)
-            self.device = torch.device("cpu")
-            self.valid = torch.zeros((self._N,), dtype=torch.bool, device=self.device)
+            self.device = torch.device('cpu')
+            self.valid = torch.zeros(
+                (self._N,), dtype=torch.bool, device=self.device
+            )
             if self._N > 0:
                 self.device = self._verts_list[0].device
                 self._num_verts_per_mesh = torch.tensor(
@@ -350,21 +353,25 @@ class Meshes(object):
 
         elif torch.is_tensor(verts) and torch.is_tensor(faces):
             if verts.size(2) != 3 and faces.size(2) != 3:
-                raise ValueError("Verts and Faces tensors have incorrect dimensions.")
+                raise ValueError(
+                    'Verts and Faces tensors have incorrect dimensions.'
+                )
             self._verts_padded = verts
             self._faces_padded = faces.to(torch.int64)
             self._N = self._verts_padded.shape[0]
             self._V = self._verts_padded.shape[1]
 
             self.device = self._verts_padded.device
-            self.valid = torch.zeros((self._N,), dtype=torch.bool, device=self.device)
+            self.valid = torch.zeros(
+                (self._N,), dtype=torch.bool, device=self.device
+            )
             if self._N > 0:
                 # Check that padded faces - which have value -1 - are at the
                 # end of the tensors
                 faces_not_padded = self._faces_padded.gt(-1).all(2)
                 self._num_faces_per_mesh = faces_not_padded.sum(1)
                 if (faces_not_padded[:, :-1] < faces_not_padded[:, 1:]).any():
-                    raise ValueError("Padding of faces must be at the end")
+                    raise ValueError('Padding of faces must be at the end')
 
                 # NOTE that we don't check for the ordering of padded verts
                 # as long as the faces index correspond to the right vertices.
@@ -383,9 +390,9 @@ class Meshes(object):
 
         else:
             raise ValueError(
-                "Verts and Faces must be either a list or a tensor with \
+                'Verts and Faces must be either a list or a tensor with \
                     shape (batch_size, N, 3) where N is either the maximum \
-                       number of verts or faces respectively."
+                       number of verts or faces respectively.'
             )
 
         if self.isempty():
@@ -398,8 +405,12 @@ class Meshes(object):
 
         # Set the num verts/faces on the textures if present.
         if self.textures is not None:
-            self.textures._num_faces_per_mesh = self._num_faces_per_mesh.tolist()
-            self.textures._num_verts_per_mesh = self._num_verts_per_mesh.tolist()
+            self.textures._num_faces_per_mesh = (
+                self._num_faces_per_mesh.tolist()
+            )
+            self.textures._num_verts_per_mesh = (
+                self._num_verts_per_mesh.tolist()
+            )
 
     def __len__(self):
         return self._N
@@ -436,11 +447,13 @@ class Meshes(object):
         textures = None if self.textures is None else self.textures[index]
 
         if torch.is_tensor(verts) and torch.is_tensor(faces):
-            return self.__class__(verts=[verts], faces=[faces], textures=textures)
+            return self.__class__(
+                verts=[verts], faces=[faces], textures=textures
+            )
         elif isinstance(verts, list) and isinstance(faces, list):
             return self.__class__(verts=verts, faces=faces, textures=textures)
         else:
-            raise ValueError("(verts, faces) not defined correctly")
+            raise ValueError('(verts, faces) not defined correctly')
 
     def isempty(self) -> bool:
         """
@@ -461,7 +474,7 @@ class Meshes(object):
         if self._verts_list is None:
             assert (
                 self._verts_padded is not None
-            ), "verts_padded is required to compute verts_list."
+            ), 'verts_padded is required to compute verts_list.'
             self._verts_list = struct_utils.padded_to_list(
                 self._verts_padded, self.num_verts_per_mesh().tolist()
             )
@@ -477,7 +490,7 @@ class Meshes(object):
         if self._faces_list is None:
             assert (
                 self._faces_padded is not None
-            ), "faces_padded is required to compute faces_list."
+            ), 'faces_padded is required to compute faces_list.'
             self._faces_list = struct_utils.padded_to_list(
                 self._faces_padded, self.num_faces_per_mesh().tolist()
             )
@@ -666,7 +679,8 @@ class Meshes(object):
 
         self._verts_padded_to_packed_idx = torch.cat(
             [
-                torch.arange(v, dtype=torch.int64, device=self.device) + i * self._V
+                torch.arange(v, dtype=torch.int64, device=self.device)
+                + i * self._V
                 for (i, v) in enumerate(self.num_verts_per_mesh())
             ],
             dim=0,
@@ -706,10 +720,15 @@ class Meshes(object):
             tensor of normals of shape (N, max(V_n), 3).
         """
         if self.isempty():
-            return torch.zeros((self._N, 0, 3), dtype=torch.float32, device=self.device)
+            return torch.zeros(
+                (self._N, 0, 3), dtype=torch.float32, device=self.device
+            )
         verts_normals_list = self.verts_normals_list()
         return struct_utils.list_to_padded(
-            verts_normals_list, (self._V, 3), pad_value=0.0, equisized=self.equisized
+            verts_normals_list,
+            (self._V, 3),
+            pad_value=0.0,
+            equisized=self.equisized,
         )
 
     def faces_normals_packed(self):
@@ -745,10 +764,15 @@ class Meshes(object):
             tensor of normals of shape (N, max(F_n), 3).
         """
         if self.isempty():
-            return torch.zeros((self._N, 0, 3), dtype=torch.float32, device=self.device)
+            return torch.zeros(
+                (self._N, 0, 3), dtype=torch.float32, device=self.device
+            )
         faces_normals_list = self.faces_normals_list()
         return struct_utils.list_to_padded(
-            faces_normals_list, (self._F, 3), pad_value=0.0, equisized=self.equisized
+            faces_normals_list,
+            (self._F, 3),
+            pad_value=0.0,
+            equisized=self.equisized,
         )
 
     def faces_areas_packed(self):
@@ -787,7 +811,9 @@ class Meshes(object):
             return
         faces_packed = self.faces_packed()
         verts_packed = self.verts_packed()
-        face_areas, face_normals = mesh_face_areas_normals(verts_packed, faces_packed)
+        face_areas, face_normals = mesh_face_areas_normals(
+            verts_packed, faces_packed
+        )
         self._faces_areas_packed = face_areas
         self._faces_normals_packed = face_normals
 
@@ -801,7 +827,9 @@ class Meshes(object):
             refresh: Set to True to force recomputation of vertex normals.
                 Default: False.
         """
-        if not (refresh or any(v is None for v in [self._verts_normals_packed])):
+        if not (
+            refresh or any(v is None for v in [self._verts_normals_packed])
+        ):
             return
 
         if self.isempty():
@@ -854,7 +882,8 @@ class Meshes(object):
         Computes the padded version of meshes from verts_list and faces_list.
         """
         if not (
-            refresh or any(v is None for v in [self._verts_padded, self._faces_padded])
+            refresh
+            or any(v is None for v in [self._verts_padded, self._faces_padded])
         ):
             return
 
@@ -862,7 +891,7 @@ class Meshes(object):
         faces_list = self.faces_list()
         assert (
             faces_list is not None and verts_list is not None
-        ), "faces_list and verts_list arguments are required"
+        ), 'faces_list and verts_list arguments are required'
 
         if self.isempty():
             self._faces_padded = torch.zeros(
@@ -873,10 +902,16 @@ class Meshes(object):
             )
         else:
             self._faces_padded = struct_utils.list_to_padded(
-                faces_list, (self._F, 3), pad_value=-1.0, equisized=self.equisized
+                faces_list,
+                (self._F, 3),
+                pad_value=-1.0,
+                equisized=self.equisized,
             )
             self._verts_padded = struct_utils.list_to_padded(
-                verts_list, (self._V, 3), pad_value=0.0, equisized=self.equisized
+                verts_list,
+                (self._V, 3),
+                pad_value=0.0,
+                equisized=self.equisized,
             )
 
     # TODO(nikhilar) Improve performance of _compute_packed.
@@ -939,15 +974,23 @@ class Meshes(object):
 
         verts_list_to_packed = struct_utils.list_to_packed(verts_list)
         self._verts_packed = verts_list_to_packed[0]
-        if not torch.allclose(self.num_verts_per_mesh(), verts_list_to_packed[1]):
-            raise ValueError("The number of verts per mesh should be consistent.")
+        if not torch.allclose(
+            self.num_verts_per_mesh(), verts_list_to_packed[1]
+        ):
+            raise ValueError(
+                'The number of verts per mesh should be consistent.'
+            )
         self._mesh_to_verts_packed_first_idx = verts_list_to_packed[2]
         self._verts_packed_to_mesh_idx = verts_list_to_packed[3]
 
         faces_list_to_packed = struct_utils.list_to_packed(faces_list)
         faces_packed = faces_list_to_packed[0]
-        if not torch.allclose(self.num_faces_per_mesh(), faces_list_to_packed[1]):
-            raise ValueError("The number of faces per mesh should be consistent.")
+        if not torch.allclose(
+            self.num_faces_per_mesh(), faces_list_to_packed[1]
+        ):
+            raise ValueError(
+                'The number of faces per mesh should be consistent.'
+            )
         self._mesh_to_faces_packed_first_idx = faces_list_to_packed[2]
         self._faces_packed_to_mesh_idx = faces_list_to_packed[3]
 
@@ -1039,7 +1082,9 @@ class Meshes(object):
         self._faces_packed_to_edges_packed = face_to_edge
 
         # Compute number of edges per mesh
-        num_edges_per_mesh = torch.zeros(self._N, dtype=torch.int32, device=self.device)
+        num_edges_per_mesh = torch.zeros(
+            self._N, dtype=torch.int32, device=self.device
+        )
         ones = torch.ones(1, dtype=torch.int32, device=self.device).expand(
             self._edges_packed_to_mesh_idx.shape
         )
@@ -1170,10 +1215,10 @@ class Meshes(object):
         return other
 
     def cpu(self):
-        return self.to(torch.device("cpu"))
+        return self.to(torch.device('cpu'))
 
     def cuda(self):
-        return self.to(torch.device("cuda"))
+        return self.to(torch.device('cuda'))
 
     def get_mesh_verts_faces(self, index: int):
         """
@@ -1187,11 +1232,11 @@ class Meshes(object):
             faces: LongTensor of shape (F, 3).
         """
         if not isinstance(index, int):
-            raise ValueError("Mesh index must be an integer.")
+            raise ValueError('Mesh index must be an integer.')
         if index < 0 or index > self._N:
             raise ValueError(
-                "Mesh index must be in the range [0, N) where \
-            N is the number of meshes in the batch."
+                'Mesh index must be in the range [0, N) where \
+            N is the number of meshes in the batch.'
             )
         verts = self.verts_list()
         faces = self.faces_list()
@@ -1211,7 +1256,7 @@ class Meshes(object):
             list[Meshes].
         """
         if not all(isinstance(x, int) for x in split_sizes):
-            raise ValueError("Value of split_sizes must be a list of integers.")
+            raise ValueError('Value of split_sizes must be a list of integers.')
         meshlist = []
         curi = 0
         for i in split_sizes:
@@ -1231,7 +1276,7 @@ class Meshes(object):
         """
         verts_packed = self.verts_packed()
         if vert_offsets_packed.shape != verts_packed.shape:
-            raise ValueError("Verts offsets must have dimension (all_v, 2).")
+            raise ValueError('Verts offsets must have dimension (all_v, 2).')
         # update verts packed
         self._verts_packed = verts_packed + vert_offsets_packed
         new_verts_list = list(
@@ -1345,18 +1390,22 @@ class Meshes(object):
 
         def check_shapes(x, size):
             if x.shape[0] != size[0]:
-                raise ValueError("new values must have the same batch dimension.")
+                raise ValueError(
+                    'new values must have the same batch dimension.'
+                )
             if x.shape[1] != size[1]:
-                raise ValueError("new values must have the same number of points.")
+                raise ValueError(
+                    'new values must have the same number of points.'
+                )
             if x.shape[2] != size[2]:
-                raise ValueError("new values must have the same dimension.")
+                raise ValueError('new values must have the same dimension.')
 
         check_shapes(new_verts_padded, [self._N, self._V, 3])
 
         new = self.__class__(verts=new_verts_padded, faces=self.faces_padded())
 
         if new._N != self._N or new._V != self._V or new._F != self._F:
-            raise ValueError("Inconsistent sizes after construction.")
+            raise ValueError('Inconsistent sizes after construction.')
 
         # overwrite the equisized flag
         new.equisized = self.equisized
@@ -1365,7 +1414,7 @@ class Meshes(object):
         new.textures = self.textures
 
         # copy auxiliary tensors
-        copy_tensors = ["_num_verts_per_mesh", "_num_faces_per_mesh", "valid"]
+        copy_tensors = ['_num_verts_per_mesh', '_num_faces_per_mesh', 'valid']
 
         for k in copy_tensors:
             v = getattr(self, k)
@@ -1379,11 +1428,11 @@ class Meshes(object):
         # update verts/faces packed if they are computed in self
         if self._verts_packed is not None:
             copy_tensors = [
-                "_faces_packed",
-                "_verts_packed_to_mesh_idx",
-                "_faces_packed_to_mesh_idx",
-                "_mesh_to_verts_packed_first_idx",
-                "_mesh_to_faces_packed_first_idx",
+                '_faces_packed',
+                '_verts_packed_to_mesh_idx',
+                '_faces_packed_to_mesh_idx',
+                '_mesh_to_verts_packed_first_idx',
+                '_mesh_to_faces_packed_first_idx',
             ]
             for k in copy_tensors:
                 v = getattr(self, k)
@@ -1398,11 +1447,11 @@ class Meshes(object):
         # update edges packed if they are computed in self
         if self._edges_packed is not None:
             copy_tensors = [
-                "_edges_packed",
-                "_edges_packed_to_mesh_idx",
-                "_mesh_to_edges_packed_first_idx",
-                "_faces_packed_to_edges_packed",
-                "_num_edges_per_mesh",
+                '_edges_packed',
+                '_edges_packed_to_mesh_idx',
+                '_mesh_to_edges_packed_first_idx',
+                '_faces_packed_to_edges_packed',
+                '_num_edges_per_mesh',
             ]
             for k in copy_tensors:
                 v = getattr(self, k)
@@ -1451,9 +1500,9 @@ class Meshes(object):
             new Meshes object.
         """
         if not isinstance(N, int):
-            raise ValueError("N must be an integer.")
+            raise ValueError('N must be an integer.')
         if N <= 0:
-            raise ValueError("N must be > 0.")
+            raise ValueError('N must be > 0.')
         new_verts_list, new_faces_list = [], []
         for verts, faces in zip(self.verts_list(), self.faces_list()):
             new_verts_list.extend(verts.clone() for _ in range(N))
@@ -1463,7 +1512,9 @@ class Meshes(object):
         if self.textures is not None:
             tex = self.textures.extend(N)
 
-        return self.__class__(verts=new_verts_list, faces=new_faces_list, textures=tex)
+        return self.__class__(
+            verts=new_verts_list, faces=new_faces_list, textures=tex
+        )
 
 
 def join_meshes_as_batch(meshes: List[Meshes], include_textures: bool = True):
@@ -1484,7 +1535,7 @@ def join_meshes_as_batch(meshes: List[Meshes], include_textures: bool = True):
     if isinstance(meshes, Meshes):
         # Meshes objects can be iterated and produce single Meshes. We avoid
         # letting join_meshes_as_batch(mesh1, mesh2) silently do the wrong thing.
-        raise ValueError("Wrong first argument to join_meshes_as_batch.")
+        raise ValueError('Wrong first argument to join_meshes_as_batch.')
     # pyre-fixme[10]: Name `mesh` is used but not defined.
     verts = [v for mesh in meshes for v in mesh.verts_list()]
     faces = [f for mesh in meshes for f in mesh.faces_list()]
@@ -1493,49 +1544,63 @@ def join_meshes_as_batch(meshes: List[Meshes], include_textures: bool = True):
 
     if meshes[0].textures is None:
         if any(mesh.textures is not None for mesh in meshes):
-            raise ValueError("Inconsistent textures in join_meshes_as_batch.")
+            raise ValueError('Inconsistent textures in join_meshes_as_batch.')
         return Meshes(verts=verts, faces=faces)
 
     if any(mesh.textures is None for mesh in meshes):
-        raise ValueError("Inconsistent textures in join_meshes_as_batch.")
+        raise ValueError('Inconsistent textures in join_meshes_as_batch.')
 
     # Now we know there are multiple meshes and they have textures to merge.
     first = meshes[0].textures
     kwargs = {}
     if first.maps_padded() is not None:
         if any(mesh.textures.maps_padded() is None for mesh in meshes):
-            raise ValueError("Inconsistent maps_padded in join_meshes_as_batch.")
+            raise ValueError(
+                'Inconsistent maps_padded in join_meshes_as_batch.'
+            )
         maps = [m for mesh in meshes for m in mesh.textures.maps_padded()]
-        kwargs["maps"] = maps
+        kwargs['maps'] = maps
     elif any(mesh.textures.maps_padded() is not None for mesh in meshes):
-        raise ValueError("Inconsistent maps_padded in join_meshes_as_batch.")
+        raise ValueError('Inconsistent maps_padded in join_meshes_as_batch.')
 
     if first.verts_uvs_padded() is not None:
         if any(mesh.textures.verts_uvs_padded() is None for mesh in meshes):
-            raise ValueError("Inconsistent verts_uvs_padded in join_meshes_as_batch.")
+            raise ValueError(
+                'Inconsistent verts_uvs_padded in join_meshes_as_batch.'
+            )
         uvs = [uv for mesh in meshes for uv in mesh.textures.verts_uvs_list()]
         V = max(uv.shape[0] for uv in uvs)
-        kwargs["verts_uvs"] = struct_utils.list_to_padded(uvs, (V, 2), -1)
+        kwargs['verts_uvs'] = struct_utils.list_to_padded(uvs, (V, 2), -1)
     elif any(mesh.textures.verts_uvs_padded() is not None for mesh in meshes):
-        raise ValueError("Inconsistent verts_uvs_padded in join_meshes_as_batch.")
+        raise ValueError(
+            'Inconsistent verts_uvs_padded in join_meshes_as_batch.'
+        )
 
     if first.faces_uvs_padded() is not None:
         if any(mesh.textures.faces_uvs_padded() is None for mesh in meshes):
-            raise ValueError("Inconsistent faces_uvs_padded in join_meshes_as_batch.")
+            raise ValueError(
+                'Inconsistent faces_uvs_padded in join_meshes_as_batch.'
+            )
         uvs = [uv for mesh in meshes for uv in mesh.textures.faces_uvs_list()]
         F = max(uv.shape[0] for uv in uvs)
-        kwargs["faces_uvs"] = struct_utils.list_to_padded(uvs, (F, 3), -1)
+        kwargs['faces_uvs'] = struct_utils.list_to_padded(uvs, (F, 3), -1)
     elif any(mesh.textures.faces_uvs_padded() is not None for mesh in meshes):
-        raise ValueError("Inconsistent faces_uvs_padded in join_meshes_as_batch.")
+        raise ValueError(
+            'Inconsistent faces_uvs_padded in join_meshes_as_batch.'
+        )
 
     if first.verts_rgb_padded() is not None:
         if any(mesh.textures.verts_rgb_padded() is None for mesh in meshes):
-            raise ValueError("Inconsistent verts_rgb_padded in join_meshes_as_batch.")
+            raise ValueError(
+                'Inconsistent verts_rgb_padded in join_meshes_as_batch.'
+            )
         rgb = [i for mesh in meshes for i in mesh.textures.verts_rgb_list()]
         V = max(i.shape[0] for i in rgb)
-        kwargs["verts_rgb"] = struct_utils.list_to_padded(rgb, (V, 3))
+        kwargs['verts_rgb'] = struct_utils.list_to_padded(rgb, (V, 3))
     elif any(mesh.textures.verts_rgb_padded() is not None for mesh in meshes):
-        raise ValueError("Inconsistent verts_rgb_padded in join_meshes_as_batch.")
+        raise ValueError(
+            'Inconsistent verts_rgb_padded in join_meshes_as_batch.'
+        )
 
     tex = Textures(**kwargs)
     return Meshes(verts=verts, faces=faces, textures=tex)

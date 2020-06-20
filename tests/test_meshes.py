@@ -19,7 +19,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         max_v: int = 100,
         max_f: int = 300,
         lists_to_tensors: bool = False,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         """
         Function to generate a Meshes object of N meshes with
@@ -53,7 +53,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             # For lists of faces and vertices, we can sample different v/f
             # per mesh.
             f = torch.randint(max_f, size=(num_meshes,), dtype=torch.int32)
-            v = torch.randint(3, high=max_v, size=(num_meshes,), dtype=torch.int32)
+            v = torch.randint(
+                3, high=max_v, size=(num_meshes,), dtype=torch.int32
+            )
 
         # Generate the actual vertices and faces.
         for i in range(num_meshes):
@@ -71,7 +73,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         return Meshes(verts=verts_list, faces=faces_list)
 
     @staticmethod
-    def init_simple_mesh(device: str = "cpu"):
+    def init_simple_mesh(device: str = 'cpu'):
         """
         Returns a Meshes data structure of simple mesh examples.
 
@@ -87,7 +89,12 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 device=device,
             ),
             torch.tensor(
-                [[0.1, 0.3, 0.3], [0.6, 0.7, 0.8], [0.2, 0.3, 0.4], [0.1, 0.5, 0.3]],
+                [
+                    [0.1, 0.3, 0.3],
+                    [0.6, 0.7, 0.8],
+                    [0.2, 0.3, 0.4],
+                    [0.1, 0.5, 0.3],
+                ],
                 dtype=torch.float32,
                 device=device,
             ),
@@ -105,7 +112,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         ]
         faces = [
             torch.tensor([[0, 1, 2]], dtype=torch.int64, device=device),
-            torch.tensor([[0, 1, 2], [1, 2, 3]], dtype=torch.int64, device=device),
+            torch.tensor(
+                [[0, 1, 2], [1, 2, 3]], dtype=torch.int64, device=device
+            ),
             torch.tensor(
                 [
                     [1, 2, 0],
@@ -123,11 +132,15 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         return Meshes(verts=verts, faces=faces)
 
     def test_simple(self):
-        mesh = TestMeshes.init_simple_mesh("cuda:0")
+        mesh = TestMeshes.init_simple_mesh('cuda:0')
 
         # Check that faces/verts per mesh are set in init:
-        self.assertClose(mesh._num_faces_per_mesh.cpu(), torch.tensor([1, 2, 7]))
-        self.assertClose(mesh._num_verts_per_mesh.cpu(), torch.tensor([3, 4, 5]))
+        self.assertClose(
+            mesh._num_faces_per_mesh.cpu(), torch.tensor([1, 2, 7])
+        )
+        self.assertClose(
+            mesh._num_verts_per_mesh.cpu(), torch.tensor([3, 4, 5])
+        )
 
         # Check computed tensors
         self.assertClose(
@@ -149,7 +162,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             mesh.mesh_to_faces_packed_first_idx().cpu(), torch.tensor([0, 1, 3])
         )
         self.assertClose(
-            mesh.num_edges_per_mesh().cpu(), torch.tensor([3, 5, 10], dtype=torch.int32)
+            mesh.num_edges_per_mesh().cpu(),
+            torch.tensor([3, 5, 10], dtype=torch.int32),
         )
         self.assertClose(
             mesh.mesh_to_edges_packed_first_idx().cpu(),
@@ -161,7 +175,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         # Define the test mesh object either as a list or tensor of faces/verts.
         for lists_to_tensors in (False, True):
             N = 10
-            mesh = TestMeshes.init_mesh(N, 100, 300, lists_to_tensors=lists_to_tensors)
+            mesh = TestMeshes.init_mesh(
+                N, 100, 300, lists_to_tensors=lists_to_tensors
+            )
             verts_list = mesh.verts_list()
             faces_list = mesh.faces_list()
 
@@ -194,8 +210,12 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             for n in range(N):
                 v = verts_list[n].shape[0]
                 f = faces_list[n].shape[0]
-                self.assertClose(verts_packed[curv : curv + v, :], verts_list[n])
-                self.assertClose(faces_packed[curf : curf + f, :] - curv, faces_list[n])
+                self.assertClose(
+                    verts_packed[curv : curv + v, :], verts_list[n]
+                )
+                self.assertClose(
+                    faces_packed[curf : curf + f, :] - curv, faces_list[n]
+                )
                 self.assertTrue(vert_to_mesh[curv : curv + v].eq(n).all())
                 self.assertTrue(face_to_mesh[curf : curf + f].eq(n).all())
                 self.assertTrue(mesh_to_vert[n] == curv)
@@ -215,7 +235,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             npedges = np.concatenate((e12, e20, e01), axis=0)
             npedges = np.sort(npedges, axis=1)
 
-            unique_edges, unique_idx = np.unique(npedges, return_index=True, axis=0)
+            unique_edges, unique_idx = np.unique(
+                npedges, return_index=True, axis=0
+            )
             self.assertTrue(np.allclose(edges, unique_edges))
             temp = face_to_mesh.cpu().numpy()
             temp = np.concatenate((temp, temp, temp), axis=0)
@@ -227,7 +249,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 mesh.mesh_to_edges_packed_first_idx().cpu().numpy()
             )
             self.assertTrue(
-                np.allclose(mesh_to_edges_packed_first_idx[1:], num_edges.cumsum()[:-1])
+                np.allclose(
+                    mesh_to_edges_packed_first_idx[1:], num_edges.cumsum()[:-1]
+                )
             )
             self.assertTrue(mesh_to_edges_packed_first_idx[0] == 0)
 
@@ -245,7 +269,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
 
     def test_empty(self):
         N, V, F = 10, 100, 300
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts_list = []
         faces_list = []
         valid = torch.randint(2, size=(N,), dtype=torch.uint8, device=device)
@@ -254,9 +278,13 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 v = torch.randint(
                     3, high=V, size=(1,), dtype=torch.int32, device=device
                 )[0]
-                f = torch.randint(F, size=(1,), dtype=torch.int32, device=device)[0]
+                f = torch.randint(
+                    F, size=(1,), dtype=torch.int32, device=device
+                )[0]
                 verts = torch.rand((v, 3), dtype=torch.float32, device=device)
-                faces = torch.randint(v, size=(f, 3), dtype=torch.int64, device=device)
+                faces = torch.randint(
+                    v, size=(f, 3), dtype=torch.int64, device=device
+                )
             else:
                 verts = torch.tensor([], dtype=torch.float32, device=device)
                 faces = torch.tensor([], dtype=torch.int64, device=device)
@@ -284,7 +312,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
 
     def test_padding(self):
         N, V, F = 10, 100, 300
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts, faces = [], []
         valid = torch.randint(2, size=(N,), dtype=torch.uint8, device=device)
         num_verts, num_faces = (
@@ -293,12 +321,16 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         )
         for n in range(N):
             verts.append(torch.rand((V, 3), dtype=torch.float32, device=device))
-            this_faces = torch.full((F, 3), -1, dtype=torch.int64, device=device)
+            this_faces = torch.full(
+                (F, 3), -1, dtype=torch.int64, device=device
+            )
             if valid[n]:
                 v = torch.randint(
                     3, high=V, size=(1,), dtype=torch.int32, device=device
                 )[0]
-                f = torch.randint(F, size=(1,), dtype=torch.int32, device=device)[0]
+                f = torch.randint(
+                    F, size=(1,), dtype=torch.int32, device=device
+                )[0]
                 this_faces[:f, :] = torch.randint(
                     v, size=(f, 3), dtype=torch.int64, device=device
                 )
@@ -309,7 +341,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         mesh = Meshes(verts=torch.stack(verts), faces=torch.stack(faces))
 
         # Check verts/faces per mesh are set correctly in init.
-        self.assertListEqual(mesh._num_faces_per_mesh.tolist(), num_faces.tolist())
+        self.assertListEqual(
+            mesh._num_faces_per_mesh.tolist(), num_faces.tolist()
+        )
         self.assertListEqual(mesh._num_verts_per_mesh.tolist(), [V] * N)
 
         for n, (vv, ff) in enumerate(zip(mesh.verts_list(), mesh.faces_list())):
@@ -317,15 +351,19 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             self.assertClose(vv, verts[n])
 
         new_faces = [ff.clone() for ff in faces]
-        v = torch.randint(3, high=V, size=(1,), dtype=torch.int32, device=device)[0]
-        f = torch.randint(F - 10, size=(1,), dtype=torch.int32, device=device)[0]
+        v = torch.randint(
+            3, high=V, size=(1,), dtype=torch.int32, device=device
+        )[0]
+        f = torch.randint(F - 10, size=(1,), dtype=torch.int32, device=device)[
+            0
+        ]
         this_faces = torch.full((F, 3), -1, dtype=torch.int64, device=device)
         this_faces[10 : f + 10, :] = torch.randint(
             v, size=(f, 3), dtype=torch.int64, device=device
         )
         new_faces[3] = this_faces
 
-        with self.assertRaisesRegex(ValueError, "Padding of faces"):
+        with self.assertRaisesRegex(ValueError, 'Padding of faces'):
             Meshes(verts=torch.stack(verts), faces=torch.stack(new_faces))
 
     def test_clone(self):
@@ -374,7 +412,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
 
         # Note that we don't test with random meshes for this case, as the
         # definition of Laplacian is defined for simple graphs (aka valid meshes)
-        meshes = TestMeshes.init_simple_mesh("cuda:0")
+        meshes = TestMeshes.init_simple_mesh('cuda:0')
 
         lapl_naive = naive_laplacian_packed(meshes)
         lapl = meshes.laplacian_packed().to_dense()
@@ -405,7 +443,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 mesh._compute_face_areas_normals(refresh=True)
                 mesh._compute_vertex_normals(refresh=True)
 
-            deform = torch.rand((all_v, 3), dtype=torch.float32, device=mesh.device)
+            deform = torch.rand(
+                (all_v, 3), dtype=torch.float32, device=mesh.device
+            )
             # new meshes class to hold the deformed mesh
             new_mesh_naive = naive_offset_verts(mesh, deform)
 
@@ -423,7 +463,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 self.assertClose(
                     new_mesh.verts_list()[i], new_mesh_naive.verts_list()[i]
                 )
-                self.assertClose(mesh.faces_list()[i], new_mesh_naive.faces_list()[i])
+                self.assertClose(
+                    mesh.faces_list()[i], new_mesh_naive.faces_list()[i]
+                )
                 self.assertClose(
                     new_mesh.faces_list()[i], new_mesh_naive.faces_list()[i]
                 )
@@ -438,11 +480,21 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 )
 
             # check padded & packed
-            self.assertClose(new_mesh.faces_padded(), new_mesh_naive.faces_padded())
-            self.assertClose(new_mesh.verts_padded(), new_mesh_naive.verts_padded())
-            self.assertClose(new_mesh.faces_packed(), new_mesh_naive.faces_packed())
-            self.assertClose(new_mesh.verts_packed(), new_mesh_naive.verts_packed())
-            self.assertClose(new_mesh.edges_packed(), new_mesh_naive.edges_packed())
+            self.assertClose(
+                new_mesh.faces_padded(), new_mesh_naive.faces_padded()
+            )
+            self.assertClose(
+                new_mesh.verts_padded(), new_mesh_naive.verts_padded()
+            )
+            self.assertClose(
+                new_mesh.faces_packed(), new_mesh_naive.faces_packed()
+            )
+            self.assertClose(
+                new_mesh.verts_packed(), new_mesh_naive.verts_packed()
+            )
+            self.assertClose(
+                new_mesh.edges_packed(), new_mesh_naive.edges_packed()
+            )
             self.assertClose(
                 new_mesh.verts_packed_to_mesh_idx(),
                 new_mesh_naive.verts_packed_to_mesh_idx(),
@@ -452,7 +504,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 new_mesh_naive.mesh_to_verts_packed_first_idx(),
             )
             self.assertClose(
-                new_mesh.num_verts_per_mesh(), new_mesh_naive.num_verts_per_mesh()
+                new_mesh.num_verts_per_mesh(),
+                new_mesh_naive.num_verts_per_mesh(),
             )
             self.assertClose(
                 new_mesh.faces_packed_to_mesh_idx(),
@@ -463,7 +516,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 new_mesh_naive.mesh_to_faces_packed_first_idx(),
             )
             self.assertClose(
-                new_mesh.num_faces_per_mesh(), new_mesh_naive.num_faces_per_mesh()
+                new_mesh.num_faces_per_mesh(),
+                new_mesh_naive.num_faces_per_mesh(),
             )
             self.assertClose(
                 new_mesh.edges_packed_to_mesh_idx(),
@@ -478,19 +532,24 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
 
             # check face areas, normals and vertex normals
             self.assertClose(
-                new_mesh.verts_normals_packed(), new_mesh_naive.verts_normals_packed()
+                new_mesh.verts_normals_packed(),
+                new_mesh_naive.verts_normals_packed(),
             )
             self.assertClose(
-                new_mesh.verts_normals_padded(), new_mesh_naive.verts_normals_padded()
+                new_mesh.verts_normals_padded(),
+                new_mesh_naive.verts_normals_padded(),
             )
             self.assertClose(
-                new_mesh.faces_normals_packed(), new_mesh_naive.faces_normals_packed()
+                new_mesh.faces_normals_packed(),
+                new_mesh_naive.faces_normals_packed(),
             )
             self.assertClose(
-                new_mesh.faces_normals_padded(), new_mesh_naive.faces_normals_padded()
+                new_mesh.faces_normals_padded(),
+                new_mesh_naive.faces_normals_padded(),
             )
             self.assertClose(
-                new_mesh.faces_areas_packed(), new_mesh_naive.faces_areas_packed()
+                new_mesh.faces_areas_packed(),
+                new_mesh_naive.faces_areas_packed(),
             )
             self.assertClose(
                 new_mesh.mesh_to_edges_packed_first_idx(),
@@ -509,7 +568,7 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             return Meshes(verts=new_verts_list, faces=new_faces_list)
 
         N = 5
-        for test in ["tensor", "scalar"]:
+        for test in ['tensor', 'scalar']:
             mesh = TestMeshes.init_mesh(N, 10, 100)
             for force in [0, 1]:
                 if force:
@@ -520,20 +579,22 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     mesh._compute_face_areas_normals(refresh=True)
                     mesh._compute_vertex_normals(refresh=True)
 
-                if test == "tensor":
+                if test == 'tensor':
                     scales = torch.rand(N)
-                elif test == "scalar":
+                elif test == 'scalar':
                     scales = torch.rand(1)[0].item()
                 new_mesh_naive = naive_scale_verts(mesh, scales)
                 new_mesh = mesh.scale_verts(scales)
                 for i in range(N):
-                    if test == "tensor":
+                    if test == 'tensor':
                         self.assertClose(
-                            scales[i] * mesh.verts_list()[i], new_mesh.verts_list()[i]
+                            scales[i] * mesh.verts_list()[i],
+                            new_mesh.verts_list()[i],
                         )
                     else:
                         self.assertClose(
-                            scales * mesh.verts_list()[i], new_mesh.verts_list()[i]
+                            scales * mesh.verts_list()[i],
+                            new_mesh.verts_list()[i],
                         )
                     self.assertClose(
                         new_mesh.verts_list()[i], new_mesh_naive.verts_list()[i]
@@ -555,11 +616,21 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     )
 
                 # check padded & packed
-                self.assertClose(new_mesh.faces_padded(), new_mesh_naive.faces_padded())
-                self.assertClose(new_mesh.verts_padded(), new_mesh_naive.verts_padded())
-                self.assertClose(new_mesh.faces_packed(), new_mesh_naive.faces_packed())
-                self.assertClose(new_mesh.verts_packed(), new_mesh_naive.verts_packed())
-                self.assertClose(new_mesh.edges_packed(), new_mesh_naive.edges_packed())
+                self.assertClose(
+                    new_mesh.faces_padded(), new_mesh_naive.faces_padded()
+                )
+                self.assertClose(
+                    new_mesh.verts_padded(), new_mesh_naive.verts_padded()
+                )
+                self.assertClose(
+                    new_mesh.faces_packed(), new_mesh_naive.faces_packed()
+                )
+                self.assertClose(
+                    new_mesh.verts_packed(), new_mesh_naive.verts_packed()
+                )
+                self.assertClose(
+                    new_mesh.edges_packed(), new_mesh_naive.edges_packed()
+                )
                 self.assertClose(
                     new_mesh.verts_packed_to_mesh_idx(),
                     new_mesh_naive.verts_packed_to_mesh_idx(),
@@ -569,7 +640,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     new_mesh_naive.mesh_to_verts_packed_first_idx(),
                 )
                 self.assertClose(
-                    new_mesh.num_verts_per_mesh(), new_mesh_naive.num_verts_per_mesh()
+                    new_mesh.num_verts_per_mesh(),
+                    new_mesh_naive.num_verts_per_mesh(),
                 )
                 self.assertClose(
                     new_mesh.faces_packed_to_mesh_idx(),
@@ -580,7 +652,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     new_mesh_naive.mesh_to_faces_packed_first_idx(),
                 )
                 self.assertClose(
-                    new_mesh.num_faces_per_mesh(), new_mesh_naive.num_faces_per_mesh()
+                    new_mesh.num_faces_per_mesh(),
+                    new_mesh_naive.num_faces_per_mesh(),
                 )
                 self.assertClose(
                     new_mesh.edges_packed_to_mesh_idx(),
@@ -611,7 +684,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     new_mesh_naive.faces_normals_padded(),
                 )
                 self.assertClose(
-                    new_mesh.faces_areas_packed(), new_mesh_naive.faces_areas_packed()
+                    new_mesh.faces_areas_packed(),
+                    new_mesh_naive.faces_areas_packed(),
                 )
                 self.assertClose(
                     new_mesh.mesh_to_edges_packed_first_idx(),
@@ -655,12 +729,12 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             mesh.extend(N=-1)
 
     def test_to(self):
-        mesh = TestMeshes.init_mesh(5, 10, 100, device=torch.device("cuda:0"))
-        device = torch.device("cuda:1")
+        mesh = TestMeshes.init_mesh(5, 10, 100, device=torch.device('cuda:0'))
+        device = torch.device('cuda:1')
 
         new_mesh = mesh.to(device)
         self.assertTrue(new_mesh.device == device)
-        self.assertTrue(mesh.device == torch.device("cuda:0"))
+        self.assertTrue(mesh.device == torch.device('cuda:0'))
 
     def test_split_mesh(self):
         mesh = TestMeshes.init_mesh(5, 10, 100)
@@ -669,7 +743,10 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         self.assertTrue(len(split_meshes[0]) == 2)
         self.assertTrue(
             split_meshes[0].verts_list()
-            == [mesh.get_mesh_verts_faces(0)[0], mesh.get_mesh_verts_faces(1)[0]]
+            == [
+                mesh.get_mesh_verts_faces(0)[0],
+                mesh.get_mesh_verts_faces(1)[0],
+            ]
         )
         self.assertTrue(len(split_meshes[1]) == 3)
         self.assertTrue(
@@ -701,7 +778,9 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                     mesh.laplacian_packed()
                     mesh.faces_areas_packed()
 
-                new_verts = torch.rand((mesh._N, mesh._V, 3), device=mesh.device)
+                new_verts = torch.rand(
+                    (mesh._N, mesh._V, 3), device=mesh.device
+                )
                 new_verts_list = [
                     new_verts[i, : num_verts_per_mesh[i]] for i in range(N)
                 ]
@@ -733,16 +812,16 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 self.assertIsNone(new_mesh._verts_normals_packed)
 
                 check_tensors = [
-                    "_faces_packed",
-                    "_verts_packed_to_mesh_idx",
-                    "_faces_packed_to_mesh_idx",
-                    "_mesh_to_verts_packed_first_idx",
-                    "_mesh_to_faces_packed_first_idx",
-                    "_edges_packed",
-                    "_edges_packed_to_mesh_idx",
-                    "_mesh_to_edges_packed_first_idx",
-                    "_faces_packed_to_edges_packed",
-                    "_num_edges_per_mesh",
+                    '_faces_packed',
+                    '_verts_packed_to_mesh_idx',
+                    '_faces_packed_to_mesh_idx',
+                    '_mesh_to_verts_packed_first_idx',
+                    '_mesh_to_faces_packed_first_idx',
+                    '_edges_packed',
+                    '_edges_packed_to_mesh_idx',
+                    '_mesh_to_edges_packed_first_idx',
+                    '_faces_packed_to_edges_packed',
+                    '_num_edges_per_mesh',
                 ]
                 for k in check_tensors:
                     v = getattr(new_mesh, k)
@@ -757,18 +836,30 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 self.assertClose(new_mesh.verts_padded(), new_verts)
                 self.assertNotSeparate(new_mesh.verts_padded(), new_verts)
                 self.assertClose(new_mesh.faces_padded(), mesh.faces_padded())
-                self.assertNotSeparate(new_mesh.faces_padded(), mesh.faces_padded())
+                self.assertNotSeparate(
+                    new_mesh.faces_padded(), mesh.faces_padded()
+                )
                 # check verts/faces list
                 for i in range(N):
                     self.assertNotSeparate(
                         new_mesh.faces_list()[i], mesh.faces_list()[i]
                     )
-                    self.assertClose(new_mesh.faces_list()[i], mesh.faces_list()[i])
-                    self.assertSeparate(new_mesh.verts_list()[i], mesh.verts_list()[i])
-                    self.assertClose(new_mesh.verts_list()[i], new_verts_list[i])
+                    self.assertClose(
+                        new_mesh.faces_list()[i], mesh.faces_list()[i]
+                    )
+                    self.assertSeparate(
+                        new_mesh.verts_list()[i], mesh.verts_list()[i]
+                    )
+                    self.assertClose(
+                        new_mesh.verts_list()[i], new_verts_list[i]
+                    )
                 # check verts/faces packed
-                self.assertClose(new_mesh.verts_packed(), torch.cat(new_verts_list))
-                self.assertSeparate(new_mesh.verts_packed(), mesh.verts_packed())
+                self.assertClose(
+                    new_mesh.verts_packed(), torch.cat(new_verts_list)
+                )
+                self.assertSeparate(
+                    new_mesh.verts_packed(), mesh.verts_packed()
+                )
                 self.assertClose(new_mesh.faces_packed(), mesh.faces_packed())
                 # check pad_to_packed
                 self.assertClose(
@@ -779,13 +870,15 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
                 self.assertClose(new_mesh.edges_packed(), mesh.edges_packed())
 
     def test_get_mesh_verts_faces(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts_list = []
         faces_list = []
         verts_faces = [(10, 100), (20, 200)]
         for (V, F) in verts_faces:
             verts = torch.rand((V, 3), dtype=torch.float32, device=device)
-            faces = torch.randint(V, size=(F, 3), dtype=torch.int64, device=device)
+            faces = torch.randint(
+                V, size=(F, 3), dtype=torch.int64, device=device
+            )
             verts_list.append(verts)
             faces_list.append(faces)
 
@@ -804,12 +897,14 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
             mesh.get_mesh_verts_faces(0.2)
 
     def test_get_bounding_boxes(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts_list = []
         faces_list = []
         for (V, F) in [(10, 100)]:
             verts = torch.rand((V, 3), dtype=torch.float32, device=device)
-            faces = torch.randint(V, size=(F, 3), dtype=torch.int64, device=device)
+            faces = torch.randint(
+                V, size=(F, 3), dtype=torch.int64, device=device
+            )
             verts_list.append(verts)
             faces_list.append(faces)
 
@@ -821,13 +916,15 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         self.assertClose(bboxes_gt, bboxes)
 
     def test_padded_to_packed_idx(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts_list = []
         faces_list = []
         verts_faces = [(10, 100), (20, 200), (30, 300)]
         for (V, F) in verts_faces:
             verts = torch.rand((V, 3), dtype=torch.float32, device=device)
-            faces = torch.randint(V, size=(F, 3), dtype=torch.int64, device=device)
+            faces = torch.randint(
+                V, size=(F, 3), dtype=torch.int64, device=device
+            )
             verts_list.append(verts)
             faces_list.append(faces)
 
@@ -837,19 +934,23 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         verts_padded = mesh.verts_padded()
         verts_padded_flat = verts_padded.view(-1, 3)
 
-        self.assertClose(verts_padded_flat[verts_padded_to_packed_idx], verts_packed)
+        self.assertClose(
+            verts_padded_flat[verts_padded_to_packed_idx], verts_packed
+        )
 
         idx = verts_padded_to_packed_idx.view(-1, 1).expand(-1, 3)
         self.assertClose(verts_padded_flat.gather(0, idx), verts_packed)
 
     def test_getitem(self):
-        device = torch.device("cuda:0")
+        device = torch.device('cuda:0')
         verts_list = []
         faces_list = []
         verts_faces = [(10, 100), (20, 200), (30, 300)]
         for (V, F) in verts_faces:
             verts = torch.rand((V, 3), dtype=torch.float32, device=device)
-            faces = torch.randint(V, size=(F, 3), dtype=torch.int64, device=device)
+            faces = torch.randint(
+                V, size=(F, 3), dtype=torch.int64, device=device
+            )
             verts_list.append(verts)
             faces_list.append(faces)
 
@@ -1025,10 +1126,12 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         verts_normals_packed = meshes.verts_normals_packed()
         faces_normals_packed = meshes.faces_normals_packed()
         self.assertTrue(
-            list(verts_normals_packed.shape) == [verts.shape[0] + verts2.shape[0], 3]
+            list(verts_normals_packed.shape)
+            == [verts.shape[0] + verts2.shape[0], 3]
         )
         self.assertTrue(
-            list(faces_normals_packed.shape) == [faces.shape[0] + faces2.shape[0], 3]
+            list(faces_normals_packed.shape)
+            == [faces.shape[0] + faces2.shape[0], 3]
         )
 
         # Single mesh where two faces share one vertex so the normal is
@@ -1082,8 +1185,8 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         num_meshes = 10
         max_v = 100
         max_f = 300
-        mesh_cpu = TestMeshes.init_mesh(num_meshes, max_v, max_f, device="cpu")
-        device = torch.device("cuda:0")
+        mesh_cpu = TestMeshes.init_mesh(num_meshes, max_v, max_f, device='cpu')
+        device = torch.device('cuda:0')
         mesh_cuda = mesh_cpu.to(device)
 
         face_areas_cpu = mesh_cpu.faces_areas_packed()
@@ -1096,12 +1199,17 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
         # with areas > eps=1e-6
         nonzero = face_areas_cpu > 1e-6
         self.assertClose(
-            face_normals_cpu[nonzero], face_normals_cuda.cpu()[nonzero], atol=1e-6
+            face_normals_cpu[nonzero],
+            face_normals_cuda.cpu()[nonzero],
+            atol=1e-6,
         )
 
     @staticmethod
     def compute_packed_with_init(
-        num_meshes: int = 10, max_v: int = 100, max_f: int = 300, device: str = "cpu"
+        num_meshes: int = 10,
+        max_v: int = 100,
+        max_f: int = 300,
+        device: str = 'cpu',
     ):
         mesh = TestMeshes.init_mesh(num_meshes, max_v, max_f, device=device)
         torch.cuda.synchronize()
@@ -1114,7 +1222,10 @@ class TestMeshes(TestCaseMixin, unittest.TestCase):
 
     @staticmethod
     def compute_padded_with_init(
-        num_meshes: int = 10, max_v: int = 100, max_f: int = 300, device: str = "cpu"
+        num_meshes: int = 10,
+        max_v: int = 100,
+        max_f: int = 300,
+        device: str = 'cpu',
     ):
         mesh = TestMeshes.init_mesh(num_meshes, max_v, max_f, device=device)
         torch.cuda.synchronize()

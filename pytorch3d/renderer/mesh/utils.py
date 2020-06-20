@@ -17,7 +17,7 @@ def _clip_barycentric_coordinates(bary) -> torch.Tensor:
         The output is the same shape as the input.
     """
     if bary.shape[-1] != 3:
-        msg = "Expected barycentric coords to have last dim = 3; got %r"
+        msg = 'Expected barycentric coords to have last dim = 3; got %r'
         raise ValueError(msg % (bary.shape,))
     clipped = bary.clamp(min=0.0)
     clipped_sum = torch.clamp(clipped.sum(dim=-1, keepdim=True), min=1e-5)
@@ -52,10 +52,10 @@ def interpolate_face_attributes(
     """
     F, FV, D = face_attributes.shape
     if FV != 3:
-        raise ValueError("Faces can only have three vertices; got %r" % FV)
+        raise ValueError('Faces can only have three vertices; got %r' % FV)
     N, H, W, K, _ = barycentric_coords.shape
     if pix_to_face.shape != (N, H, W, K):
-        msg = "pix_to_face must have shape (batch_size, H, W, K); got %r"
+        msg = 'pix_to_face must have shape (batch_size, H, W, K); got %r'
         raise ValueError(msg % (pix_to_face.shape,))
 
     # Replace empty pixels in pix_to_face with 0 in order to interpolate.
@@ -93,6 +93,8 @@ def _interpolate_zbuf(
     verts = meshes.verts_packed()
     faces = meshes.faces_packed()
     faces_verts_z = verts[faces][..., 2][..., None]  # (F, 3, 1)
-    return interpolate_face_attributes(pix_to_face, barycentric_coords, faces_verts_z)[
+    return interpolate_face_attributes(
+        pix_to_face, barycentric_coords, faces_verts_z
+    )[
         ..., 0
     ]  # (1, H, W, K)

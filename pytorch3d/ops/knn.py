@@ -9,7 +9,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
 
-_KNN = namedtuple("KNN", "dists idx knn")
+_KNN = namedtuple('KNN', 'dists idx knn')
 
 
 class _knn_points(Function):
@@ -55,11 +55,14 @@ class _knn_points(Function):
         if K > 1:
             if lengths2.min() < K:
                 P1 = p1.shape[1]
-                mask = lengths2[:, None] <= torch.arange(K, device=dists.device)[None]
+                mask = (
+                    lengths2[:, None]
+                    <= torch.arange(K, device=dists.device)[None]
+                )
                 # mask has shape [N, K], true where dists irrelevant
                 mask = mask[:, None].expand(-1, P1, -1)
                 # mask has shape [N, P1, K], true where dists irrelevant
-                dists[mask] = float("inf")
+                dists[mask] = float('inf')
                 dists, sort_idx = dists.sort(dim=2)
                 dists[mask] = 0
             else:
@@ -142,9 +145,9 @@ def knn_points(
 
     """
     if p1.shape[0] != p2.shape[0]:
-        raise ValueError("pts1 and pts2 must have the same batch dimension.")
+        raise ValueError('pts1 and pts2 must have the same batch dimension.')
     if p1.shape[2] != p2.shape[2]:
-        raise ValueError("pts1 and pts2 must have the same point dimension.")
+        raise ValueError('pts1 and pts2 must have the same point dimension.')
 
     p1 = p1.contiguous()
     p2 = p2.contiguous()
@@ -153,9 +156,13 @@ def knn_points(
     P2 = p2.shape[1]
 
     if lengths1 is None:
-        lengths1 = torch.full((p1.shape[0],), P1, dtype=torch.int64, device=p1.device)
+        lengths1 = torch.full(
+            (p1.shape[0],), P1, dtype=torch.int64, device=p1.device
+        )
     if lengths2 is None:
-        lengths2 = torch.full((p1.shape[0],), P2, dtype=torch.int64, device=p1.device)
+        lengths2 = torch.full(
+            (p1.shape[0],), P2, dtype=torch.int64, device=p1.device
+        )
 
     # pyre-fixme[16]: `_knn_points` has no attribute `apply`.
     p1_dists, p1_idx = _knn_points.apply(p1, p2, lengths1, lengths2, K, version)
@@ -168,7 +175,9 @@ def knn_points(
 
 
 def knn_gather(
-    x: torch.Tensor, idx: torch.Tensor, lengths: Union[torch.Tensor, None] = None
+    x: torch.Tensor,
+    idx: torch.Tensor,
+    lengths: Union[torch.Tensor, None] = None,
 ):
     """
     A helper function for knn that allows indexing a tensor x with the indices `idx`
@@ -195,10 +204,12 @@ def knn_gather(
     _N, L, K = idx.shape
 
     if N != _N:
-        raise ValueError("x and idx must have same batch dimension.")
+        raise ValueError('x and idx must have same batch dimension.')
 
     if lengths is None:
-        lengths = torch.full((x.shape[0],), M, dtype=torch.int64, device=x.device)
+        lengths = torch.full(
+            (x.shape[0],), M, dtype=torch.int64, device=x.device
+        )
 
     idx_expanded = idx[:, :, :, None].expand(-1, -1, -1, U)
     # idx_expanded has shape [N, L, K, U]

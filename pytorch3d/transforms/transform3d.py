@@ -137,7 +137,7 @@ class Transform3d:
     def __init__(
         self,
         dtype: torch.dtype = torch.float32,
-        device="cpu",
+        device='cpu',
         matrix: Optional[torch.Tensor] = None,
     ):
         """
@@ -153,11 +153,15 @@ class Transform3d:
         """
 
         if matrix is None:
-            self._matrix = torch.eye(4, dtype=dtype, device=device).view(1, 4, 4)
+            self._matrix = torch.eye(4, dtype=dtype, device=device).view(
+                1, 4, 4
+            )
         else:
             # pyre-fixme[16]: `Tensor` has no attribute `ndim`.
             if matrix.ndim not in (2, 3):
-                raise ValueError('"matrix" has to be a 2- or a 3-dimensional tensor.')
+                raise ValueError(
+                    '"matrix" has to be a 2- or a 3-dimensional tensor.'
+                )
             if matrix.shape[-2] != 4 or matrix.shape[-1] != 4:
                 raise ValueError(
                     '"matrix" has to be a tensor of shape (minibatch, 4, 4)'
@@ -188,7 +192,7 @@ class Transform3d:
         out._matrix = self._matrix.clone()
         for other in others:
             if not isinstance(other, Transform3d):
-                msg = "Only possible to compose Transform3d objects; got %s"
+                msg = 'Only possible to compose Transform3d objects; got %s'
                 raise ValueError(msg % type(other))
         out._transforms = self._transforms + list(others)
         return out
@@ -261,7 +265,9 @@ class Transform3d:
                 # the transformations with get_matrix(), this correctly
                 # right-multiplies by the inverse of self._matrix
                 # at the end of the composition.
-                tinv._transforms = [t.inverse() for t in reversed(self._transforms)]
+                tinv._transforms = [
+                    t.inverse() for t in reversed(self._transforms)
+                ]
                 last = Transform3d(device=self.device)
                 last._matrix = i_matrix
                 tinv._transforms.append(last)
@@ -302,7 +308,7 @@ class Transform3d:
         if points_batch.dim() == 2:
             points_batch = points_batch[None]  # (P, 3) -> (1, P, 3)
         if points_batch.dim() != 3:
-            msg = "Expected points to have dim = 2 or dim = 3: got shape %r"
+            msg = 'Expected points to have dim = 2 or dim = 3: got shape %r'
             raise ValueError(msg % repr(points.shape))
 
         N, P, _3 = points_batch.shape
@@ -336,7 +342,7 @@ class Transform3d:
             on the dimensions of the transform
         """
         if normals.dim() not in [2, 3]:
-            msg = "Expected normals to have dim = 2 or dim = 3: got shape %r"
+            msg = 'Expected normals to have dim = 2 or dim = 3: got shape %r'
             raise ValueError(msg % (normals.shape,))
         composed_matrix = self.get_matrix()
 
@@ -363,7 +369,9 @@ class Transform3d:
         return self.compose(Scale(device=self.device, *args, **kwargs))
 
     def rotate_axis_angle(self, *args, **kwargs):
-        return self.compose(RotateAxisAngle(device=self.device, *args, **kwargs))
+        return self.compose(
+            RotateAxisAngle(device=self.device, *args, **kwargs)
+        )
 
     def clone(self):
         """
@@ -408,14 +416,16 @@ class Transform3d:
         return other
 
     def cpu(self):
-        return self.to(torch.device("cpu"))
+        return self.to(torch.device('cpu'))
 
     def cuda(self):
-        return self.to(torch.device("cuda"))
+        return self.to(torch.device('cuda'))
 
 
 class Translate(Transform3d):
-    def __init__(self, x, y=None, z=None, dtype=torch.float32, device: str = "cpu"):
+    def __init__(
+        self, x, y=None, z=None, dtype=torch.float32, device: str = 'cpu'
+    ):
         """
         Create a new Transform3d representing 3D translations.
 
@@ -430,7 +440,7 @@ class Translate(Transform3d):
                 - A 1D torch tensor
         """
         super().__init__(device=device)
-        xyz = _handle_input(x, y, z, dtype, device, "Translate")
+        xyz = _handle_input(x, y, z, dtype, device, 'Translate')
         N = xyz.shape[0]
 
         mat = torch.eye(4, dtype=dtype, device=device)
@@ -449,7 +459,9 @@ class Translate(Transform3d):
 
 
 class Scale(Transform3d):
-    def __init__(self, x, y=None, z=None, dtype=torch.float32, device: str = "cpu"):
+    def __init__(
+        self, x, y=None, z=None, dtype=torch.float32, device: str = 'cpu'
+    ):
         """
         A Transform3d representing a scaling operation, with different scale
         factors along each coordinate axis.
@@ -467,7 +479,9 @@ class Scale(Transform3d):
                 - 1D torch tensor
         """
         super().__init__(device=device)
-        xyz = _handle_input(x, y, z, dtype, device, "scale", allow_singleton=True)
+        xyz = _handle_input(
+            x, y, z, dtype, device, 'scale', allow_singleton=True
+        )
         N = xyz.shape[0]
 
         # TODO: Can we do this all in one go somehow?
@@ -490,7 +504,11 @@ class Scale(Transform3d):
 
 class Rotate(Transform3d):
     def __init__(
-        self, R, dtype=torch.float32, device: str = "cpu", orthogonal_tol: float = 1e-5
+        self,
+        R,
+        dtype=torch.float32,
+        device: str = 'cpu',
+        orthogonal_tol: float = 1e-5,
     ):
         """
         Create a new Transform3d representing 3D rotation using a rotation
@@ -505,7 +523,7 @@ class Rotate(Transform3d):
         if R.dim() == 2:
             R = R[None]
         if R.shape[-2:] != (3, 3):
-            msg = "R must have shape (3, 3) or (N, 3, 3); got %s"
+            msg = 'R must have shape (3, 3) or (N, 3, 3); got %s'
             raise ValueError(msg % repr(R.shape))
         R = R.to(dtype=dtype).to(device=device)
         _check_valid_rotation_matrix(R, tol=orthogonal_tol)
@@ -526,10 +544,10 @@ class RotateAxisAngle(Rotate):
     def __init__(
         self,
         angle,
-        axis: str = "X",
+        axis: str = 'X',
         degrees: bool = True,
         dtype=torch.float64,
-        device: str = "cpu",
+        device: str = 'cpu',
     ):
         """
         Create a new Transform3d representing 3D rotation about an axis
@@ -549,10 +567,10 @@ class RotateAxisAngle(Rotate):
                 NOTE: All batch elements are rotated about the same axis.
         """
         axis = axis.upper()
-        if axis not in ["X", "Y", "Z"]:
+        if axis not in ['X', 'Y', 'Z']:
             msg = "Expected axis to be one of ['X', 'Y', 'Z']; got %s"
             raise ValueError(msg % axis)
-        angle = _handle_angle_input(angle, dtype, device, "RotateAxisAngle")
+        angle = _handle_angle_input(angle, dtype, device, 'RotateAxisAngle')
         angle = (angle / 180.0 * math.pi) if degrees else angle
         # We assume the points on which this transformation will be applied
         # are row vectors. The rotation matrix returned from _axis_angle_rotation
@@ -579,7 +597,9 @@ def _handle_coord(c, dtype, device):
     return c
 
 
-def _handle_input(x, y, z, dtype, device, name: str, allow_singleton: bool = False):
+def _handle_input(
+    x, y, z, dtype, device, name: str, allow_singleton: bool = False
+):
     """
     Helper function to handle parsing logic for building transforms. The output
     is always a tensor of shape (N, 3), but there are several types of allowed
@@ -610,10 +630,10 @@ def _handle_input(x, y, z, dtype, device, name: str, allow_singleton: bool = Fal
     # If x is actually a tensor of shape (N, 3) then just return it
     if torch.is_tensor(x) and x.dim() == 2:
         if x.shape[1] != 3:
-            msg = "Expected tensor of shape (N, 3); got %r (in %s)"
+            msg = 'Expected tensor of shape (N, 3); got %r (in %s)'
             raise ValueError(msg % (x.shape, name))
         if y is not None or z is not None:
-            msg = "Expected y and z to be None (in %s)" % name
+            msg = 'Expected y and z to be None (in %s)' % name
             raise ValueError(msg)
         return x
 
@@ -629,7 +649,7 @@ def _handle_input(x, y, z, dtype, device, name: str, allow_singleton: bool = Fal
     N = max(sizes)
     for c in xyz:
         if c.shape[0] != 1 and c.shape[0] != N:
-            msg = "Got non-broadcastable sizes %r (in %s)" % (sizes, name)
+            msg = 'Got non-broadcastable sizes %r (in %s)' % (sizes, name)
             raise ValueError(msg)
     xyz = [c.expand(N) for c in xyz]
     xyz = torch.stack(xyz, dim=1)
@@ -647,7 +667,7 @@ def _handle_angle_input(x, dtype, device: str, name: str):
         - Torch scalar
     """
     if torch.is_tensor(x) and x.dim() > 1:
-        msg = "Expected tensor of shape (N,); got %r (in %s)"
+        msg = 'Expected tensor of shape (N,); got %r (in %s)'
         raise ValueError(msg % (x.shape, name))
     else:
         return _handle_coord(x, dtype, device)
@@ -672,7 +692,7 @@ def _broadcast_bmm(a, b):
         a = a[None]
     if len(a) != len(b):
         if not ((len(a) == 1) or (len(b) == 1)):
-            msg = "Expected batch dim for bmm to be equal or 1; got %r, %r"
+            msg = 'Expected batch dim for bmm to be equal or 1; got %r, %r'
             raise ValueError(msg % (a.shape, b.shape))
         if len(a) == 1:
             a = a.expand(len(b), -1, -1)
@@ -703,6 +723,6 @@ def _check_valid_rotation_matrix(R, tol: float = 1e-7):
     det_R = torch.det(R)
     no_distortion = torch.allclose(det_R, torch.ones_like(det_R))
     if not (orthogonal and no_distortion):
-        msg = "R is not a valid rotation matrix"
+        msg = 'R is not a valid rotation matrix'
         warnings.warn(msg)
     return

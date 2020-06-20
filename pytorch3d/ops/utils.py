@@ -33,7 +33,7 @@ def wmean(
         * if `weights` is None => `mean(x, dim)`,
         * otherwise => `sum(x*w, dim) / max{sum(w, dim), eps}`.
     """
-    args = {"dim": dim, "keepdim": keepdim}
+    args = {'dim': dim, 'keepdim': keepdim}
 
     if weight is None:
         return x.mean(**args)
@@ -42,11 +42,11 @@ def wmean(
         xd != wd and xd != 1 and wd != 1
         for xd, wd in zip(x.shape[-2::-1], weight.shape[::-1])
     ):
-        raise ValueError("wmean: weights are not compatible with the tensor")
+        raise ValueError('wmean: weights are not compatible with the tensor')
 
-    return (x * weight[..., None]).sum(**args) / weight[..., None].sum(**args).clamp(
-        eps
-    )
+    return (x * weight[..., None]).sum(**args) / weight[..., None].sum(
+        **args
+    ).clamp(eps)
 
 
 def eyes(
@@ -71,7 +71,7 @@ def eyes(
     return identities[None].repeat(N, 1, 1)
 
 
-def convert_pointclouds_to_tensor(pcl: Union[torch.Tensor, "Pointclouds"]):
+def convert_pointclouds_to_tensor(pcl: Union[torch.Tensor, 'Pointclouds']):
     """
     If `type(pcl)==Pointclouds`, converts a `pcl` object to a
     padded representation and returns it together with the number of points
@@ -88,17 +88,19 @@ def convert_pointclouds_to_tensor(pcl: Union[torch.Tensor, "Pointclouds"]):
         )
     else:
         raise ValueError(
-            "The inputs X, Y should be either Pointclouds objects or tensors."
+            'The inputs X, Y should be either Pointclouds objects or tensors.'
         )
     return X, num_points
 
 
-def is_pointclouds(pcl: Union[torch.Tensor, "Pointclouds"]):
+def is_pointclouds(pcl: Union[torch.Tensor, 'Pointclouds']):
     """ Checks whether the input `pcl` is an instance of `Pointclouds`
     by checking the existence of `points_padded` and `num_points_per_cloud`
     functions.
     """
-    return hasattr(pcl, "points_padded") and hasattr(pcl, "num_points_per_cloud")
+    return hasattr(pcl, 'points_padded') and hasattr(
+        pcl, 'num_points_per_cloud'
+    )
 
 
 def get_point_covariances(
