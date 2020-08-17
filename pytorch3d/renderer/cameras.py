@@ -326,7 +326,7 @@ class OpenGLPerspectiveCameras(CamerasBase):
         # camera space negative z direction. This is because the sign of the z
         # in the projection matrix is set to -1.0.
         # In pytorch3d we maintain a right handed coordinate system throughout
-        # so the so the z sign is 1.0.
+        # so the z sign is 1.0.
         z_sign = 1.0
 
         P[:, 0, 0] = 2.0 * znear / (right - left)
